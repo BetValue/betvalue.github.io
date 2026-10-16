@@ -724,3 +724,30 @@ footer p { margin: 4px auto; max-width: 70ch; }
   .tabs a.acctab { display: none; }
   .logout-btn { margin-left: 0; order: 2; }
 }
+
+/* ---------- Vänner ---------- */
+.fr-add { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 10px; margin-bottom: 14px; }
+.fr-add .f { margin: 0; }
+.fr-add .btn-gold { width: auto; padding: 14px 18px; font-size: 16px; }
+.fr-add .note { grid-column: 1 / -1; margin: 0; }
+.fr-add .note:empty { display: none; }
+@media (max-width: 560px) { .fr-add { grid-template-columns: 1fr; } .fr-add .btn-gold { width: 100%; } }
+.fr-list { display: grid; gap: 8px; margin-bottom: 12px; }
+.fr { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 4px 12px; padding: 12px 14px; border-radius: 16px; background: var(--glass); border: 1px solid var(--line); }
+.fr b { font: 800 20px/1.1 var(--display); text-transform: uppercase; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fr small { grid-column: 2; color: var(--muted); font-size: 12px; }
+.fr-av { grid-row: span 2; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: var(--gold); color: #241900; font: 900 17px/1 var(--display); }
+.fr-btns { grid-column: 3; grid-row: 1 / span 2; display: flex; gap: 6px; }
+.btn-mini { padding: 7px 12px; border-radius: 999px; border: 1px solid var(--glass-2); font-size: 12px; font-weight: 700; color: var(--chalk); }
+.btn-mini:hover { border-color: var(--chalk); }
+.btn-mini.gold { background: var(--gold); border-color: var(--gold); color: #241900; }
+.btn-mini.armed { background: var(--live); border-color: var(--live); color: #fff; }
+.fr-bets { grid-column: 1 / -1; display: grid; gap: 6px; margin-top: 8px; }
+.fr-bet { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 12px; background: var(--night-2); cursor: pointer; }
+.fr-bet .fb-main { display: grid; min-width: 0; }
+.fr-bet .fb-main b { font: 800 16px/1.15 var(--display); text-transform: uppercase; }
+.fr-bet .fb-main small { grid-column: auto; color: var(--dim); }
+.fr-bet em { font: 800 17px/1 var(--display); font-style: normal; color: var(--gold); }
+@media (max-width: 560px) { .fr { grid-template-columns: auto minmax(0, 1fr); } .fr-btns { grid-column: 1 / -1; grid-row: auto; } }
+#nav-account.has-req, #nav-account-m.has-req { position: relative; }
+#nav-account.has-req::after, #nav-account-m.has-req::after { content: ""; position: absolute; top: 2px; right: 2px; width: 9px; height: 9px; border-radius: 50%; background: var(--live); box-shadow: 0 0 0 2px var(--night); }

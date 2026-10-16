@@ -22,6 +22,8 @@ async function loadProfile() {
   AUTH.profile = profile;
   AUTH.favs = new Map((favs ?? []).map(f => [f.kind + '|' + f.ref, f]));
   AUTH.saved = new Set((saved ?? []).map(b => b.match_id + '|' + b.pick));
+  const { count } = await sb.from('friendships').select('id', { count: 'exact', head: true }).eq('addressee', AUTH.user.id).eq('status', 'pending');
+  AUTH.requests = count ?? 0;
 }
 
 function paintAccountLink() {
@@ -31,6 +33,8 @@ function paintAccountLink() {
     if (!link) continue;
     link.textContent = AUTH.user ? (AUTH.profile?.username ?? 'Mitt konto') : 'Logga in';
     link.classList.toggle('signed-in', !!AUTH.user);
+    link.classList.toggle('has-req', !!(AUTH.user && AUTH.requests));
+    if (AUTH.user && AUTH.requests) link.title = AUTH.requests === 1 ? '1 ny vänförfrågan' : AUTH.requests + ' nya vänförfrågningar';
   }
   let out = document.getElementById('nav-logout');
   if (AUTH.user && !out) {
