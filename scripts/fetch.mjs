@@ -184,7 +184,11 @@ async function buildCompetition(c, odds, prev) {
   }
   if (!FD_KEY) return prev ?? base;
 
-  const st = await fd(`/competitions/${c.fd}/standings`);
+  // Avslutade turneringar (EM/VM) saknar ibland tabell men har matcher.
+  const st = await fd(`/competitions/${c.fd}/standings`).catch(err => {
+    if (!err.message.includes(': 404')) throw err;
+    return { standings: [] };
+  });
   const mt = await fd(`/competitions/${c.fd}/matches`);
 
   const teams = new Map();
@@ -195,7 +199,7 @@ async function buildCompetition(c, odds, prev) {
     .map(m => ({ home: m.homeTeam.id, away: m.awayTeam.id, hg: m.score.fullTime.home, ag: m.score.fullTime.away, time: Date.parse(m.utcDate) }));
   const model = buildModel(finished, now);
 
-  base.emblem = st.competition?.emblem ?? null;
+  base.emblem = st.competition?.emblem ?? mt.competition?.emblem ?? null;
   base.season = st.season ? `${st.season.startDate.slice(0, 4)}/${st.season.endDate.slice(2, 4)}` : null;
   base.standings = st.standings.filter(s => s.type === 'TOTAL').map(s => ({
     group: s.group ? s.group.replace('GROUP_', 'Grupp ') : null,
