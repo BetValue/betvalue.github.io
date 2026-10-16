@@ -104,3 +104,34 @@ drop policy if exists "Egna sparade bets" on public.saved_bets;
 create policy "Egna sparade bets" on public.saved_bets for all
   using (auth.uid() = user_id) with check (auth.uid() = user_id);
 alter table public.saved_bets add column if not exists result text check (result in ('won', 'lost', 'void'));
+
+-- ---------- Vänner ----------
+create table if not exists public.friendships (
+  id bigint generated always as identity primary key,
+  requester uuid not null references auth.users on delete cascade default auth.uid(),
+  addressee uuid not null references auth.users on delete cascade,
+  status text not null default 'pending' check (status in ('pending', 'accepted')),
+  created_at timestamptz not null default now(),
+  check (requester <> addressee)
+);
+-- Bara en relation per par, oavsett vem som frågade.
+create unique index if not exists friendships_pair on public.friendships (least(requester, addressee), greatest(requester, addressee));
+alter table public.friendships enable row level security;
+drop policy if exists "Se egna vänrelationer" on public.friendships;
+drop policy if exists "Skicka vänförfrågan" on public.friendships;
+drop policy if exists "Acceptera förfrågan" on public.friendships;
+drop policy if exists "Ta bort vän eller förfrågan" on public.friendships;
+create policy "Se egna vänrelationer" on public.friendships for select to authenticated using (auth.uid() in (requester, addressee));
+create policy "Skicka vänförfrågan" on public.friendships for insert to authenticated with check (auth.uid() = requester and status = 'pending');
+create policy "Acceptera förfrågan" on public.friendships for update to authenticated using (auth.uid() = addressee) with check (auth.uid() = addressee);
+create policy "Ta bort vän eller förfrågan" on public.friendships for delete to authenticated using (auth.uid() in (requester, addressee));
+
+-- Vänner kan se varandras sparade bets.
+create or replace function public.is_friend(other uuid) returns boolean
+language sql security definer set search_path = '' stable as $$
+  select exists (select 1 from public.friendships f where f.status = 'accepted'
+    and ((f.requester = auth.uid() and f.addressee = other) or (f.addressee = auth.uid() and f.requester = other)));
+$$;
+grant execute on function public.is_friend(uuid) to authenticated;
+drop policy if exists "Vänner ser varandras bets" on public.saved_bets;
+create policy "Vänner ser varandras bets" on public.saved_bets for select to authenticated using (public.is_friend(user_id));
