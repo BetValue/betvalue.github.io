@@ -255,8 +255,30 @@ function nextMatchFor(name) {
 
 const POS_SV = { Goalkeeper: 'Målvakt', Defender: 'Försvarare', Midfielder: 'Mittfältare', Forward: 'Anfallare' };
 function cm(display) {
-  const m = /(d+)'s*(d+)?/.exec(display ?? '');
+  const m = /(\d+)'\s*(\d+)?/.exec(display ?? '');
   return m ? Math.round((Number(m[1]) * 12 + Number(m[2] ?? 0)) * 2.54) + ' cm' : null;
+}
+
+// Spelarbild från Wikipedia (fri licens, CORS öppet). Vi kräver att sidan handlar om en
+// fotbollsspelare med samma namn – och samma födelseår om Wikipedia anger ett – så att
+// vi inte visar fel person. Tar det för lång tid visas profilen utan bild.
+async function playerPhoto(a) {
+  if (a.headshot?.href) return { src: a.headshot.href, credit: null };
+  const year = (a.dateOfBirth ?? '').slice(0, 4);
+  const url = 'https://en.wikipedia.org/w/api.php?action=query&format=json&origin=*&generator=search&gsrlimit=4'
+    + '&prop=pageimages|description&piprop=thumbnail&pithumbsize=500&gsrsearch=' + encodeURIComponent(a.displayName + ' footballer');
+  const search = getJson(url).then(j => {
+    const pages = Object.values(j.query?.pages ?? {}).sort((x, y) => x.index - y.index);
+    const ok = pages.find(p => {
+      const desc = (p.description ?? '').toLowerCase();
+      const born = /born (\d{4})/.exec(desc)?.[1];
+      return p.thumbnail && /footballer|soccer player/.test(desc)
+        && nameSim(p.title.replace(/\s*\(.*\)$/, ''), a.displayName) >= 0.7
+        && (!year || !born || born === year);
+    });
+    return ok ? { src: ok.thumbnail.source, credit: 'https://en.wikipedia.org/wiki/' + encodeURIComponent(ok.title.replace(/ /g, '_')) } : null;
+  }).catch(() => null);
+  return Promise.race([search, new Promise(r => setTimeout(() => r(null), 3000))]);
 }
 
 async function playerHtml(id, slug, teamName) {
@@ -287,30 +309,52 @@ async function playerHtml(id, slug, teamName) {
   const per = k => (n ? (sum(k) / n).toFixed(2).replace('.', ',') : '–');
   const rate = (f, label) => { const h = hits(f); return `<div class="hit"><div class="hit-bar"><i style="width:${n ? (h / n) * 100 : 0}%"></i></div><span>${label}</span><b>${h}/${n}</b></div>`; };
 
-  const big = [['Matcher', n], ['Mål', sum('totalGoals')], ['Assist', sum('goalAssists')], ['Skott', sum('totalShots')], ['Skott på mål', sum('shotsOnTarget')],
-    ['Fouls', sum('foulsCommitted')], ['Fouls mot', sum('foulsSuffered')], ['Offside', sum('offsides')], ['Gula', sum('yellowCards')], ['Röda', sum('redCards')]];
   const nm = nextMatchFor(a.displayName);
   const splits = ov?.statistics?.splits ?? [];
   const sNames = ov?.statistics?.names ?? [];
+  const leagueName = DATA.latest.competitions.find(c => SLUG[c.id] === slug)?.name ?? '';
+  const photo = await playerPhoto(a);
+  const shotPct = sum('totalShots') ? Math.round((sum('shotsOnTarget') / sum('totalShots')) * 100) : null;
+
+  // Huvudsiffrorna, stora och tydliga i spelarkortet.
+  const key = [['Mål', 'totalGoals'], ['Assist', 'goalAssists'], ['Skott', 'totalShots'], ['Skott på mål', 'shotsOnTarget']];
+  const tile = (label, value, sub, cls = '') => `<div class="st ${cls}"><small>${label}</small><b>${value}</b>${sub ? `<em>${sub}</em>` : ''}</div>`;
 
   return `<div class="phead" style="--kit:${hex(color) ?? '#3ddc84'};--ink:${ink}">
-      <div class="avatar">${esc(a.jersey ?? initials(a.displayName))}</div>
+      <div class="ph-photo">${photo
+        ? `<img src="${esc(photo.src)}" alt="${esc(a.displayName)}" onerror="this.parentNode.classList.add('nophoto');this.remove()"><span class="ph-no">${esc(a.jersey ?? initials(a.displayName))}</span>`
+        : `<span class="ph-no">${esc(a.jersey ?? initials(a.displayName))}</span>`}</div>
       <div class="ph-main">
         <span class="label">${esc(POS_SV[a.position?.displayName] ?? a.position?.displayName ?? 'Spelare')}${team ? ' · ' + esc(team.displayName) : ''}</span>
         <h2>${esc(a.displayName)}</h2>
-        <div class="ph-facts">${[a.age && `${a.age} år`, a.citizenship, cm(a.displayHeight), a.jersey && `#${a.jersey}`].filter(Boolean).map(f => `<span>${esc(f)}</span>`).join('')}</div>
+        <div class="ph-facts">${[a.age && `${a.age} år`, a.citizenship, cm(a.displayHeight), a.jersey && `Tröja #${a.jersey}`].filter(Boolean).map(f => `<span>${esc(f)}</span>`).join('')}</div>
       </div>
       ${team?.logos?.[0]?.href ? `<img class="ph-logo" src="${esc(team.logos[0].href)}" alt="">` : ''}
+      <div class="ph-key" title="${esc(leagueName)} den här säsongen">${key.map(([l, k]) => `<div><b>${sum(k)}</b><small>${l}</small><em>${n ? per(k) + ' / match' : '–'}</em></div>`).join('')}</div>
+      ${photo?.credit ? `<a class="ph-credit" href="${esc(photo.credit)}" target="_blank" rel="noopener">Bild: Wikipedia</a>` : ''}
     </div>
 
     ${nm ? `<button class="box nextm" data-match="${nm.m.id}"><span class="label">Nästa match</span>
       <div class="nm-row">${crest(nm.m.home)}<b>${esc(nm.m.home.short)} – ${esc(nm.m.away.short)}</b>${crest(nm.m.away)}<small>${dayText(nm.m.utc)} ${clock(nm.m.utc)}</small></div>
       <div class="nm-num"><span>Chans att göra mål</span><b>${pct(nm.pl.p)}</b><small>värde från ${odd(minOdds(nm.pl.p))}</small></div></button>` : ''}
 
-    <div class="box"><span class="label">Säsongen ${n ? `· ${n} matcher` : ''}</span>
-      <div class="sgrid">${big.map(([l, v]) => `<div><b>${v}</b><small>${l}</small></div>`).join('')}</div>
-      ${n ? `<div class="avg"><span>Per match:</span> <b>${per('totalShots')}</b> skott · <b>${per('shotsOnTarget')}</b> på mål · <b>${per('foulsCommitted')}</b> fouls · <b>${per('foulsSuffered')}</b> fouls mot
-        ${sum('totalShots') ? ` · <b>${Math.round((sum('shotsOnTarget') / sum('totalShots')) * 100)}%</b> av skotten på mål` : ''}</div>` : ''}
+    <div class="box"><span class="label">Säsongen ${esc(DATA.latest.competitions.find(c => c.season)?.season ?? '')} · ${esc(leagueName)}</span>
+      <div class="stgroup"><h4>Anfall</h4><div class="sts">
+        ${tile('Matcher', n)}
+        ${tile('Mål', sum('totalGoals'), n ? per('totalGoals') + ' / match' : '', 'hot')}
+        ${tile('Assist', sum('goalAssists'), n ? per('goalAssists') + ' / match' : '', 'hot')}
+        ${tile('Mål + assist', sum('totalGoals') + sum('goalAssists'), '', 'hot')}
+        ${tile('Skott', sum('totalShots'), n ? per('totalShots') + ' / match' : '')}
+        ${tile('Skott på mål', sum('shotsOnTarget'), n ? per('shotsOnTarget') + ' / match' : '')}
+        ${tile('Träffsäkerhet', shotPct == null ? '–' : shotPct + '%', 'av skotten på mål')}
+        ${tile('Offside', sum('offsides'), n ? per('offsides') + ' / match' : '')}
+      </div></div>
+      <div class="stgroup"><h4>Fouls och kort</h4><div class="sts">
+        ${tile('Fouls begångna', sum('foulsCommitted'), n ? per('foulsCommitted') + ' / match' : '')}
+        ${tile('Blivit fälld', sum('foulsSuffered'), n ? per('foulsSuffered') + ' / match' : '')}
+        ${tile('Gula kort', sum('yellowCards'), '', 'yc')}
+        ${tile('Röda kort', sum('redCards'), '', 'rc')}
+      </div></div>
     </div>
 
     ${n ? `<div class="box"><span class="label">Trender · bra för bet builders</span>
