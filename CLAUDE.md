@@ -1,4 +1,4 @@
-# Simon-Casper gamble projekt
+# BetValue (repo: simon-casper-gamble-projekt)
 
 Privat fotbollssida (för användaren och kompisar): statistik à la FotMob + värdebets mot spelbolagens odds. Man spelar inte på sidan och vi länkar inte till spelbolag – den visar bara statistik och värde. Svenska i UI och commits. Live: https://simmpro123.github.io/simon-casper-gamble-projekt/ (GitHub Pages, main). Commit + push publicerar.
 
