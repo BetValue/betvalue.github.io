@@ -5,8 +5,10 @@
 const SUPABASE_URL = 'https://avtmxbqqjkrcwbpkaihr.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_kl5iy4KG88gg8Shzm4_G-w_A-8JL6xw';
 
+// lock: supabase-js låser normalt sessionen mellan flikar via navigator.locks. Med sidan öppen i
+// flera flikar kan inloggningen då stå och vänta länge ("laddar"). Vi kör utan det låset.
 const sb = window.supabase?.createClient(SUPABASE_URL, SUPABASE_KEY, {
-  auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false },
+  auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false, lock: (_name, _timeout, fn) => fn() },
 });
 const AUTH = { user: null, profile: null, favs: new Map(), saved: new Set(), ready: null };
 
@@ -25,8 +27,11 @@ async function loadProfile() {
 function paintAccountLink() {
   const a = document.getElementById('nav-account');
   if (!a) return;
-  a.textContent = AUTH.user ? (AUTH.profile?.username ?? 'Mitt konto') : 'Logga in';
-  a.classList.toggle('signed-in', !!AUTH.user);
+  for (const link of [a, document.getElementById('nav-account-m')]) {
+    if (!link) continue;
+    link.textContent = AUTH.user ? (AUTH.profile?.username ?? 'Mitt konto') : 'Logga in';
+    link.classList.toggle('signed-in', !!AUTH.user);
+  }
   let out = document.getElementById('nav-logout');
   if (AUTH.user && !out) {
     out = document.createElement('button');
@@ -46,7 +51,7 @@ async function logOut() {
 
 AUTH.ready = (async () => {
   if (!sb) return;
-  const { data } = await sb.auth.getSession();
+  const { data } = await Promise.race([sb.auth.getSession(), new Promise(r => setTimeout(() => r({ data: {} }), 6000))]);
   AUTH.user = data.session?.user ?? null;
   await loadProfile().catch(() => {});
   paintAccountLink();

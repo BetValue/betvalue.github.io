@@ -94,56 +94,6 @@ function favLink(f) {
   return `?player=${encodeURIComponent(id)}&slug=${encodeURIComponent(slug)}&team=${encodeURIComponent(f.extra?.team ?? '')}`;
 }
 
-const RESULT_TEXT = { won: 'Vann', lost: 'Förlorade', live: 'Pågår', open: 'Väntar', unknown: 'Okänt', void: 'Struken' };
-
-// Sparade bets med resultat. Resultatet sparas på raden när matchen är spelad, så det finns kvar
-// även när matchen försvunnit ur datan.
-async function savedBetsHtml() {
-  const { data: rows } = await sb.from('saved_bets').select('*').order('kickoff', { ascending: false }).limit(200);
-  const bets = (rows ?? []).map(r => {
-    const m = findMatch(r.match_id);
-    const res = r.result ?? betResult(m, r.pick);
-    if (!r.result && (res === 'won' || res === 'lost')) sb.from('saved_bets').update({ result: res }).eq('id', r.id).then(() => {});
-    return { ...r, m, res };
-  });
-  const settled = bets.filter(b => b.res === 'won' || b.res === 'lost');
-  const won = settled.filter(b => b.res === 'won').length;
-  const withOdds = settled.filter(b => b.odds);
-  const units = withOdds.reduce((t, b) => t + (b.res === 'won' ? Number(b.odds) - 1 : -1), 0);
-  const isOpen = b => b.res === 'open' || b.res === 'live';
-  const upcoming = bets.filter(isOpen).sort((a, b) => String(a.kickoff).localeCompare(String(b.kickoff)));
-  const done = bets.filter(b => !isOpen(b));
-
-  const card = b => `<div class="sbet r-${b.res}" ${b.m ? `role="button" tabindex="0" data-match="${b.m.id}"` : ''}>
-      <div class="sb-top"><span class="sb-res">${RESULT_TEXT[b.res] ?? b.res}</span><small>${esc(b.comp ?? '')}${b.kickoff ? ' · ' + esc(dayText(b.kickoff)) + ' ' + esc(clock(b.kickoff)) : ''}</small></div>
-      <div class="sb-match">${b.m ? crest(b.m.home) : ''}<span>${esc(b.match_label)}</span>${b.m ? crest(b.m.away) : ''}${b.m?.score && b.res !== 'open' ? `<b class="sb-score">${b.m.score.h}–${b.m.score.a}</b>` : ''}</div>
-      <div class="sb-pick">${esc(b.label)}</div>
-      <div class="sb-nums">
-        ${b.p != null ? `<span>Vår chans <b>${pct(Number(b.p))}</b></span>` : ''}
-        ${b.odds ? `<span>Odds <b>${Number(b.odds).toFixed(2)}</b>${b.book ? ' hos ' + esc(b.book) : ''}</span>` : ''}
-        <button class="linkbtn" data-unsave="${b.id}">Ta bort</button>
-      </div>
-    </div>`;
-
-  if (!bets.length) {
-    return `<section class="sec"><div class="sec-head"><h2>Mina bets</h2><span>0 sparade</span></div>
-      <p class="note">Tryck på <b>＋ Spara</b> på ett bet under Dagens värde, i en match eller på en boost, så hamnar det här.</p></section>`;
-  }
-  return `<section class="sec"><div class="sec-head"><h2>Mina bets</h2><span>${bets.length} sparade</span></div>
-    <div class="sb-stats">
-      <div><b>${bets.length}</b><small>Sparade</small></div>
-      <div><b>${upcoming.length}</b><small>Väntar</small></div>
-      <div class="w"><b>${won}</b><small>Vann</small></div>
-      <div class="l"><b>${settled.length - won}</b><small>Förlorade</small></div>
-      <div><b>${settled.length ? Math.round((won / settled.length) * 100) + '%' : '–'}</b><small>Träffprocent</small></div>
-      <div class="${units >= 0 ? 'w' : 'l'}"><b>${withOdds.length ? (units >= 0 ? '+' : '') + units.toFixed(2).replace('.', ',') : '–'}</b><small>Enheter</small></div>
-    </div>
-    ${upcoming.length ? `<h3 class="sb-h">Kommande</h3><div class="cgrid">${upcoming.map(card).join('')}</div>` : ''}
-    ${done.length ? `<h3 class="sb-h">Avgjorda</h3><div class="cgrid">${done.map(card).join('')}</div>` : ''}
-    <p class="note">Enheter räknar som om du satsat 1 enhet på varje avgjort bet som har odds. Målskyttebets kan vi inte rätta automatiskt.</p>
-  </section>`;
-}
-
 async function viewAccount() {
   const favs = [...AUTH.favs.values()];
   const teams = favs.filter(f => f.kind === 'team'), players = favs.filter(f => f.kind === 'player');
@@ -157,7 +107,7 @@ async function viewAccount() {
       <div><span class="label">Inloggad som</span><h2>${esc(AUTH.profile?.username ?? '')}</h2><small>${esc(AUTH.user.email)}</small></div>
       <button class="btn-ghost" id="logout">Logga ut</button>
     </div>
-    ${await savedBetsHtml()}
+    <a class="sb-link" href="sparade.html"><b>Sparade bets</b><span>${AUTH.saved.size} sparade · se resultat och träffprocent</span><i>→</i></a>
     <section class="sec"><div class="sec-head"><h2>Favoritlag</h2><span>${teams.length}</span></div>
       ${list(teams, 'Tryck på ☆ på en klubbsida för att spara laget här.')}</section>
     <section class="sec"><div class="sec-head"><h2>Favoritspelare</h2><span>${players.length}</span></div>
@@ -282,13 +232,6 @@ document.addEventListener('click', e => {
   render();
 });
 document.addEventListener('auth:changed', () => { if (kstate.view !== 'verify') render(); });
-document.addEventListener('click', async e => {
-  const t = e.target.closest('[data-unsave]');
-  if (!t) return;
-  e.stopPropagation();
-  const { data } = await sb.from('saved_bets').delete().eq('id', t.dataset.unsave).select('match_id, pick');
-  for (const r of data ?? []) AUTH.saved.delete(r.match_id + '|' + r.pick);
-  render();
-}, true);
+
 
 boot('konto', render);
