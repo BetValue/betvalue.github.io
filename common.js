@@ -95,6 +95,37 @@ function marketsFor(m) {
   return out;
 }
 
+// ---------- Sparade bets ----------
+
+// Vann betet? Samma villkor som scripts/markets.mjs. Spelarspel kan vi inte avgöra (ingen målskyttedata).
+const BET_TESTS = {
+  home: (h, a) => h > a, draw: (h, a) => h === a, away: (h, a) => a > h,
+  over: (h, a) => h + a >= 3, under: (h, a) => h + a <= 2,
+  's:o15': (h, a) => h + a >= 2, 's:u35': (h, a) => h + a <= 3, 's:btts': (h, a) => h > 0 && a > 0,
+  's:hscore': h => h > 0, 's:ascore': (h, a) => a > 0, 's:1x': (h, a) => h >= a, 's:x2': (h, a) => a >= h,
+  'b:1-o15': (h, a) => h > a && h + a >= 2, 'b:1-o25': (h, a) => h > a && h + a >= 3, 'b:1-btts': (h, a) => h > a && a > 0, 'b:1-cs': (h, a) => h > a && a === 0,
+  'b:2-o15': (h, a) => a > h && h + a >= 2, 'b:2-o25': (h, a) => a > h && h + a >= 3, 'b:2-btts': (h, a) => a > h && h > 0, 'b:2-cs': (h, a) => a > h && h === 0,
+  'b:btts-o25': (h, a) => h > 0 && a > 0 && h + a >= 3, 'b:1x-u35': (h, a) => h >= a && h + a <= 3, 'b:x2-u35': (h, a) => a >= h && h + a <= 3, 'b:x-u25': (h, a) => h === a && h + a <= 2,
+};
+
+// 'won' | 'lost' | 'live' | 'open' | 'unknown'
+function betResult(m, key) {
+  if (!m) return 'unknown';
+  if (LIVE.has(m.status)) return 'live';
+  if (m.status !== 'FINISHED' || !m.score) return 'open';
+  const test = BET_TESTS[key];
+  return test ? (test(m.score.h, m.score.a) ? 'won' : 'lost') : 'unknown';
+}
+
+// Knapp som sparar betet på kontot (auth.js sköter klicket).
+function saveBtn(m, key, label, p = null, odds = null, book = null) {
+  const data = {
+    match_id: String(m.id), pick: key, label, match_label: `${m.home.short} – ${m.away.short}`, kickoff: m.utc,
+    comp: m.comp?.name ?? null, p: p != null ? Math.round(p * 1000) / 1000 : null, odds: odds ?? null, book: book ?? null,
+  };
+  return `<button class="savebet" data-save-bet="${esc(JSON.stringify(data))}" aria-pressed="false" title="Spara betet på ditt konto"><b>＋</b><span>Spara</span></button>`;
+}
+
 // ---------- Sidhuvud och resultatrad ----------
 
 function markNav(page) {
@@ -173,7 +204,7 @@ function playerRow(m, pl, extra = '') {
     <div class="pl-main"><b class="plname" ${playerAttrs(m.comp, team.name, pl.name)}>${esc(pl.name)}</b>
       <small>${pl.goals} mål · ${pl.assists} assist · ${pl.played} matcher${pl.pens ? ` · ${pl.pens} straff` : ''}</small>
       <small class="faces">${facing(m, pl.side)}</small>${extra}</div>
-    <div class="pl-num"><b>${pct(pl.p)}</b><small>fair ${odd(fair(pl.p))}</small></div>
+    <div class="pl-num"><b>${pct(pl.p)}</b><small>fair ${odd(fair(pl.p))}</small>${saveBtn(m, 'p:' + pl.id, pl.name + ' gör mål', pl.p)}</div>
   </div>`;
 }
 
@@ -199,7 +230,7 @@ function matchHtml(m) {
   if (m.values.length) {
     html += `<div class="box valbox"><span class="label">Värdebet</span>${m.values.map(v => `<div class="valrow">
       <div><b>${esc(pickLabel(m, v.pick))} @ ${odd(v.odds)}</b><br><small>hos ${esc(v.book)} · vår chans ${pct(v.p)} · marknaden ${pct(v.fair)}</small></div>
-      <em>${signed(v.edge)}</em></div>`).join('')}</div>`;
+      <em>${signed(v.edge)}</em>${saveBtn(m, v.pick, pickLabel(m, v.pick), v.p, v.odds, v.book)}</div>`).join('')}</div>`;
   }
 
   if (f.home != null && !done) {
@@ -229,7 +260,7 @@ function matchHtml(m) {
     if (builders.length) {
       html += `<div class="box"><span class="label">Bet builders · modellens bästa</span>${builders.map(b => `<div class="bb">
         <ul>${b.legs.map(l => `<li>${esc(l)}</li>`).join('')}</ul>
-        <div class="pl-num"><b>${pct(b.p)}</b><small>värde från ${odd(minOdds(b.p))}</small></div></div>`).join('')}
+        <div class="pl-num"><b>${pct(b.p)}</b><small>värde från ${odd(minOdds(b.p))}</small>${saveBtn(m, b.key, b.label, b.p)}</div></div>`).join('')}
         <p class="note">Spelbolagen sätter egna odds på bet builders. Är deras odds högre än "värde från" har spelet värde enligt modellen.</p></div>`;
     }
     if (m.extras.players.length) {
@@ -316,7 +347,11 @@ document.addEventListener('click', e => {
   else if ('back' in t.dataset) { sheetStack.pop(); paintSheet(); }
   else closeSheet();
 });
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSheet(); });
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeSheet();
+  // Kort som är div med role="button" (de innehåller egna knappar) ska gå att öppna med tangentbordet.
+  if ((e.key === 'Enter' || e.key === ' ') && e.target.matches?.('[role="button"][data-match]')) { e.preventDefault(); e.target.click(); }
+});
 
 // Hämtar datan, fyller sidfoten och resultatraden och anropar sidans egen ritfunktion.
 async function boot(page, start) {

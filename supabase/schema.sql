@@ -95,6 +95,7 @@ create table if not exists public.saved_bets (
   p numeric(5, 3),                  -- vår sannolikhet när betet sparades
   odds numeric(7, 2) check (odds is null or (odds > 1 and odds < 10000)),
   book text,
+  result text check (result in ('won', 'lost', 'void')),  -- sätts när matchen är spelad
   created_at timestamptz not null default now(),
   unique (user_id, match_id, pick)
 );
@@ -102,3 +103,4 @@ alter table public.saved_bets enable row level security;
 drop policy if exists "Egna sparade bets" on public.saved_bets;
 create policy "Egna sparade bets" on public.saved_bets for all
   using (auth.uid() = user_id) with check (auth.uid() = user_id);
+alter table public.saved_bets add column if not exists result text check (result in ('won', 'lost', 'void'));

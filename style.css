@@ -659,3 +659,50 @@ footer p { margin: 4px auto; max-width: 70ch; }
 @media (max-width: 600px) { .share { grid-template-columns: 1fr; } .share .btn-gold { width: 100%; } }
 .b-by { color: var(--muted); font-size: 12px; }
 .b-by b { color: var(--chalk); }
+
+/* ---------- Spara bets ---------- */
+.savebet { display: inline-flex; align-items: center; gap: 6px; justify-self: start; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--glass-2);
+  background: var(--glass); color: var(--chalk); font-size: 12px; font-weight: 700; transition: background .2s, border-color .2s; }
+.savebet b { font: 900 14px/1 var(--body); color: var(--gold); }
+.savebet:hover { border-color: var(--gold); }
+.savebet.on { background: var(--gold); border-color: var(--gold); color: #241900; }
+.savebet.on b { color: #241900; }
+.savebet:disabled { opacity: .6; }
+.pl-num .savebet { margin-top: 6px; }
+.valrow .savebet { margin-left: 12px; align-self: center; }
+.gh-save { position: relative; }
+.goldhero .savebet { background: rgba(36, 25, 0, .14); border-color: rgba(36, 25, 0, .3); color: #241900; }
+.goldhero .savebet b { color: #241900; }
+.goldhero .savebet.on { background: #1b1300; color: var(--gold); }
+.goldhero .savebet.on b { color: var(--gold); }
+.goldhero, .pcard, .plink { cursor: pointer; }
+.logout-btn { padding: 7px 13px; border-radius: 999px; border: 1px solid var(--glass-2); color: var(--muted); font-size: 13px; font-weight: 700; }
+.logout-btn:hover { color: var(--chalk); border-color: var(--chalk); }
+@media (max-width: 760px) { .logout-btn { margin-left: auto; } }
+
+/* Mina bets */
+.sb-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 8px; margin-bottom: 16px; }
+.sb-stats div { padding: 12px; border-radius: 14px; background: var(--glass); border: 1px solid var(--line); }
+.sb-stats b { display: block; font: 900 32px/1 var(--display); }
+.sb-stats small { color: var(--muted); font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.sb-stats .w b { color: var(--home); }
+.sb-stats .l b { color: var(--live); }
+.sb-h { margin: 18px 0 10px; font: 800 18px/1 var(--display); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.sbet { display: grid; gap: 8px; padding: 14px; border-radius: var(--r); background: var(--night-2); border: 1px solid var(--line); border-left: 4px solid var(--dim); cursor: pointer; animation: rise .4s both; }
+.sbet:hover { border-color: var(--glass-2); }
+.sbet.r-won { border-left-color: var(--home); }
+.sbet.r-lost { border-left-color: var(--live); }
+.sbet.r-live { border-left-color: var(--gold); }
+.sb-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.sb-top small { color: var(--dim); font-size: 12px; }
+.sb-res { padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; background: var(--glass-2); color: var(--muted); }
+.r-won .sb-res { background: var(--home); color: var(--night); }
+.r-lost .sb-res { background: var(--live); color: #fff; }
+.r-live .sb-res { background: var(--gold); color: #241900; }
+.sb-match { display: flex; align-items: center; gap: 8px; font-weight: 600; min-width: 0; }
+.sb-match span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sb-score { margin-left: auto; font: 900 20px/1 var(--display); }
+.sb-pick { font: 800 22px/1.05 var(--display); text-transform: uppercase; }
+.sb-nums { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; color: var(--muted); font-size: 13px; }
+.sb-nums b { color: var(--chalk); }
+.sb-nums .linkbtn { margin-left: auto; font-size: 12px; color: var(--muted); }

@@ -59,7 +59,7 @@ function bestBet(s) {
   if (!s) return `<section class="goldhero empty-hero"><span class="ribbon">Bäst värde</span><h2>Inga spel för dagen</h2><p>Det finns inga kommande matcher med statistik den här dagen.</p></section>`;
   const m = s.m;
   const minO = minOdds(s.p);
-  return `<button class="goldhero" data-match="${m.id}">
+  return `<div class="goldhero" role="button" tabindex="0" data-match="${m.id}">
     <span class="shine" aria-hidden="true"></span>
     <div class="gh-top"><span class="ribbon">★ Bäst värde</span><span class="gh-meta">${esc(m.comp.name)} · ${dayText(m.utc)} ${clock(m.utc)}</span></div>
     <div class="gh-label">Dagens bästa bet</div>
@@ -74,12 +74,13 @@ function bestBet(s) {
       <div><small>Rättvist odds</small><b>${odd(fair(s.p))}</b></div>
     </div>
     <ul class="gh-why">${reasons(m, s.key).map(r => `<li>${esc(r)}</li>`).join('')}</ul>
-  </button>`;
+    <div class="gh-save">${saveBtn(m, s.key, s.label, s.p, s.odds ?? null, s.book ?? null)}</div>
+  </div>`;
 }
 
 function singleCard(s, i) {
   const m = s.m;
-  return `<button class="pcard${s.real ? ' gold' : ''}" data-match="${m.id}" style="animation-delay:${i * 40}ms">
+  return `<div class="pcard${s.real ? ' gold' : ''}" role="button" tabindex="0" data-match="${m.id}" style="animation-delay:${i * 40}ms">
     <div class="meta">${m.comp.emblem ? `<img src="${esc(m.comp.emblem)}" alt="">` : ''}${esc(m.comp.name)} · ${clock(m.utc)}</div>
     <div class="vs">${crest(m.home)}<span>${esc(m.home.short)}</span><small>–</small><span>${esc(m.away.short)}</span>${crest(m.away)}</div>
     <div class="pc-pick">${esc(s.label)}</div>
@@ -88,12 +89,13 @@ function singleCard(s, i) {
       ${s.real ? `<div><small>Odds</small><b>${odd(s.odds)}</b></div><div class="hl"><small>Värde</small><b>${signed(s.edge)}</b></div>`
         : `<div><small>Rättvist</small><b>${odd(fair(s.p))}</b></div><div class="hl"><small>Värde från</small><b>${odd(minOdds(s.p))}</b></div>`}
     </div>
-  </button>`;
+    ${saveBtn(m, s.key, s.label, s.p, s.odds ?? null, s.book ?? null)}
+  </div>`;
 }
 
 function builderCard(b, i) {
   const m = b.m;
-  return `<button class="pcard bb-card" data-match="${m.id}" style="animation-delay:${i * 40}ms">
+  return `<div class="pcard bb-card" role="button" tabindex="0" data-match="${m.id}" style="animation-delay:${i * 40}ms">
     <div class="meta">${m.comp.emblem ? `<img src="${esc(m.comp.emblem)}" alt="">` : ''}${esc(m.comp.name)} · ${clock(m.utc)}</div>
     <div class="vs">${crest(m.home)}<span>${esc(m.home.short)}</span><small>–</small><span>${esc(m.away.short)}</span>${crest(m.away)}</div>
     <ul class="legs">${b.legs.map(l => `<li>${esc(l)}</li>`).join('')}</ul>
@@ -102,7 +104,8 @@ function builderCard(b, i) {
       <div><small>Rättvist</small><b>${odd(fair(b.p))}</b></div>
       <div class="hl"><small>Värde från</small><b>${odd(minOdds(b.p))}</b></div>
     </div>
-  </button>`;
+    ${saveBtn(m, b.key, b.label, b.p)}
+  </div>`;
 }
 
 function render() {
@@ -144,8 +147,8 @@ function render() {
 
     <section class="sec">
       <div class="sec-head"><h2>Målskyttar</h2><span>Chans att göra mål</span></div>
-      ${sc.length ? `<div class="plist">${sc.map(({ m, pl }) => `<button class="plink" data-match="${m.id}">${playerRow(m, pl,
-        `<small class="faces">${clock(m.utc)} · ${esc(m.home.short)} – ${esc(m.away.short)} · värde från <b>${odd(minOdds(pl.p))}</b></small>`)}</button>`).join('')}</div>` : '<p class="empty">Ingen spelarstatistik för dagens matcher.</p>'}
+      ${sc.length ? `<div class="plist">${sc.map(({ m, pl }) => `<div class="plink" role="button" tabindex="0" data-match="${m.id}">${playerRow(m, pl,
+        `<small class="faces">${clock(m.utc)} · ${esc(m.home.short)} – ${esc(m.away.short)} · värde från <b>${odd(minOdds(pl.p))}</b></small>`)}</div>`).join('')}</div>` : '<p class="empty">Ingen spelarstatistik för dagens matcher.</p>'}
       <p class="note lineup">⏱ Startelvan släpps ungefär en timme före avspark. Kolla alltid att spelaren startar innan du spelar på hen.</p>
     </section>`;
 }

@@ -102,6 +102,7 @@ function boostCard(b, i) {
       <div class="hl"><small>Värde</small><b>${v ? signed(v.edge) : '–'}</b></div>
     </div>
     ${v ? `<div class="b-verdict">${esc(v.text)}</div>` : ''}
+    ${m && mk ? saveBtn(m, mk.key, mk.label, mk.p, b.odds, b.book) : ''}
     ${b.note ? `<p class="note">${esc(b.note)}</p>` : ''}
     ${b.username ? `<div class="b-by">Upplagd av <b>${esc(b.username)}</b>${AUTH.user?.id === b.created_by ? ` · <button class="linkbtn" data-remove-boost="${b.id}">Ta bort</button>` : ''}</div>` : ''}
   </div>`;
