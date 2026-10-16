@@ -8,7 +8,7 @@
 
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { buildModel, predict } from './model.mjs';
-import { findEvent } from './match.mjs';
+import { findEvent, similarity } from './match.mjs';
 import { teamMarkets, playerMarkets } from './markets.mjs';
 
 const FD_KEY = process.env.FOOTBALL_DATA_KEY;
@@ -21,6 +21,9 @@ const MIN_EDGE = 0.04, MIN_ODDS = 1.3, MAX_ODDS = 8;
 const MODEL_WEIGHT = { hög: 0.4, medel: 0.3, låg: 0.15 };
 const DATA = new URL('../data/', import.meta.url);
 const DAY = 864e5;
+// ESPN:s öppna API används av sidan för startelvor och spelarstatistik. Lagslistan saknar
+// CORS, så kopplingen vårt lag → ESPN-lag (id, färg, logga) görs här i stället.
+const ESPN_SLUG = { PL: 'eng.1', PD: 'esp.1', BL1: 'ger.1', SA: 'ita.1', FL1: 'fra.1', CL: 'uefa.champions', UNL: 'uefa.nations', EC: 'uefa.euro', WC: 'fifa.world' };
 
 const COMPETITIONS = [
   { id: 'PL', name: 'Premier League', area: 'England', fd: 'PL', odds: 'soccer_epl' },
@@ -168,6 +171,29 @@ function formTable(finished, teams) {
   return Object.fromEntries(byTeam);
 }
 
+async function espnTeams(compId, teams) {
+  const slug = ESPN_SLUG[compId];
+  if (!slug || !teams.size) return null;
+  try {
+    const res = await fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/${slug}/teams`);
+    if (!res.ok) throw new Error(res.status);
+    const list = (await res.json()).sports[0].leagues[0].teams.map(x => x.team);
+    const map = {};
+    for (const [id, t] of teams) {
+      let best = null, score = 0;
+      for (const e of list) {
+        const sc = Math.max(...[e.displayName, e.shortDisplayName, e.name, e.location].filter(Boolean).map(n => similarity(t.name, n)));
+        if (sc > score) { best = e; score = sc; }
+      }
+      if (best && score >= 0.4) map[id] = { id: best.id, name: best.displayName, color: best.color ?? null, alt: best.alternateColor ?? null, logo: best.logos?.[0]?.href ?? null };
+    }
+    return { slug, teams: map };
+  } catch (err) {
+    console.warn(`ESPN-lag ${compId}: ${err.message}`);
+    return null;
+  }
+}
+
 async function buildCompetition(c, odds, prev) {
   const events = odds?.sports?.[c.odds] ?? [];
   const now = Date.now();
@@ -227,6 +253,7 @@ async function buildCompetition(c, odds, prev) {
     })),
   }));
   base.form = formTable(finished, teams);
+  base.espn = await espnTeams(c.id, teams);
   base.scorers = scorers.slice(0, 20).map(p => ({ ...p, team: teams.get(p.team) ?? { id: p.team, short: '?' } }));
 
   base.matches = mt.matches

@@ -122,7 +122,7 @@ function scorerTable(c) {
       <thead><tr><th>#</th><th style="text-align:left">Spelare</th><th>Mål</th><th class="hide-sm">Assist</th><th class="hide-sm">Straff</th><th>Matcher</th><th class="hide-sm">Mål/match</th></tr></thead>
       <tbody>${c.scorers.slice(0, 15).map((p, i) => `<tr>
         <td class="pos">${i + 1}</td>
-        <td class="team-cell"><div>${crest(p.team)}<span>${esc(p.name)}</span><small class="muted">${esc(p.team.short)}</small></div></td>
+        <td class="team-cell"><button class="cell-btn" ${playerAttrs(c, p.team.name ?? p.team.short, p.name)}>${crest(p.team)}<span>${esc(p.name)}</span><small class="muted">${esc(p.team.short)}</small></button></td>
         <td class="pts">${p.goals}</td><td class="hide-sm">${p.assists}</td><td class="hide-sm">${p.pens}</td><td>${p.played}</td>
         <td class="hide-sm">${p.played ? (p.goals / p.played).toFixed(2).replace('.', ',') : '–'}</td>
       </tr>`).join('')}</tbody>
@@ -144,7 +144,7 @@ function viewTables() {
       <thead><tr><th>#</th><th style="text-align:left">Lag</th><th>S</th><th class="hide-sm">V</th><th class="hide-sm">O</th><th class="hide-sm">F</th><th class="hide-sm">Mål</th><th>+/-</th><th>P</th><th class="hide-sm">Form</th></tr></thead>
       <tbody>${s.rows.map(r => `<tr class="${z ? 'z-' + z.rule(r.pos) : ''}">
         <td class="pos">${r.pos}</td>
-        <td class="team-cell"><div>${crest(r.team)}<span>${esc(r.team.short)}</span></div></td>
+        <td class="team-cell"><button class="cell-btn" ${clubAttrs(c, r.team)}>${crest(r.team)}<span>${esc(r.team.short)}</span></button></td>
         <td>${r.p}</td><td class="hide-sm">${r.w}</td><td class="hide-sm">${r.d}</td><td class="hide-sm">${r.l}</td>
         <td class="hide-sm">${r.gf}–${r.ga}</td>
         <td>${r.gd > 0 ? '+' : ''}${r.gd}</td><td class="pts">${r.pts}</td>

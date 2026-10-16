@@ -130,19 +130,27 @@ function bigBar(m) {
     <div class="bar-labels"><span>${esc(m.home.short)}</span><span>Oavgjort</span><span>${esc(m.away.short)}</span></div></div>`;
 }
 
-function scoreboard(m) {
+// Attribut som öppnar klubbsidan (espn.js) när man trycker.
+const clubAttrs = (c, t) => `data-cteam="${t.id ?? ''}" data-ccomp="${c.id}" data-cname="${esc(t.name)}"`;
+// Attribut som öppnar spelarprofilen via namnet (espn.js letar upp spelaren).
+const playerAttrs = (c, teamName, name) => `data-pname="${esc(name)}" data-pcomp="${c.id}" data-pteamname="${esc(teamName)}"`;
+
+function scoreboard(m, clickable = false) {
   const done = m.score && !UPCOMING.has(m.status);
   const live = LIVE.has(m.status);
   const mid = done
     ? `<b>${m.score.h}–${m.score.a}</b><small>${live ? '<span class="livedot"></span> Live' : 'Slutresultat'}</small>`
     : `<b>${clock(m.utc)}</b><small class="count">${countdown(m.utc)}</small>`;
   const sh = standing(m.comp, m.home.id), sa = standing(m.comp, m.away.id);
+  const side = (t, s) => clickable && t.id
+    ? `<button class="side-t club" ${clubAttrs(m.comp, t)}>${crest(t)}<span>${esc(t.short)}</span><small>${s ? `${ord(s.pos)} · ${s.pts} p · ` : ''}Klubbsida →</small></button>`
+    : `<div class="side-t">${crest(t)}<span>${esc(t.short)}</span>${s ? `<small>${ord(s.pos)} · ${s.pts} p</small>` : ''}</div>`;
   return `${m.home.crest ? `<img class="glow h" src="${esc(m.home.crest)}" alt="">` : ''}
     ${m.away.crest ? `<img class="glow a" src="${esc(m.away.crest)}" alt="">` : ''}
     <div class="duel">
-      <div class="side-t">${crest(m.home)}<span>${esc(m.home.short)}</span>${sh ? `<small>${ord(sh.pos)} · ${sh.pts} p</small>` : ''}</div>
+      ${side(m.home, sh)}
       <div class="mid">${mid}</div>
-      <div class="side-t">${crest(m.away)}<span>${esc(m.away.short)}</span>${sa ? `<small>${ord(sa.pos)} · ${sa.pts} p</small>` : ''}</div>
+      ${side(m.away, sa)}
     </div>`;
 }
 
@@ -162,7 +170,7 @@ function playerRow(m, pl, extra = '') {
   const team = pl.side === 'home' ? m.home : m.away;
   return `<div class="player">
     ${crest(team)}
-    <div class="pl-main"><b>${esc(pl.name)}</b>
+    <div class="pl-main"><b class="plname" ${playerAttrs(m.comp, team.name, pl.name)}>${esc(pl.name)}</b>
       <small>${pl.goals} mål · ${pl.assists} assist · ${pl.played} matcher${pl.pens ? ` · ${pl.pens} straff` : ''}</small>
       <small class="faces">${facing(m, pl.side)}</small>${extra}</div>
     <div class="pl-num"><b>${pct(pl.p)}</b><small>fair ${odd(fair(pl.p))}</small></div>
@@ -174,6 +182,10 @@ function playerRow(m, pl, extra = '') {
 function openMatch(id) {
   const m = findMatch(id);
   if (!m) return;
+  pushSheet(() => matchHtml(m), root => loadMatchExtras(m, root));
+}
+
+function matchHtml(m) {
   const c = m.comp, f = m.final ?? {}, mo = m.model, mk = m.market;
   const done = m.score && !UPCOMING.has(m.status);
   const sh = standing(c, m.home.id), sa = standing(c, m.away.id);
@@ -181,7 +193,7 @@ function openMatch(id) {
 
   let html = `<div class="board">
     <div class="sub">${esc(c.name)}${m.matchday && m.stage === 'REGULAR_SEASON' ? ' · Omgång ' + m.matchday : ''} · ${dayText(m.utc)}</div>
-    ${scoreboard(m)}
+    ${scoreboard(m, true)}
   </div>`;
 
   if (m.values.length) {
@@ -209,6 +221,8 @@ function openMatch(id) {
       </div>
     </div>`;
   }
+
+  html += '<div id="espn-slot"></div>';
 
   if (m.extras && !done) {
     const builders = marketsFor(m).filter(x => x.legs && fair(x.p) >= 1.8 && fair(x.p) <= 9).sort((a, b) => b.p - a.p).slice(0, 4);
@@ -259,21 +273,46 @@ function openMatch(id) {
     html += '<p class="note">Inga odds från spelbolagen för matchen än – de hämtas en gång per dygn.</p>';
   }
 
-  $('#sheet-body').innerHTML = html;
+  return html;
+}
+
+// ---------- Bottenarket: en stapel av vyer (match → spelare → klubb …) med Tillbaka ----------
+
+const sheetStack = [];
+
+async function paintSheet() {
+  const view = sheetStack[sheetStack.length - 1];
+  const body = $('#sheet-body');
   $('#sheet').hidden = false;
-  $('#sheet .sheet-card').scrollTop = 0;
   document.body.style.overflow = 'hidden';
+  const back = sheetStack.length > 1 ? '<button class="back" data-back>← Tillbaka</button>' : '';
+  body.innerHTML = back + '<div class="loading big"><span class="spin"></span>Laddar…</div>';
+  $('#sheet .sheet-card').scrollTop = 0;
+  let html;
+  try { html = await view.render(); } catch { html = '<p class="empty">Kunde inte hämta det här just nu. Försök igen om en stund.</p>'; }
+  if (sheetStack[sheetStack.length - 1] !== view) return; // användaren hann gå vidare
+  body.innerHTML = back + html;
+  view.after?.(body);
+}
+
+// Öppna en ny vy. Är arket redan öppet läggs den ovanpå (Tillbaka går till förra).
+function pushSheet(render, after) {
+  if ($('#sheet').hidden) sheetStack.length = 0;
+  sheetStack.push({ render, after });
+  paintSheet();
 }
 
 function closeSheet() {
+  sheetStack.length = 0;
   $('#sheet').hidden = true;
   document.body.style.overflow = '';
 }
 
 document.addEventListener('click', e => {
-  const t = e.target.closest('[data-match],[data-close]');
+  const t = e.target.closest('[data-match],[data-close],[data-back]');
   if (!t) return;
   if (t.dataset.match) openMatch(t.dataset.match);
+  else if ('back' in t.dataset) { sheetStack.pop(); paintSheet(); }
   else closeSheet();
 });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSheet(); });
@@ -294,6 +333,9 @@ async function boot(page, start) {
     (DATA.latest.oddsUpdated ? ` · odds ${ts(DATA.latest.oddsUpdated)}` : '');
   renderTicker();
   await start();
-  const m = new URLSearchParams(location.search).get('match');
-  if (m) openMatch(m);
+  // Direktlänkar: ?match=ID, ?player=ESPN-ID&slug=eng.1&team=Arsenal, ?club=LAG-ID&comp=PL
+  const q = new URLSearchParams(location.search);
+  if (q.get('match')) openMatch(q.get('match'));
+  else if (q.get('player') && typeof openPlayer === 'function') openPlayer(q.get('player'), q.get('slug') ?? 'eng.1', q.get('team'));
+  else if (q.get('club') && typeof openClub === 'function') openClub(q.get('comp') ?? 'PL', Number(q.get('club')), null);
 }
