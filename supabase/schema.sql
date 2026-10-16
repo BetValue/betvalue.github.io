@@ -135,3 +135,124 @@ $$;
 grant execute on function public.is_friend(uuid) to authenticated;
 drop policy if exists "Vänner ser varandras bets" on public.saved_bets;
 create policy "Vänner ser varandras bets" on public.saved_bets for select to authenticated using (public.is_friend(user_id));
+
+-- ---------- Chatt: enskilda chattar (dm) och grupper ----------
+create table if not exists public.conversations (
+  id bigint generated always as identity primary key,
+  kind text not null check (kind in ('dm', 'group')),
+  name text check (name is null or length(name) between 1 and 40),
+  created_by uuid not null references auth.users on delete cascade default auth.uid(),
+  created_at timestamptz not null default now(),
+  last_message_at timestamptz not null default now()
+);
+create table if not exists public.conversation_members (
+  conversation_id bigint not null references public.conversations on delete cascade,
+  user_id uuid not null references auth.users on delete cascade,
+  joined_at timestamptz not null default now(),
+  last_read_at timestamptz not null default now(),
+  primary key (conversation_id, user_id)
+);
+create table if not exists public.messages (
+  id bigint generated always as identity primary key,
+  conversation_id bigint not null references public.conversations on delete cascade,
+  sender uuid not null references auth.users on delete cascade default auth.uid(),
+  body text check (body is null or length(body) between 1 and 1000),
+  bet jsonb,                         -- delat bet (samma fält som saved_bets)
+  created_at timestamptz not null default now(),
+  check (body is not null or bet is not null)
+);
+create index if not exists messages_conv_time on public.messages (conversation_id, created_at);
+
+create or replace function public.is_member(conv bigint) returns boolean
+language sql security definer set search_path = '' stable as $$
+  select exists (select 1 from public.conversation_members m where m.conversation_id = conv and m.user_id = auth.uid());
+$$;
+
+alter table public.conversations enable row level security;
+alter table public.conversation_members enable row level security;
+alter table public.messages enable row level security;
+drop policy if exists "Medlemmar ser chatten" on public.conversations;
+drop policy if exists "Medlemmar ser medlemmarna" on public.conversation_members;
+drop policy if exists "Markera som läst" on public.conversation_members;
+drop policy if exists "Lämna chatt" on public.conversation_members;
+drop policy if exists "Medlemmar läser meddelanden" on public.messages;
+drop policy if exists "Medlemmar skriver" on public.messages;
+drop policy if exists "Ta bort eget meddelande" on public.messages;
+create policy "Medlemmar ser chatten" on public.conversations for select to authenticated using (public.is_member(id));
+create policy "Medlemmar ser medlemmarna" on public.conversation_members for select to authenticated using (public.is_member(conversation_id));
+create policy "Markera som läst" on public.conversation_members for update to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
+create policy "Lämna chatt" on public.conversation_members for delete to authenticated using (user_id = auth.uid());
+create policy "Medlemmar läser meddelanden" on public.messages for select to authenticated using (public.is_member(conversation_id));
+create policy "Medlemmar skriver" on public.messages for insert to authenticated with check (sender = auth.uid() and public.is_member(conversation_id));
+create policy "Ta bort eget meddelande" on public.messages for delete to authenticated using (sender = auth.uid());
+
+-- Senaste aktivitet, för att sortera chattlistan.
+create or replace function public.bump_conversation() returns trigger
+language plpgsql security definer set search_path = '' as $$
+begin
+  update public.conversations set last_message_at = new.created_at where id = new.conversation_id;
+  return new;
+end $$;
+drop trigger if exists on_message_bump on public.messages;
+create trigger on_message_bump after insert on public.messages for each row execute function public.bump_conversation();
+
+-- Öppna (eller skapa) en enskild chatt med en vän.
+create or replace function public.open_dm(other uuid) returns bigint
+language plpgsql security definer set search_path = '' as $$
+declare cid bigint;
+begin
+  if not public.is_friend(other) then raise exception 'Ni måste vara vänner för att chatta'; end if;
+  select c.id into cid from public.conversations c
+   where c.kind = 'dm'
+     and exists (select 1 from public.conversation_members m where m.conversation_id = c.id and m.user_id = auth.uid())
+     and exists (select 1 from public.conversation_members m where m.conversation_id = c.id and m.user_id = other)
+   limit 1;
+  if cid is null then
+    insert into public.conversations (kind, created_by) values ('dm', auth.uid()) returning id into cid;
+    insert into public.conversation_members (conversation_id, user_id) values (cid, auth.uid()), (cid, other);
+  end if;
+  return cid;
+end $$;
+
+-- Skapa en grupp med vänner.
+create or replace function public.create_group(group_name text, members uuid[]) returns bigint
+language plpgsql security definer set search_path = '' as $$
+declare cid bigint;
+begin
+  if length(trim(coalesce(group_name, ''))) not between 1 and 40 then raise exception 'Gruppnamnet ska vara 1–40 tecken'; end if;
+  if exists (select 1 from unnest(members) x where not public.is_friend(x)) then raise exception 'Du kan bara lägga till vänner'; end if;
+  insert into public.conversations (kind, name, created_by) values ('group', trim(group_name), auth.uid()) returning id into cid;
+  insert into public.conversation_members (conversation_id, user_id)
+    select cid, u from (select auth.uid() as u union select distinct x from unnest(members) x) s;
+  return cid;
+end $$;
+
+-- Lägg till vänner i en grupp man själv är med i.
+create or replace function public.add_to_group(conv bigint, members uuid[]) returns void
+language plpgsql security definer set search_path = '' as $$
+begin
+  if not public.is_member(conv) or not exists (select 1 from public.conversations where id = conv and kind = 'group') then
+    raise exception 'Du är inte med i gruppen'; end if;
+  if exists (select 1 from unnest(members) x where not public.is_friend(x)) then raise exception 'Du kan bara lägga till vänner'; end if;
+  insert into public.conversation_members (conversation_id, user_id) select conv, x from unnest(members) x on conflict do nothing;
+end $$;
+
+-- Olästa meddelanden per chatt.
+create or replace function public.unread_counts() returns table (conversation_id bigint, unread bigint)
+language sql security definer set search_path = '' stable as $$
+  select m.conversation_id, count(msg.id)
+  from public.conversation_members m
+  left join public.messages msg on msg.conversation_id = m.conversation_id and msg.created_at > m.last_read_at and msg.sender <> auth.uid()
+  where m.user_id = auth.uid()
+  group by m.conversation_id;
+$$;
+
+revoke all on function public.open_dm(uuid), public.create_group(text, uuid[]), public.add_to_group(bigint, uuid[]), public.unread_counts(), public.is_member(bigint) from public;
+grant execute on function public.open_dm(uuid), public.create_group(text, uuid[]), public.add_to_group(bigint, uuid[]), public.unread_counts(), public.is_member(bigint) to authenticated;
+
+-- Nya meddelanden skickas direkt till öppna chattar (Supabase Realtime, följer reglerna ovan).
+do $$ begin
+  if not exists (select 1 from pg_publication_tables where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'messages') then
+    alter publication supabase_realtime add table public.messages;
+  end if;
+end $$;
