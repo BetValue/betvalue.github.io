@@ -9,12 +9,14 @@
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { buildModel, predict } from './model.mjs';
 import { findEvent } from './match.mjs';
+import { teamMarkets, playerMarkets } from './markets.mjs';
 
 const FD_KEY = process.env.FOOTBALL_DATA_KEY;
 const ODDS_KEY = process.env.ODDS_API_KEY;
 const FORCE_ODDS = process.argv.includes('--odds');
 const ODDS_MAX_AGE_H = 20;
 const PAST_DAYS = 10, AHEAD_DAYS = 14;
+const H2H_HOURS = 48, H2H_MAX_PER_RUN = 30;
 const MIN_EDGE = 0.04, MIN_ODDS = 1.3, MAX_ODDS = 8;
 const MODEL_WEIGHT = { hög: 0.4, medel: 0.3, låg: 0.15 };
 const DATA = new URL('../data/', import.meta.url);
@@ -190,6 +192,10 @@ async function buildCompetition(c, odds, prev) {
     return { standings: [] };
   });
   const mt = await fd(`/competitions/${c.fd}/matches`);
+  const sc = await fd(`/competitions/${c.fd}/scorers?limit=80`).catch(err => {
+    console.warn(`${c.name} skytteliga: ${err.message}`);
+    return { scorers: [] };
+  });
 
   const teams = new Map();
   for (const m of mt.matches) for (const t of [m.homeTeam, m.awayTeam]) if (t?.id) teams.set(t.id, teamInfo(t));
@@ -198,6 +204,18 @@ async function buildCompetition(c, odds, prev) {
     .filter(m => m.status === 'FINISHED' && m.score.fullTime.home != null && m.homeTeam.id && m.awayTeam.id)
     .map(m => ({ home: m.homeTeam.id, away: m.awayTeam.id, hg: m.score.fullTime.home, ag: m.score.fullTime.away, time: Date.parse(m.utcDate) }));
   const model = buildModel(finished, now);
+
+  const teamGoals = {};
+  for (const m of finished) {
+    teamGoals[m.home] = (teamGoals[m.home] ?? 0) + m.hg;
+    teamGoals[m.away] = (teamGoals[m.away] ?? 0) + m.ag;
+  }
+  const scorers = sc.scorers.filter(x => x.team?.id).map(x => ({
+    id: x.player.id, name: x.player.name, team: x.team.id,
+    goals: x.goals ?? 0, assists: x.assists ?? 0, pens: x.penalties ?? 0, played: x.playedMatches ?? 0,
+  }));
+  const keyPlayers = id => scorers.filter(p => p.team === id && p.goals >= 2 && p.played >= 3)
+    .sort((a, b) => b.goals - a.goals).slice(0, 2);
 
   base.emblem = st.competition?.emblem ?? mt.competition?.emblem ?? null;
   base.season = st.season ? `${st.season.startDate.slice(0, 4)}/${st.season.endDate.slice(2, 4)}` : null;
@@ -209,6 +227,7 @@ async function buildCompetition(c, odds, prev) {
     })),
   }));
   base.form = formTable(finished, teams);
+  base.scorers = scorers.slice(0, 20).map(p => ({ ...p, team: teams.get(p.team) ?? { id: p.team, short: '?' } }));
 
   base.matches = mt.matches
     .filter(m => inWindow(Date.parse(m.utcDate)) && m.homeTeam.id && m.awayTeam.id)
@@ -217,8 +236,20 @@ async function buildCompetition(c, odds, prev) {
         id: m.id, utc: m.utcDate, status: m.status, stage: m.stage, matchday: m.matchday,
         home: teams.get(m.homeTeam.id), away: teams.get(m.awayTeam.id),
         score: m.score.fullTime.home != null ? { h: m.score.fullTime.home, a: m.score.fullTime.away } : null,
-        model: m.status === 'FINISHED' ? null : predict(model, m.homeTeam.id, m.awayTeam.id),
+        model: null, extras: null,
       };
+      const pred = m.status === 'FINISHED' ? null : predict(model, m.homeTeam.id, m.awayTeam.id);
+      if (pred) {
+        const { grid, ...rest } = pred;
+        out.model = rest;
+        out.extras = {
+          ...teamMarkets(grid),
+          players: [
+            ...playerMarkets(grid, 'home', keyPlayers(m.homeTeam.id), teamGoals[m.homeTeam.id] ?? 0),
+            ...playerMarkets(grid, 'away', keyPlayers(m.awayTeam.id), teamGoals[m.awayTeam.id] ?? 0),
+          ],
+        };
+      }
       const event = UPCOMING.has(m.status) || LIVE.has(m.status) ? findEvent(m, events) : null;
       return { ...out, ...analyze(out, out.model, event) };
     });
@@ -227,6 +258,36 @@ async function buildCompetition(c, odds, prev) {
   const open = base.matches.filter(m => UPCOMING.has(m.status)).length;
   console.log(`${c.name}: ${base.matches.length} matcher, odds kopplade till ${matched}/${open} kommande (${events.length} odds-event)`);
   return base;
+}
+
+// Tidigare möten: hämtas en gång per match, för matcher de närmaste två dygnen.
+async function addHeadToHead(competitions) {
+  const cache = await readJson('h2h.json', {});
+  const now = Date.now();
+  const all = competitions.flatMap(c => c.matches);
+  let fetched = 0;
+  for (const m of all) {
+    const t = Date.parse(m.utc);
+    if (typeof m.id !== 'number' || !UPCOMING.has(m.status) || t > now + H2H_HOURS * 36e5 || cache[m.id]) continue;
+    if (fetched >= H2H_MAX_PER_RUN) break;
+    try {
+      const res = await fd(`/matches/${m.id}/head2head?limit=6`);
+      cache[m.id] = {
+        until: m.utc,
+        list: res.matches.filter(x => x.status === 'FINISHED' && x.id !== m.id).slice(0, 6).map(x => ({
+          date: x.utcDate.slice(0, 10), comp: x.competition?.code ?? null,
+          home: x.homeTeam.id, away: x.awayTeam.id, hg: x.score.fullTime.home, ag: x.score.fullTime.away,
+        })),
+      };
+      fetched++;
+    } catch (err) {
+      console.warn(`Inbördes möten ${m.id}: ${err.message}`);
+    }
+  }
+  for (const [id, v] of Object.entries(cache)) if (Date.parse(v.until) < now - 3 * DAY) delete cache[id];
+  for (const m of all) if (cache[m.id]) m.h2h = cache[m.id].list;
+  await writeJson('h2h.json', cache);
+  console.log(`Inbördes möten: ${fetched} nya, ${Object.keys(cache).length} sparade`);
 }
 
 async function main() {
@@ -248,6 +309,8 @@ async function main() {
       if (prev) competitions.push(prev);
     }
   }
+
+  if (FD_KEY) await addHeadToHead(competitions);
 
   await writeJson('latest.json', {
     updated: new Date().toISOString(),

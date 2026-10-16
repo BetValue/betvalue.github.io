@@ -1,0 +1,299 @@
+// Delad kod för alla sidor: hjälpfunktioner, datahämtning, resultatraden och matchdetaljerna.
+
+const TZ = 'Europe/Stockholm';
+const DATA = { latest: null };
+const $ = sel => document.querySelector(sel);
+
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const pct = p => (p == null ? '–' : Math.round(p * 100) + '%');
+const odd = o => (o == null || !isFinite(o) ? '–' : o.toFixed(2));
+const fair = p => (p > 0 ? 1 / p : null);
+const minOdds = p => (p > 0 ? 1.05 / p : null); // 5 % värde
+// Svenska ordningstal: 1:a, 2:a, 3:e … 11:e, 12:e, 21:a, 22:a
+const ord = n => n + ([1, 2].includes(n % 10) && ![11, 12].includes(n % 100) ? ':a' : ':e');
+const signed = e => (e >= 0.0005 ? '+' : '') + (Math.round(e * 1000) / 10).toFixed(1) + '%';
+const dayKey = iso => new Date(iso).toLocaleDateString('sv-SE', { timeZone: TZ });
+const todayKey = () => dayKey(new Date().toISOString());
+const clock = iso => new Date(iso).toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit', timeZone: TZ });
+const LIVE = new Set(['IN_PLAY', 'PAUSED']);
+const UPCOMING = new Set(['SCHEDULED', 'TIMED']);
+const PICK = { home: '1', draw: 'X', away: '2', over: 'Över 2,5', under: 'Under 2,5' };
+const CONF_W = { hög: 1, medel: 0.85, låg: 0.6 };
+
+function dayParts(key) {
+  const d = new Date(key + 'T12:00:00Z');
+  const diff = Math.round((Date.parse(key) - Date.parse(todayKey())) / 864e5);
+  const name = diff === 0 ? 'Idag' : diff === 1 ? 'Imorgon' : diff === -1 ? 'Igår'
+    : d.toLocaleDateString('sv-SE', { weekday: 'short', timeZone: 'UTC' });
+  return { name, date: d.getUTCDate(), month: d.toLocaleDateString('sv-SE', { month: 'short', timeZone: 'UTC' }), today: diff === 0, diff };
+}
+const dayText = iso => { const p = dayParts(dayKey(iso)); return Math.abs(p.diff) <= 1 ? p.name : `${p.name} ${p.date} ${p.month}`; };
+
+function countdown(iso) {
+  const min = Math.round((Date.parse(iso) - Date.now()) / 6e4);
+  if (min <= 0) return 'Snart';
+  if (min < 60) return `om ${min} min`;
+  if (min < 24 * 60) return `om ${Math.floor(min / 60)} h ${min % 60} min`;
+  return dayText(iso);
+}
+
+function crest(team, cls = 'crest') {
+  return team?.crest
+    ? `<img class="${cls}" src="${esc(team.crest)}" alt="" loading="lazy">`
+    : `<span class="${cls} blank"></span>`;
+}
+
+const fill = (s, m) => s.replace('{H}', m.home.short).replace('{A}', m.away.short);
+const surname = name => name.split(' ').slice(-1)[0];
+
+function pickLabel(m, pick) {
+  if (pick === 'home') return `${m.home.short} vinner`;
+  if (pick === 'away') return `${m.away.short} vinner`;
+  if (pick === 'draw') return 'Oavgjort';
+  return PICK[pick] + ' mål';
+}
+
+const everyMatch = () => DATA.latest.competitions.flatMap(c => c.matches.map(m => ({ ...m, comp: c })));
+const findMatch = id => everyMatch().find(x => String(x.id) === String(id));
+
+function standing(c, teamId) {
+  for (const s of c.standings) {
+    const r = s.rows.find(x => x.team.id === teamId);
+    if (r) return { ...r, group: s.group, size: s.rows.length };
+  }
+  return null;
+}
+
+// Hur bra försvar ett lag har: insläppta mål per match och plats i ligan (1 = bäst).
+function defence(c, teamId) {
+  const rows = c.standings.flatMap(s => s.rows).filter(r => r.p > 0);
+  const me = rows.find(r => r.team.id === teamId);
+  if (!me) return null;
+  const per = r => r.ga / r.p;
+  const rank = rows.filter(r => per(r) < per(me)).length + 1;
+  return { per: per(me), rank, size: rows.length };
+}
+
+// Alla spel vi kan räkna fram för en match, med nyckel, text och sannolikhet.
+function marketsFor(m) {
+  const out = [];
+  const f = m.final ?? {};
+  for (const k of ['home', 'draw', 'away', 'over', 'under']) {
+    if (f[k] != null) out.push({ key: k, group: 'Matchen', label: pickLabel(m, k), p: f[k] });
+  }
+  const x = m.extras;
+  if (x) {
+    for (const s of x.singles) out.push({ key: 's:' + s.key, group: 'Matchen', label: fill(s.label, m), p: s.p });
+    for (const b of x.builders) out.push({ key: 'b:' + b.key, group: 'Bet builder', label: b.legs.map(l => fill(l, m)).join(' + '), legs: b.legs.map(l => fill(l, m)), p: b.p });
+    for (const pl of x.players) {
+      const team = pl.side === 'home' ? m.home.short : m.away.short;
+      out.push({ key: 'p:' + pl.id, group: 'Målskytt', label: `${pl.name} gör mål`, p: pl.p, player: pl });
+      out.push({ key: 'pw:' + pl.id, group: 'Bet builder', label: `${team} vinner + ${pl.name} gör mål`, legs: [`${team} vinner`, `${pl.name} gör mål`], p: pl.win, player: pl });
+      out.push({ key: 'po:' + pl.id, group: 'Bet builder', label: `${pl.name} gör mål + Över 2,5 mål`, legs: [`${pl.name} gör mål`, 'Över 2,5 mål'], p: pl.o25, player: pl });
+    }
+  }
+  return out;
+}
+
+// ---------- Sidhuvud och resultatrad ----------
+
+function markNav(page) {
+  document.querySelectorAll('[data-nav]').forEach(a => a.classList.toggle('active', a.dataset.nav === page));
+}
+
+function renderTicker() {
+  const now = Date.now();
+  const all = everyMatch();
+  const items = [
+    ...all.filter(m => LIVE.has(m.status)).map(m => ['live', 'Live', m, `${m.score?.h ?? 0}–${m.score?.a ?? 0}`]),
+    ...all.filter(m => UPCOMING.has(m.status)).flatMap(m => m.values.map(v => ({ m, v })))
+      .sort((a, b) => b.v.edge - a.v.edge).slice(0, 6)
+      .map(({ m, v }) => ['val', 'Värde ' + signed(v.edge), m, `${PICK[v.pick]} @ ${odd(v.odds)}`]),
+    ...all.filter(m => m.status === 'FINISHED' && m.score && now - Date.parse(m.utc) < 3 * 864e5)
+      .sort((a, b) => b.utc.localeCompare(a.utc)).slice(0, 16)
+      .map(m => ['', 'Slut', m, `${m.score.h}–${m.score.a}`]),
+  ];
+  if (items.length < 4) { $('#ticker').hidden = true; return; }
+  const html = items.map(([cls, tag, m, mid]) => `<button class="tk" data-match="${m.id}"><em class="${cls}">${esc(tag)}</em>
+    ${crest(m.home)}<span>${esc(m.home.short)}</span><b>${esc(mid)}</b><span>${esc(m.away.short)}</span>${crest(m.away)}</button>`).join('');
+  $('#ticker-track').innerHTML = html + html.replace(/<button class="tk"/g, '<button tabindex="-1" aria-hidden="true" class="tk"');
+  $('#ticker').hidden = false;
+}
+
+// ---------- Byggstenar ----------
+
+function bigBar(m) {
+  const f = m.final, vals = new Set(m.values.map(v => v.pick));
+  const parts = [['home', 'h'], ['draw', 'd'], ['away', 'a']];
+  return `<div class="bigbar"><div class="bar">${parts.map(([k, c]) =>
+    `<div class="${c}${vals.has(k) ? ' v' : ''}" style="flex:${Math.max(f[k] * 100, 1)}">${pct(f[k])}</div>`).join('')}</div>
+    <div class="bar-labels"><span>${esc(m.home.short)}</span><span>Oavgjort</span><span>${esc(m.away.short)}</span></div></div>`;
+}
+
+function scoreboard(m) {
+  const done = m.score && !UPCOMING.has(m.status);
+  const live = LIVE.has(m.status);
+  const mid = done
+    ? `<b>${m.score.h}–${m.score.a}</b><small>${live ? '<span class="livedot"></span> Live' : 'Slutresultat'}</small>`
+    : `<b>${clock(m.utc)}</b><small class="count">${countdown(m.utc)}</small>`;
+  const sh = standing(m.comp, m.home.id), sa = standing(m.comp, m.away.id);
+  return `${m.home.crest ? `<img class="glow h" src="${esc(m.home.crest)}" alt="">` : ''}
+    ${m.away.crest ? `<img class="glow a" src="${esc(m.away.crest)}" alt="">` : ''}
+    <div class="duel">
+      <div class="side-t">${crest(m.home)}<span>${esc(m.home.short)}</span>${sh ? `<small>${ord(sh.pos)} · ${sh.pts} p</small>` : ''}</div>
+      <div class="mid">${mid}</div>
+      <div class="side-t">${crest(m.away)}<span>${esc(m.away.short)}</span>${sa ? `<small>${ord(sa.pos)} · ${sa.pts} p</small>` : ''}</div>
+    </div>`;
+}
+
+function formIcons(list) {
+  return `<span class="form">${(list ?? []).slice().reverse().map(f =>
+    `<i class="${f.r}" title="${esc((f.home ? 'mot ' : 'borta mot ') + f.opp + ' ' + f.gf + '–' + f.ga)}">${f.r}</i>`).join('')}</span>`;
+}
+
+// "möter Köln – släpper in 1,8 mål/match (16:e av 18)"
+function facing(m, side) {
+  const opp = side === 'home' ? m.away : m.home;
+  const d = defence(m.comp, opp.id);
+  return `möter ${esc(opp.short)}${d ? ` · släpper in ${d.per.toFixed(1).replace('.', ',')}/match <span class="rank ${d.rank > d.size * 0.66 ? 'weak' : d.rank <= d.size * 0.33 ? 'strong' : ''}">${ord(d.rank)} bästa försvar</span>` : ''}`;
+}
+
+function playerRow(m, pl, extra = '') {
+  const team = pl.side === 'home' ? m.home : m.away;
+  return `<div class="player">
+    ${crest(team)}
+    <div class="pl-main"><b>${esc(pl.name)}</b>
+      <small>${pl.goals} mål · ${pl.assists} assist · ${pl.played} matcher${pl.pens ? ` · ${pl.pens} straff` : ''}</small>
+      <small class="faces">${facing(m, pl.side)}</small>${extra}</div>
+    <div class="pl-num"><b>${pct(pl.p)}</b><small>fair ${odd(fair(pl.p))}</small></div>
+  </div>`;
+}
+
+// ---------- Matchdetaljer ----------
+
+function openMatch(id) {
+  const m = findMatch(id);
+  if (!m) return;
+  const c = m.comp, f = m.final ?? {}, mo = m.model, mk = m.market;
+  const done = m.score && !UPCOMING.has(m.status);
+  const sh = standing(c, m.home.id), sa = standing(c, m.away.id);
+  const vals = new Set(m.values.map(v => v.pick));
+
+  let html = `<div class="board">
+    <div class="sub">${esc(c.name)}${m.matchday && m.stage === 'REGULAR_SEASON' ? ' · Omgång ' + m.matchday : ''} · ${dayText(m.utc)}</div>
+    ${scoreboard(m)}
+  </div>`;
+
+  if (m.values.length) {
+    html += `<div class="box valbox"><span class="label">Värdebet</span>${m.values.map(v => `<div class="valrow">
+      <div><b>${esc(pickLabel(m, v.pick))} @ ${odd(v.odds)}</b><br><small>hos ${esc(v.book)} · vår chans ${pct(v.p)} · marknaden ${pct(v.fair)}</small></div>
+      <em>${signed(v.edge)}</em></div>`).join('')}</div>`;
+  }
+
+  if (f.home != null && !done) {
+    html += `<div class="box"><span class="label">Vinstchans</span>${bigBar(m)}
+      ${mo && mk?.h2h ? `<p class="note">Modell ${pct(mo.p.home)} / ${pct(mo.p.draw)} / ${pct(mo.p.away)} · Marknaden ${pct(mk.h2h.home.fair)} / ${pct(mk.h2h.draw.fair)} / ${pct(mk.h2h.away.fair)}</p>` : ''}
+      ${!mo ? '<p class="note">Ingen statistik för den här turneringen – bara spelbolagens odds.</p>' : ''}</div>`;
+  }
+
+  if (mo) {
+    html += `<div class="row2">
+      <div class="box"><span class="label">Förväntade mål</span>
+        <div class="xg">${mo.xg[0].toFixed(2)}<small>XG</small>${mo.xg[1].toFixed(2)}</div>
+        <div class="stat"><span>Över 2,5 mål</span><b>${pct(f.over ?? mo.p.over)}</b></div>
+        <div class="stat"><span>Båda lagen gör mål</span><b>${pct(mo.p.btts)}</b></div>
+        <div class="stat"><span>Modellens säkerhet</span><span class="conf ${mo.conf}">${mo.conf}</span></div>
+      </div>
+      <div class="box"><span class="label">Troligaste resultat</span>
+        <div class="scores">${mo.scores.map(s => `<span>${s.h}–${s.a}<small>${pct(s.p)}</small></span>`).join('')}</div>
+      </div>
+    </div>`;
+  }
+
+  if (m.extras && !done) {
+    const builders = marketsFor(m).filter(x => x.legs && fair(x.p) >= 1.8 && fair(x.p) <= 9).sort((a, b) => b.p - a.p).slice(0, 4);
+    if (builders.length) {
+      html += `<div class="box"><span class="label">Bet builders · modellens bästa</span>${builders.map(b => `<div class="bb">
+        <ul>${b.legs.map(l => `<li>${esc(l)}</li>`).join('')}</ul>
+        <div class="pl-num"><b>${pct(b.p)}</b><small>värde från ${odd(minOdds(b.p))}</small></div></div>`).join('')}
+        <p class="note">Spelbolagen sätter egna odds på bet builders. Är deras odds högre än "värde från" har spelet värde enligt modellen.</p></div>`;
+    }
+    if (m.extras.players.length) {
+      html += `<div class="box"><span class="label">Nyckelspelare · chans att göra mål</span>
+        ${m.extras.players.slice().sort((a, b) => b.p - a.p).map(pl => playerRow(m, pl)).join('')}
+        <p class="note">Startelvan släpps ungefär en timme före avspark. Kolla att spelaren startar innan du spelar.</p></div>`;
+    }
+  }
+
+  if (m.home.id && (c.form[m.home.id] || c.form[m.away.id])) {
+    const row = (t, s) => `<div class="formrow"><div>${crest(t)}<span>${esc(t.short)}</span>${s ? `<small>${ord(s.pos)}</small>` : ''}</div>${formIcons(c.form[t.id])}</div>`;
+    html += `<div class="box"><span class="label">Form · senaste 5</span>${row(m.home, sh)}${row(m.away, sa)}</div>`;
+  }
+
+  if (m.h2h?.length) {
+    const name = id => id === m.home.id ? m.home.short : id === m.away.id ? m.away.short : '?';
+    const wins = { [m.home.id]: 0, [m.away.id]: 0, d: 0 };
+    for (const x of m.h2h) {
+      if (x.hg === x.ag) wins.d++;
+      else wins[x.hg > x.ag ? x.home : x.away] = (wins[x.hg > x.ag ? x.home : x.away] ?? 0) + 1;
+    }
+    html += `<div class="box"><span class="label">Inbördes möten</span>
+      <div class="h2h-sum"><div><b>${wins[m.home.id]}</b><small>${esc(m.home.short)}</small></div><div><b>${wins.d}</b><small>Oavgjort</small></div><div><b>${wins[m.away.id]}</b><small>${esc(m.away.short)}</small></div></div>
+      ${m.h2h.map(x => `<div class="stat"><span>${x.date}</span><b class="h2h-res">${esc(name(x.home))} ${x.hg}–${x.ag} ${esc(name(x.away))}</b></div>`).join('')}</div>`;
+  }
+
+  if (mk) {
+    const rows = [];
+    if (mk.h2h) for (const k of ['home', 'draw', 'away']) rows.push([k, mk.h2h[k]]);
+    if (mk.ou25) for (const k of ['over', 'under']) rows.push([k, mk.ou25[k]]);
+    const name = k => k === 'home' ? '1 · ' + m.home.short : k === 'away' ? '2 · ' + m.away.short : k === 'draw' ? 'X · Oavgjort' : PICK[k] + ' mål';
+    html += `<div class="box"><span class="label">Odds</span><div class="odds-wrap"><table class="odds-table">
+      <thead><tr><th>Spel</th><th>Bäst</th><th>Hos</th><th>Vår chans</th><th>Värde</th></tr></thead>
+      <tbody>${rows.map(([k, o]) => `<tr class="${vals.has(k) ? 'val' : ''}"><td>${esc(name(k))}</td>
+        <td class="best">${odd(o.odds)}</td><td>${esc(o.book)}</td><td>${pct(f[k])}</td>
+        <td>${f[k] != null ? signed(f[k] * o.odds - 1) : '–'}</td></tr>`).join('')}</tbody></table></div>
+      ${mk.books?.length ? `<details><summary class="note">Alla spelbolag (1X2)</summary><div class="odds-wrap"><table class="odds-table">
+        <tbody>${mk.books.map(b => `<tr><td>${esc(b.name)}</td><td>${odd(b.home)}</td><td>${odd(b.draw)}</td><td>${odd(b.away)}</td></tr>`).join('')}</tbody></table></div></details>` : ''}
+    </div>`;
+  } else if (UPCOMING.has(m.status)) {
+    html += '<p class="note">Inga odds från spelbolagen för matchen än – de hämtas en gång per dygn.</p>';
+  }
+
+  $('#sheet-body').innerHTML = html;
+  $('#sheet').hidden = false;
+  $('#sheet .sheet-card').scrollTop = 0;
+  document.body.style.overflow = 'hidden';
+}
+
+function closeSheet() {
+  $('#sheet').hidden = true;
+  document.body.style.overflow = '';
+}
+
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-match],[data-close]');
+  if (!t) return;
+  if (t.dataset.match) openMatch(t.dataset.match);
+  else closeSheet();
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSheet(); });
+
+// Hämtar datan, fyller sidfoten och resultatraden och anropar sidans egen ritfunktion.
+async function boot(page, start) {
+  markNav(page);
+  try {
+    const res = await fetch('data/latest.json?t=' + Date.now());
+    if (!res.ok) throw new Error(res.status);
+    DATA.latest = await res.json();
+  } catch {
+    $('#main').innerHTML = '<p class="empty">Ingen data ännu. Den hämtas automatiskt några gånger per dygn.</p>';
+    return;
+  }
+  const ts = iso => new Date(iso).toLocaleString('sv-SE', { dateStyle: 'short', timeStyle: 'short', timeZone: TZ });
+  $('#updated').textContent = `Statistik uppdaterad ${ts(DATA.latest.updated)}` +
+    (DATA.latest.oddsUpdated ? ` · odds ${ts(DATA.latest.oddsUpdated)}` : '');
+  renderTicker();
+  await start();
+  const m = new URLSearchParams(location.search).get('match');
+  if (m) openMatch(m);
+}

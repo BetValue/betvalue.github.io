@@ -69,7 +69,9 @@ export function predict(model, homeId, awayId) {
   }
 
   const games = Math.min(h.n, a.n);
+  const grid = ph.map(x => pa.map(y => (x * y) / total));
   return {
+    grid, // används av markets.mjs, skrivs inte ut
     xg: [Math.round(lh * 100) / 100, Math.round(la * 100) / 100],
     p: {
       home: r3(home / total), draw: r3(draw / total), away: r3(away / total),
