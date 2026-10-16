@@ -202,7 +202,7 @@ async function buildCompetition(c, odds, prev) {
   base.emblem = st.competition?.emblem ?? mt.competition?.emblem ?? null;
   base.season = st.season ? `${st.season.startDate.slice(0, 4)}/${st.season.endDate.slice(2, 4)}` : null;
   base.standings = st.standings.filter(s => s.type === 'TOTAL').map(s => ({
-    group: s.group ? s.group.replace('GROUP_', 'Grupp ') : null,
+    group: s.group?.startsWith('GROUP_') ? s.group.replace('GROUP_', 'Grupp ') : null,
     rows: s.table.map(r => ({
       pos: r.position, team: teamInfo(r.team), p: r.playedGames, w: r.won, d: r.draw, l: r.lost,
       gf: r.goalsFor, ga: r.goalsAgainst, gd: r.goalDifference, pts: r.points,
