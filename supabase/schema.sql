@@ -81,3 +81,24 @@ create or replace view public.boosts_public with (security_invoker = true) as
   select b.id, b.book, b.match_id, b.pick, b.title, b.odds, b.was, b.ends, b.created_at, b.created_by, p.username
   from public.boosts b left join public.profiles p on p.id = b.created_by;
 grant select on public.boosts_public to anon, authenticated;
+
+-- ---------- Sparade bets (syns bara för den som sparat dem) ----------
+create table if not exists public.saved_bets (
+  id bigint generated always as identity primary key,
+  user_id uuid not null references auth.users on delete cascade default auth.uid(),
+  match_id text not null,
+  pick text not null,               -- samma nycklar som marketsFor() i common.js
+  label text not null,
+  match_label text not null,
+  kickoff timestamptz,
+  comp text,
+  p numeric(5, 3),                  -- vår sannolikhet när betet sparades
+  odds numeric(7, 2) check (odds is null or (odds > 1 and odds < 10000)),
+  book text,
+  created_at timestamptz not null default now(),
+  unique (user_id, match_id, pick)
+);
+alter table public.saved_bets enable row level security;
+drop policy if exists "Egna sparade bets" on public.saved_bets;
+create policy "Egna sparade bets" on public.saved_bets for all
+  using (auth.uid() = user_id) with check (auth.uid() = user_id);
