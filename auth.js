@@ -24,6 +24,8 @@ async function loadProfile() {
   AUTH.saved = new Set((saved ?? []).map(b => b.match_id + '|' + b.pick));
   const { count } = await sb.from('friendships').select('id', { count: 'exact', head: true }).eq('addressee', AUTH.user.id).eq('status', 'pending');
   AUTH.requests = count ?? 0;
+  const { data: unread } = await sb.rpc('unread_counts');
+  AUTH.unread = (unread ?? []).reduce((t, u) => t + Number(u.unread), 0);
 }
 
 function paintAccountLink() {
@@ -36,6 +38,9 @@ function paintAccountLink() {
     link.classList.toggle('has-req', !!(AUTH.user && AUTH.requests));
     if (AUTH.user && AUTH.requests) link.title = AUTH.requests === 1 ? '1 ny vänförfrågan' : AUTH.requests + ' nya vänförfrågningar';
   }
+  document.querySelectorAll('[data-nav="chatt"]').forEach(tab => {
+    tab.dataset.badge = AUTH.user && AUTH.unread ? (AUTH.unread > 9 ? '9+' : AUTH.unread) : '';
+  });
   let out = document.getElementById('nav-logout');
   if (AUTH.user && !out) {
     out = document.createElement('button');

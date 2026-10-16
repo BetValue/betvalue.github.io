@@ -27,6 +27,7 @@ async function savedBetsHtml() {
       <div class="sb-nums">
         ${b.p != null ? `<span>Vår chans <b>${pct(Number(b.p))}</b></span>` : ''}
         ${b.odds ? `<span>Odds <b>${Number(b.odds).toFixed(2)}</b>${b.book ? ' hos ' + esc(b.book) : ''}</span>` : ''}
+        <a class="linkbtn share-link" href="chatt.html?share=${b.id}">Dela i chatt</a>
         <button class="linkbtn" data-unsave="${b.id}">Ta bort</button>
       </div>
     </div>`;

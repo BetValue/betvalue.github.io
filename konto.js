@@ -111,7 +111,7 @@ async function friendsHtml() {
 
   return `<section class="sec" id="friends"><div class="sec-head"><h2>Vänner</h2><span>${friends.length} ${friends.length === 1 ? 'vän' : 'vänner'}</span></div>
     <form id="friend-form" class="fr-add" novalidate>
-      <label class="f"><span>Lägg till vän med användarnamn</span><input id="friend-name" autocomplete="off" placeholder="t.ex. casper" maxlength="20"></label>
+      <label class="f"><span>Lägg till vän med användarnamn</span><input id="friend-name" autocomplete="off" maxlength="20"></label>
       <button class="btn-gold" type="submit">Skicka förfrågan</button>
       <p class="note" id="friend-msg" role="status"></p>
     </form>
@@ -121,7 +121,7 @@ async function friendsHtml() {
     </div>`).join('')}</div>` : ''}
     ${friends.length ? `<div class="fr-list">${friends.map(r => `<div class="fr" data-fr="${other(r)}">
       ${avatar(name(other(r)))}<b>${esc(name(other(r)))}</b>
-      <div class="fr-btns"><button class="btn-mini" data-friend-bets="${other(r)}" data-friend-label="${esc(name(other(r)))}">Se bets</button><button class="btn-mini" data-friend-remove="${r.id}" data-confirm-text="Ta bort">Ta bort</button></div>
+      <div class="fr-btns"><a class="btn-mini gold" href="chatt.html?dm=${other(r)}">Chatta</a><button class="btn-mini" data-friend-bets="${other(r)}" data-friend-label="${esc(name(other(r)))}">Se bets</button><button class="btn-mini" data-friend-remove="${r.id}" data-confirm-text="Ta bort">Ta bort</button></div>
       <div class="fr-bets" hidden></div>
     </div>`).join('')}</div>` : '<p class="note">Du har inga vänner här än. Skriv en väns användarnamn ovan för att skicka en förfrågan.</p>'}
     ${outgoing.length ? `<h3 class="sb-h">Skickade förfrågningar</h3><div class="fr-list">${outgoing.map(r => `<div class="fr">
