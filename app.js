@@ -262,7 +262,7 @@ function closeSheet() {
 // ---------- Ritning och händelser ----------
 
 function render() {
-  history.replaceState(null, "", state.view === "matcher" ? location.pathname : "#" + state.view);
+  try { history.replaceState(null, "", state.view === "matcher" ? location.pathname : "#" + state.view); } catch {}
   document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('active', b.dataset.view === state.view));
   renderChips();
   $('#main').innerHTML = state.view === 'matcher' ? viewMatches() : state.view === 'varde' ? viewValues() : viewTables();
