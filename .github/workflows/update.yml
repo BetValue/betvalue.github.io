@@ -1,0 +1,38 @@
+name: Uppdatera data
+
+on:
+  schedule:
+    - cron: '15 */3 * * *'   # var tredje timme; odds hämtas bara en gång per dygn
+  workflow_dispatch:
+    inputs:
+      odds:
+        description: 'Hämta nya odds direkt (kostar ca 2 anrop per liga)'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: data
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Hämta statistik och odds
+        run: node scripts/fetch.mjs ${{ inputs.odds && '--odds' || '' }}
+        env:
+          FOOTBALL_DATA_KEY: ${{ secrets.FOOTBALL_DATA_KEY }}
+          ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+      - name: Spara data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+          git add data
+          git diff --cached --quiet || (git commit -m "Uppdatera data" && git push)
