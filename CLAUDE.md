@@ -1,6 +1,6 @@
-# Matchvärde
+# Simon-Casper gamble projekt
 
-Privat fotbollssida (för användaren och kompisar): statistik à la FotMob + värdebets mot spelbolagens odds. Man spelar inte på sidan och vi länkar inte till spelbolag – den visar bara statistik och värde. Svenska i UI och commits. Live: https://simmpro123.github.io/matchvarde/ (GitHub Pages, main). Commit + push publicerar.
+Privat fotbollssida (för användaren och kompisar): statistik à la FotMob + värdebets mot spelbolagens odds. Man spelar inte på sidan och vi länkar inte till spelbolag – den visar bara statistik och värde. Svenska i UI och commits. Live: https://simmpro123.github.io/simon-casper-gamble-projekt/ (GitHub Pages, main). Commit + push publicerar.
 
 ## Sidor
 - `index.html` + `app.js`: Matcher (per dag, "Matchen i fokus") och `#tabeller` (tabeller med zoner + skytteliga).
