@@ -54,14 +54,19 @@ AUTH.ready = (async () => {
   syncSaveButtons(document);
 })();
 
-sb?.auth.onAuthStateChange(async (event, session) => {
+// OBS: inga Supabase-anrop direkt i den här callbacken – supabase-js håller ett lås medan den körs,
+// så ett anrop här inne väntar på sig självt och inloggningen fastnar på "Loggar in…".
+// Därför skjuts arbetet upp med setTimeout.
+sb?.auth.onAuthStateChange((event, session) => {
   if (event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED') return;
   AUTH.user = session?.user ?? null;
-  await loadProfile().catch(() => {});
-  paintAccountLink();
-  syncFavButtons(document);
-  syncSaveButtons(document);
-  document.dispatchEvent(new CustomEvent('auth:changed'));
+  setTimeout(async () => {
+    await loadProfile().catch(() => {});
+    paintAccountLink();
+    syncFavButtons(document);
+    syncSaveButtons(document);
+    document.dispatchEvent(new CustomEvent('auth:changed'));
+  }, 0);
 });
 
 // Skriv bara om texten ändrats – annars triggar MutationObservern nedan sig själv i all evighet.

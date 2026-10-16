@@ -11,6 +11,10 @@ function showErr(text) {
   el.textContent = text;
   el.hidden = !text;
 }
+// Avbryt efter 20 s så att knappen inte står och snurrar om nätet eller Supabase hänger.
+function withTimeout(promise, ms = 20000) {
+  return Promise.race([promise, new Promise(resolve => setTimeout(() => resolve({ error: { message: 'timeout' } }), ms))]);
+}
 function busy(btn, on, text) {
   btn.disabled = on;
   if (text) btn.textContent = text;
@@ -26,6 +30,7 @@ function sv(error) {
   if (m.includes('rate limit') || m.includes('security purposes')) return 'För många försök. Vänta en stund och försök igen.';
   if (m.includes('email address') && m.includes('invalid')) return 'Mejladressen ser inte giltig ut.';
   if (m.includes('error sending') || m.includes('smtp')) return 'Kunde inte skicka mejlet med koden just nu. Försök igen om en stund.';
+  if (m === 'timeout') return 'Det tog för lång tid. Kontrollera uppkopplingen och försök igen.';
   return 'Något gick fel: ' + (error?.message ?? error);
 }
 
@@ -191,7 +196,7 @@ function wire() {
       if (!data) { busy(btn, false, 'Logga in'); return showErr('Fel användarnamn, mejl eller lösenord.'); }
       email = data;
     }
-    const { error } = await sb.auth.signInWithPassword({ email, password: pw });
+    const { error } = await withTimeout(sb.auth.signInWithPassword({ email, password: pw }));
     if (error && /not confirmed/i.test(error.message)) {
       kstate.email = email;
       kstate.view = 'verify';
@@ -214,7 +219,7 @@ function wire() {
     busy(btn, true, 'Skapar konto…');
     const { data: taken } = await sb.rpc('username_taken', { name: username });
     if (taken) { busy(btn, false, 'Skapa konto'); return showErr('Användarnamnet är upptaget. Välj ett annat.'); }
-    const { data, error } = await sb.auth.signUp({ email, password: pw, options: { data: { username } } });
+    const { data, error } = await withTimeout(sb.auth.signUp({ email, password: pw, options: { data: { username } } }));
     if (error) { busy(btn, false, 'Skapa konto'); return showErr(sv(error)); }
     // Finns mejlen redan returnerar Supabase en användare utan identiteter.
     if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
@@ -250,8 +255,8 @@ function wire() {
     const token = otpValue();
     if (token.length !== 6) return showErr('Skriv in alla 6 siffrorna.');
     busy(btn, true, 'Kontrollerar…');
-    let { error } = await sb.auth.verifyOtp({ email: kstate.email, token, type: 'email' });
-    if (error) ({ error } = await sb.auth.verifyOtp({ email: kstate.email, token, type: 'signup' }));
+    let { error } = await withTimeout(sb.auth.verifyOtp({ email: kstate.email, token, type: 'email' }));
+    if (error && error.message !== 'timeout') ({ error } = await withTimeout(sb.auth.verifyOtp({ email: kstate.email, token, type: 'signup' })));
     if (error) { busy(btn, false, 'Aktivera kontot'); boxes.forEach(b => { b.value = ''; }); boxes[0]?.focus(); return showErr(sv(error)); }
     kstate.view = 'account';
     done();
