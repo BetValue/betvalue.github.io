@@ -4,7 +4,7 @@
 // boosts.json: [{ "book": "Unibet", "match": 560603, "pick": "pw:38101", "odds": 4.5, "was": 3.6, "ends": "2026-10-17T13:30:00Z", "note": "..." }]
 // pick-nycklar: home/draw/away/over/under, s:<enkel>, b:<bygge>, p:<spelar-id>, pw:<spelar-id>, po:<spelar-id>
 
-const BOOKS = ['Svenska Spel', 'Unibet', 'Betsson', 'LeoVegas', 'Bet365', 'ComeOn', 'Mr Green', 'Coolbet', 'Annat'];
+const BOOKS = ['Svenska Spel', 'Bet365', 'ATG', 'Unibet', 'Betsson', 'LeoVegas', 'NordicBet', 'ComeOn', 'Mr Green', 'Coolbet', 'Betway', 'Speedy Bet', 'Annat'];
 
 function verdict(p, odds) {
   if (!(p > 0) || !(odds > 1)) return null;
@@ -60,6 +60,31 @@ function fillMarkets() {
   updateCalc();
 }
 
+// Lägg upp boosten som står i kalkylatorn så att alla ser den (kräver inloggning).
+async function shareBoost(btn) {
+  const m = findMatch($('#c-match').value);
+  const mk = m && marketsFor(m).find(x => x.key === $('#c-market').value);
+  const odds = parseFloat($('#c-odds').value.replace(',', '.'));
+  const was = parseFloat($('#c-was').value.replace(',', '.'));
+  const book = $('#c-book').value;
+  const msg = $('#share-msg');
+  if (!mk || !(odds > 1)) { msg.textContent = 'Välj match och spel och skriv in det boostade oddset först.'; return; }
+  if (!book) { msg.textContent = 'Välj vilket spelbolag som har boosten.'; return; }
+  btn.disabled = true;
+  const { error } = await sb.from('boosts').insert({
+    book, match_id: String(m.id), pick: mk.key, title: mk.label, odds, was: was > 1 ? was : null, ends: m.utc,
+  });
+  btn.disabled = false;
+  if (error) { msg.textContent = 'Kunde inte lägga upp boosten: ' + error.message; return; }
+  msg.textContent = 'Upplagd! Nu ser alla boosten i listan nedan.';
+  render();
+}
+
+async function removeBoost(id) {
+  await sb.from('boosts').delete().eq('id', id);
+  render();
+}
+
 function boostCard(b, i) {
   const m = findMatch(b.match);
   const mk = m && marketsFor(m).find(x => x.key === b.pick);
@@ -78,6 +103,7 @@ function boostCard(b, i) {
     </div>
     ${v ? `<div class="b-verdict">${esc(v.text)}</div>` : ''}
     ${b.note ? `<p class="note">${esc(b.note)}</p>` : ''}
+    ${b.username ? `<div class="b-by">Upplagd av <b>${esc(b.username)}</b>${AUTH.user?.id === b.created_by ? ` · <button class="linkbtn" data-remove-boost="${b.id}">Ta bort</button>` : ''}</div>` : ''}
   </div>`;
 }
 
@@ -87,6 +113,8 @@ async function render() {
     const res = await fetch('data/boosts.json?t=' + Date.now());
     if (res.ok) boosts = await res.json();
   } catch {}
+  await AUTH.ready;
+  boosts = boosts.concat(await sharedBoosts());
   boosts = boosts.filter(b => !b.ends || Date.parse(b.ends) > Date.now())
     .map(b => {
       const m = findMatch(b.match), mk = m && marketsFor(m).find(x => x.key === b.pick);
@@ -109,6 +137,12 @@ async function render() {
         <label><span>Vanligt odds <i>(valfritt)</i></span><input id="c-was" inputmode="decimal" placeholder="t.ex. 2,90" autocomplete="off"></label>
       </div>
       <div id="c-result" class="calc-result"></div>
+      <div class="share">
+        ${AUTH.user ? `<label class="f"><span>Spelbolag</span><select id="c-book"><option value="">Välj spelbolag…</option>${BOOKS.map(b => `<option>${b}</option>`).join('')}</select></label>
+          <button class="btn-gold" id="share-boost">Lägg upp boosten för alla</button>`
+          : `<p class="note"><a href="konto.html?next=${encodeURIComponent(location.pathname)}">Logga in</a> för att lägga upp boosten så att alla ser den.</p>`}
+        <p class="note" id="share-msg" role="status"></p>
+      </div>
     </section>
 
     <section class="sec">
@@ -122,6 +156,13 @@ async function render() {
   $('#c-odds').addEventListener('input', updateCalc);
   $('#c-was').addEventListener('input', updateCalc);
   fillMarkets();
+  $('#share-boost')?.addEventListener('click', e => shareBoost(e.currentTarget));
 }
+
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-remove-boost]');
+  if (t) removeBoost(t.dataset.removeBoost);
+});
+document.addEventListener('auth:changed', () => render());
 
 boot('boostar', render);

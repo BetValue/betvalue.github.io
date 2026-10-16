@@ -292,6 +292,7 @@ async function paintSheet() {
   try { html = await view.render(); } catch { html = '<p class="empty">Kunde inte hämta det här just nu. Försök igen om en stund.</p>'; }
   if (sheetStack[sheetStack.length - 1] !== view) return; // användaren hann gå vidare
   body.innerHTML = back + html;
+  document.dispatchEvent(new CustomEvent('sheet:rendered', { detail: body }));
   view.after?.(body);
 }
 

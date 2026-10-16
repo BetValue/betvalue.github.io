@@ -330,6 +330,7 @@ async function playerHtml(id, slug, teamName) {
         <div class="ph-facts">${[a.age && `${a.age} år`, a.citizenship, cm(a.displayHeight), a.jersey && `Tröja #${a.jersey}`].filter(Boolean).map(f => `<span>${esc(f)}</span>`).join('')}</div>
       </div>
       ${team?.logos?.[0]?.href ? `<img class="ph-logo" src="${esc(team.logos[0].href)}" alt="">` : ''}
+      ${typeof favButton === 'function' ? `<div class="ph-fav">${favButton('player', slug + ':' + id, a.displayName, { team: team?.displayName ?? teamName ?? '', logo: team?.logos?.[0]?.href ?? null, sub: team?.displayName ?? '' })}</div>` : ''}
       <div class="ph-key" title="${esc(leagueName)} den här säsongen">${key.map(([l, k]) => `<div><b>${sum(k)}</b><small>${l}</small><em>${n ? per(k) + ' / match' : '–'}</em></div>`).join('')}</div>
       ${photo?.credit ? `<a class="ph-credit" href="${esc(photo.credit)}" target="_blank" rel="noopener">Bild: Wikipedia</a>` : ''}
     </div>
@@ -443,7 +444,8 @@ async function clubHtml(compId, ourTeamId, teamName) {
   return `<div class="chead" style="--kit:${color}">
       ${team.logos?.[0]?.href ? `<img src="${esc(team.logos[0].href)}" alt="">` : crest(ours)}
       <div><span class="label">${esc(c?.name ?? '')}</span><h2>${esc(team.displayName)}</h2>
-        ${row ? `<small>${ord(row.pos)} i ${esc(c.name)} · ${row.pts} poäng</small>` : ''}</div>
+        ${row ? `<small>${ord(row.pos)} i ${esc(c.name)} · ${row.pts} poäng</small>` : ''}
+        ${typeof favButton === 'function' && ourTeamId ? favButton('team', compId + ':' + ourTeamId, team.displayName, { logo: team.logos?.[0]?.href ?? null, sub: c?.name ?? '' }) : ''}</div>
     </div>
 
     ${row ? `<div class="box"><span class="label">Tabellen</span><div class="sgrid">
