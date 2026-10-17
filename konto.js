@@ -1,5 +1,7 @@
 // Kontosidan: logga in, skapa konto (med 6-siffrig kod via mejl första gången) och Mitt konto.
 
+// Mejlbekräftelse är avstängd i Supabase (Confirm email = av). Sätt till false om den slås på igen.
+const AUTH_NO_EMAIL = true;
 const kstate = { view: 'login', email: '', notice: '' };
 const next = new URLSearchParams(location.search).get('next');
 
@@ -44,7 +46,7 @@ function viewLogin() {
   return `<div class="auth-card">
     <div class="auth-tabs"><button class="on">Logga in</button><button data-kview="signup">Skapa konto</button></div>
     <form id="login-form" novalidate>
-      ${field('l-id', 'Användarnamn eller mejl', 'text', 'autocomplete="username" required')}
+      ${field('l-id', 'Användarnamn', 'text', 'autocomplete="username" required')}
       ${field('l-pw', 'Lösenord', 'password', 'autocomplete="current-password" required')}
       ${errBox}
       <button class="btn-gold" type="submit">Logga in</button>
@@ -57,7 +59,6 @@ function viewSignup() {
   return `<div class="auth-card">
     <div class="auth-tabs"><button data-kview="login">Logga in</button><button class="on">Skapa konto</button></div>
     <form id="signup-form" novalidate>
-      ${field('s-email', 'Mejl', 'email', 'autocomplete="email" required')}
       ${field('s-user', 'Användarnamn', 'text', 'autocomplete="nickname" minlength="3" maxlength="20" required')}
       <p class="hint-sm">3–20 tecken: bokstäver a–z, siffror, punkt, bindestreck eller understreck.</p>
       ${field('s-pw', 'Lösenord', 'password', 'autocomplete="new-password" minlength="8" required')}
@@ -65,7 +66,7 @@ function viewSignup() {
       ${errBox}
       <button class="btn-gold" type="submit">Skapa konto</button>
     </form>
-    <p class="auth-alt">Vi skickar en 6-siffrig kod till din mejl som du skriver in för att aktivera kontot.</p>
+    <p class="auth-alt">Det räcker med användarnamn och lösenord. Du loggar in direkt.</p>
   </div>`;
 }
 
@@ -221,6 +222,10 @@ function wire() {
       email = data;
     }
     const { error } = await withTimeout(sb.auth.signInWithPassword({ email, password: pw }));
+    if (error && /not confirmed/i.test(error.message) && AUTH_NO_EMAIL) {
+      busy(btn, false, 'Logga in');
+      return showErr('Kontot är inte aktiverat än. Be Simon aktivera det i Supabase, eller skapa ett nytt konto.');
+    }
     if (error && /not confirmed/i.test(error.message)) {
       kstate.email = email;
       kstate.view = 'verify';
@@ -235,8 +240,10 @@ function wire() {
   $('#signup-form')?.addEventListener('submit', async e => {
     e.preventDefault();
     const btn = e.submitter;
-    const email = $('#s-email').value.trim(), username = $('#s-user').value.trim(), pw = $('#s-pw').value;
-    if (!/^\S+@\S+\.\S+$/.test(email)) return showErr('Skriv en giltig mejladress.');
+    const username = $('#s-user').value.trim(), pw = $('#s-pw').value;
+    // Supabase kräver en mejladress, så kontot får en intern adress som aldrig tar emot mejl.
+    // Inloggning sker med användarnamnet (RPC email_for_login slår upp adressen).
+    const email = username.toLowerCase() + '@konto.betvalue.github.io';
     if (!/^[A-Za-z0-9_.-]{3,20}$/.test(username)) return showErr('Användarnamnet ska vara 3–20 tecken: bokstäver a–z, siffror, punkt, bindestreck eller understreck.');
     if (pw.length < 8) return showErr('Lösenordet måste vara minst 8 tecken.');
     if (pw !== $('#s-pw2').value) return showErr('Lösenorden är inte lika.');
@@ -248,8 +255,10 @@ function wire() {
     // Finns mejlen redan returnerar Supabase en användare utan identiteter.
     if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
       busy(btn, false, 'Skapa konto');
-      return showErr('Det finns redan ett konto med den mejladressen. Logga in i stället.');
+      return showErr('Användarnamnet är upptaget. Välj ett annat.');
     }
+    // Utan mejlbekräftelse är man inloggad direkt. Annars (om bekräftelse slås på igen) visas kodsteget.
+    if (data.session) { done(); return; }
     kstate.email = email;
     kstate.notice = '';
     kstate.view = 'verify';
