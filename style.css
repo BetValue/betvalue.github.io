@@ -923,3 +923,31 @@ footer p { margin: 4px auto; max-width: 70ch; }
 /* Matchminut live */
 .time.live { font-variant-numeric: tabular-nums; }
 .mid small.live-min { color: var(--live); font-weight: 800; letter-spacing: .04em; }
+
+/* ---------- Målskyttar och händelser ---------- */
+.board-scorers:empty { display: none; }
+.scorers { position: relative; display: grid; grid-template-columns: 1fr auto 1fr; gap: 10px; margin-top: 14px; font-size: 13px; color: var(--muted); }
+.scorers .sc-h { display: grid; justify-items: end; text-align: right; gap: 2px; }
+.scorers .sc-a { display: grid; justify-items: start; gap: 2px; }
+.scorers span { white-space: nowrap; }
+.sc-ball { font-size: 13px; align-self: start; opacity: .8; }
+.events { display: grid; gap: 2px; }
+.ev { display: grid; grid-template-columns: 1fr 52px 1fr; align-items: center; min-height: 44px; }
+.ev-min { justify-self: center; padding: 3px 8px; border-radius: 999px; background: var(--glass-2); font: 800 13px/1 var(--display); letter-spacing: .03em; font-variant-numeric: tabular-nums; }
+.ev.is-goal .ev-min { background: var(--gold); color: #241900; }
+.ev-l .ev-body { flex-direction: row-reverse; text-align: right; }
+.ev-body { display: flex; align-items: center; gap: 8px; padding: 4px 8px; }
+.ev-txt { display: grid; min-width: 0; }
+.ev-txt b { font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ev-txt small { color: var(--muted); font-size: 12px; }
+.ev-txt .in { color: var(--home); font-size: 13px; }
+.ev-txt .out { color: var(--live); }
+.ev-ic { flex: none; font-size: 16px; line-height: 1; }
+.ev-score { flex: none; padding: 3px 7px; border-radius: 8px; background: var(--glass-2); font: 900 15px/1 var(--display); }
+.ev.is-goal .ev-txt b { font: 800 17px/1.1 var(--display); text-transform: uppercase; }
+.card { display: inline-block; width: 11px; height: 15px; border-radius: 2px; vertical-align: middle; }
+.card.y { background: #ffd400; }
+.card.r { background: var(--live); }
+.ev-ht { display: flex; justify-content: center; margin: 6px 0; }
+.ev-ht span { padding: 4px 12px; border-radius: 999px; border: 1px solid var(--glass-2); color: var(--muted); font-size: 12px; font-weight: 700; }
+@media (max-width: 520px) { .ev { grid-template-columns: 1fr 44px 1fr; } .ev-txt b { font-size: 13px; } .ev-body { padding: 4px 4px; gap: 6px; } }

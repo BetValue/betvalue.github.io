@@ -238,6 +238,7 @@ function matchHtml(m) {
   let html = `<div class="board" data-board="${m.id}">
     <div class="sub">${esc(c.name)}${m.matchday && m.stage === 'REGULAR_SEASON' ? ' · Omgång ' + m.matchday : ''} · ${dayText(m.utc)}</div>
     ${scoreboard(m, true)}
+    <div class="board-scorers" id="board-scorers"></div>
   </div>`;
 
   if (!premium() && UPCOMING.has(m.status) && m.model) {

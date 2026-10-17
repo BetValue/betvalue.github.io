@@ -194,7 +194,7 @@ async function previousRoster(slug, sum, teamId) {
 const STAT_ROWS = [
   ['possessionPct', 'Bollinnehav', v => v + '%'], ['totalShots', 'Skott'], ['shotsOnTarget', 'Skott på mål'],
   ['wonCorners', 'Hörnor'], ['foulsCommitted', 'Fouls'], ['yellowCards', 'Gula kort'], ['redCards', 'Röda kort'],
-  ['offsides', 'Offside'], ['saves', 'Räddningar'], ['accuratePasses', 'Lyckade passningar'], ['effectiveTackles', 'Lyckade tacklingar'], ['interceptions', 'Brytningar'],
+  ['offsides', 'Offside'], ['saves', 'Räddningar'], ['blockedShots', 'Blockerade skott'], ['totalCrosses', 'Inlägg'], ['accuratePasses', 'Lyckade passningar'], ['effectiveTackles', 'Lyckade tacklingar'], ['interceptions', 'Brytningar'],
 ];
 
 function matchStatsHtml(sum) {
@@ -208,6 +208,63 @@ function matchStatsHtml(sum) {
       <div class="ms-bar"><i style="width:${(a / tot) * 100}%;--c:${barColor(home.team.color, 'var(--home)')}"></i><i style="width:${(b / tot) * 100}%;--c:${barColor(away.team.color === home.team.color ? null : away.team.color, 'var(--chalk)')}"></i></div></div>`;
   }).join('');
   return rows ? `<div class="box"><span class="label">Matchstatistik</span>${rows}</div>` : '';
+}
+
+// ---------- Händelser: mål, kort och byten (som på FotMob) ----------
+
+const EVENT_KIND = [
+  [/own goal/i, 'og'], [/penalty - scored/i, 'pen'], [/penalty - missed|penalty - saved/i, 'penmiss'], [/^goal/i, 'goal'],
+  [/red card|second yellow/i, 'red'], [/yellow card/i, 'yellow'], [/substitution/i, 'sub'], [/^halftime/i, 'ht'],
+];
+const kindOf = e => EVENT_KIND.find(([re]) => re.test(e.type?.text ?? ''))?.[1] ?? null;
+const lastName = n => String(n ?? '').split(' ').slice(-1)[0];
+
+function matchEvents(sum) {
+  const comp = sum.header?.competitions?.[0];
+  const homeId = String(comp?.competitors?.find(c => c.homeAway === 'home')?.team?.id ?? '');
+  let h = 0, a = 0;
+  return (sum.keyEvents ?? []).map(e => {
+    const kind = kindOf(e);
+    if (!kind) return null;
+    const side = e.team ? (String(e.team.id) === homeId ? 'home' : 'away') : null;
+    const who = (e.participants ?? []).map(x => x.athlete?.displayName).filter(Boolean);
+    if (['goal', 'pen', 'og'].includes(kind)) { if (side === 'home') h++; else if (side === 'away') a++; }
+    return { kind, side, minute: e.clock?.displayValue ?? '', who, score: `${h}–${a}` };
+  }).filter(Boolean);
+}
+
+// Målskyttar under resultattavlan: "Rudoni 6' (str), Cherif 48'".
+function scorersHtml(events) {
+  const goals = events.filter(e => ['goal', 'pen', 'og'].includes(e.kind));
+  if (!goals.length) return '';
+  const col = side => goals.filter(g => g.side === side).map(g =>
+    `<span>${esc(lastName(g.who[0]))} ${esc(g.minute)}${g.kind === 'pen' ? ' (str)' : g.kind === 'og' ? ' (självm.)' : ''}</span>`).join('');
+  return `<div class="scorers"><div class="sc-h">${col('home')}</div><span class="sc-ball">⚽</span><div class="sc-a">${col('away')}</div></div>`;
+}
+
+function eventLine(e) {
+  const [main, other] = e.who;
+  const text = {
+    goal: `<b>${esc(main ?? 'Mål')}</b>${other ? `<small>Assist: ${esc(other)}</small>` : ''}`,
+    pen: `<b>${esc(main ?? 'Straff')}</b><small>Straffmål</small>`,
+    og: `<b>${esc(main ?? 'Självmål')}</b><small>Självmål</small>`,
+    penmiss: `<b>${esc(main ?? 'Straff')}</b><small>Missad straff</small>`,
+    yellow: `<b>${esc(main ?? '')}</b><small>Gult kort</small>`,
+    red: `<b>${esc(main ?? '')}</b><small>Rött kort</small>`,
+    sub: `<b class="in">▲ ${esc(main ?? '')}</b><small class="out">▼ ${esc(other ?? '')}</small>`,
+  }[e.kind];
+  const icon = { goal: '⚽', pen: '⚽', og: '⚽', penmiss: '✖', yellow: '<i class="card y"></i>', red: '<i class="card r"></i>', sub: '🔁' }[e.kind];
+  const goal = ['goal', 'pen', 'og'].includes(e.kind);
+  const body = `<div class="ev-body ${e.kind}">${goal ? `<span class="ev-score">${e.score}</span>` : ''}<span class="ev-ic">${icon}</span><div class="ev-txt">${text}</div></div>`;
+  return `<div class="ev${goal ? ' is-goal' : ''}"><div class="ev-l">${e.side === 'home' ? body : ''}</div><span class="ev-min">${esc(e.minute)}</span><div class="ev-r">${e.side === 'away' ? body : ''}</div></div>`;
+}
+
+function eventsHtml(events) {
+  if (!events.length) return '';
+  const rows = events.map(e => (e.kind === 'ht'
+    ? `<div class="ev-ht"><span>Paus ${esc(events.filter(x => x.kind !== 'ht' && ['goal', 'pen', 'og'].includes(x.kind) && events.indexOf(x) < events.indexOf(e)).pop()?.score ?? '0–0')}</span></div>`
+    : eventLine(e))).join('');
+  return `<div class="box"><span class="label">Händelser</span><div class="events">${rows}</div></div>`;
 }
 
 // Fylls i matchdetaljerna efter att arket öppnats.
@@ -230,10 +287,12 @@ async function loadMatchExtras(m, root) {
       } else rosters = [];
     }
     if (!slot.isConnected) return;
-    slot.innerHTML = (rosters.length === 2
+    const events = matchEvents(sum);
+    const scorersSlot = root.querySelector('#board-scorers');
+    if (scorersSlot) scorersSlot.innerHTML = scorersHtml(events);
+    slot.innerHTML = eventsHtml(events) + matchStatsHtml(sum) + (rosters.length === 2
       ? `<div class="box"><span class="label">Startelvor</span>${note}${pitchHtml(rosters, ev.slug)}<p class="note">Tryck på en spelare för all statistik.</p></div>`
-      : `<div class="box"><span class="label">Startelvor</span><p class="note">Startelvorna släpps ungefär en timme före avspark.</p></div>`)
-      + matchStatsHtml(sum);
+      : `<div class="box"><span class="label">Startelvor</span><p class="note">Startelvorna släpps ungefär en timme före avspark.</p></div>`);
   } catch (err) {
     console.warn("ESPN:", err);
     if (slot.isConnected) slot.innerHTML = '<div class="box"><span class="label">Startelvor</span><p class="note">Kunde inte hämta startelvor just nu.</p></div>';
