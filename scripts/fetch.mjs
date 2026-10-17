@@ -8,7 +8,7 @@
 
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { buildModel, predict } from './model.mjs';
-import { findEvent, similarity } from './match.mjs';
+import { findEvent, similarity, tokens } from './match.mjs';
 import { teamMarkets, playerMarkets } from './markets.mjs';
 import { buildPlayerIndex } from './players.mjs';
 
@@ -176,6 +176,24 @@ function formTable(finished, teams) {
   return Object.fromEntries(byTeam);
 }
 
+// Strängare namnjämförelse än similarity() för lagkopplingen: exakta ord väger 1, ett ord som
+// börjar som det andra (minst 3 tecken, t.ex. "inter"/"internazionale") 0,75. Ingen
+// "gemensam början"-regel, så "portugal" och "porto" räknas inte som samma.
+function teamNameScore(a, b) {
+  const A = tokens(a), B = tokens(b);
+  if (!A.length || !B.length) return 0;
+  let hits = 0;
+  for (const x of A) {
+    let best = 0;
+    for (const y of B) {
+      if (x === y) best = 1;
+      else if (Math.min(x.length, y.length) >= 3 && (x.startsWith(y) || y.startsWith(x))) best = Math.max(best, 0.75);
+    }
+    hits += best;
+  }
+  return (2 * hits) / (A.length + B.length);
+}
+
 async function espnTeams(compId, teams) {
   const slug = ESPN_SLUG[compId];
   if (!slug || !teams.size) return null;
@@ -183,14 +201,23 @@ async function espnTeams(compId, teams) {
     const res = await fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/${slug}/teams`);
     if (!res.ok) throw new Error(res.status);
     const list = (await res.json()).sports[0].leagues[0].teams.map(x => x.team);
-    const map = {};
+    // Räkna ut alla par (vårt lag, ESPN-lag) och para ihop bästa först, så att varje
+    // ESPN-lag bara används en gång. Annars kan t.ex. Espanyol ("…de Barcelona") ta
+    // Barcelonas trupp, eller Sporting ("…de Portugal") hamna på FC Porto.
+    const pairs = [];
     for (const [id, t] of teams) {
-      let best = null, score = 0;
       for (const e of list) {
-        const sc = Math.max(...[e.displayName, e.shortDisplayName, e.name, e.location].filter(Boolean).map(n => similarity(t.name, n)));
-        if (sc > score) { best = e; score = sc; }
+        const names = [e.displayName, e.shortDisplayName, e.name, e.location].filter(Boolean);
+        const sc = Math.max(...names.flatMap(n => [teamNameScore(t.name, n), t.short ? teamNameScore(t.short, n) : 0]));
+        if (sc >= 0.4) pairs.push({ id, e, sc });
       }
-      if (best && score >= 0.4) map[id] = { id: best.id, name: best.displayName, color: best.color ?? null, alt: best.alternateColor ?? null, logo: best.logos?.[0]?.href ?? null };
+    }
+    pairs.sort((a, b) => b.sc - a.sc);
+    const map = {}, used = new Set();
+    for (const { id, e } of pairs) {
+      if (map[id] || used.has(e.id)) continue;
+      map[id] = { id: e.id, name: e.displayName, color: e.color ?? null, alt: e.alternateColor ?? null, logo: e.logos?.[0]?.href ?? null };
+      used.add(e.id);
     }
     return { slug, teams: map };
   } catch (err) {
