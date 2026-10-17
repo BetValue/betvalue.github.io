@@ -62,7 +62,7 @@ async function runSearch(text) {
 
   SEARCH.results = [
     ...clubs.map(({ t }) => ({ type: 'club', t })),
-    ...players.map(({ p }) => ({ type: 'player', p, team: teamOf(p.c, p.t) })),
+    ...players.map(({ p }) => ({ type: 'player', p, team: teamOf(p.c, p.t) ?? (p.tn ? { name: p.tn, short: p.tn, crest: p.tl } : null) })),
   ];
   SEARCH.active = 0;
   if (!SEARCH.results.length) { list.innerHTML = `<p class="note search-tip">Hittade inget för "${esc(text.trim())}".</p>`; return; }

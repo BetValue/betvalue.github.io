@@ -1,7 +1,7 @@
 // Bygger data/players.json: alla spelare i ligornas trupper (från ESPN), för sökrutan.
 // Körs av fetch.mjs högst en gång per dygn, eller direkt: node scripts/players.mjs
 //
-// Format: { updated, players: [{ i: ESPN-id, n: namn, p: position, j: tröjnummer, t: vårt lag-id, c: turnering }] }
+// Format: { updated, players: [{ i: ESPN-id, n: namn, p: position, j: tröjnummer, t: vårt lag-id, c: turnering, tn: lagnamn, tl: klubbmärke }] }
 
 import { readFile, writeFile } from 'node:fs/promises';
 
@@ -27,7 +27,7 @@ export async function buildPlayerIndex(competitions, { force = false } = {}) {
         const roster = await res.json();
         for (const a of roster.athletes ?? []) {
           if (players.has(a.id)) continue;
-          players.set(a.id, { i: a.id, n: a.displayName, p: a.position?.abbreviation ?? '', j: a.jersey ?? '', t: Number(ourId), c: c.id });
+          players.set(a.id, { i: a.id, n: a.displayName, p: a.position?.abbreviation ?? '', j: a.jersey ?? '', t: Number(ourId), c: c.id, tn: team.name, tl: team.logo });
         }
         teams++;
       } catch {
