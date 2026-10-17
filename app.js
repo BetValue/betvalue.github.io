@@ -30,7 +30,7 @@ function renderDays(matches) {
 
 function pickFocus(matches) {
   const score = m => {
-    if (m.values.length) return 1000 + Math.max(...m.values.map(v => v.edge)) * 100;
+    if (valuesOf(m).length) return 1000 + Math.max(...valuesOf(m).map(v => v.edge)) * 100;
     const ph = standing(m.comp, m.home.id), pa = standing(m.comp, m.away.id);
     const rank = ph && pa ? (ph.pos + pa.pos) / 2 : 15;
     return (m.comp.id === 'CL' ? 60 : 40) - rank + (LIVE.has(m.status) ? 50 : 0) + (m.final?.home != null ? 5 : 0);
@@ -40,9 +40,9 @@ function pickFocus(matches) {
 
 function hero(m) {
   const done = m.score && !UPCOMING.has(m.status);
-  const top = m.values.length ? 'Bästa värdet' : LIVE.has(m.status) ? 'Live nu' : 'Matchen i fokus';
-  const v = m.values.slice().sort((a, b) => b.edge - a.edge)[0];
-  const star = m.extras?.players.slice().sort((a, b) => b.p - a.p)[0];
+  const top = valuesOf(m).length ? 'Bästa värdet' : LIVE.has(m.status) ? 'Live nu' : 'Matchen i fokus';
+  const v = valuesOf(m).slice().sort((a, b) => b.edge - a.edge)[0];
+  const star = premium() ? m.extras?.players.slice().sort((a, b) => b.p - a.p)[0] : null;
   const foot = v ? `Värde: <b>${esc(pickLabel(m, v.pick))} @ ${odd(v.odds)}</b> (${signed(v.edge)})`
     : m.model ? `Förväntade mål <b>${m.model.xg[0].toFixed(1)} – ${m.model.xg[1].toFixed(1)}</b>${star ? ` · ${esc(surname(star.name))} gör mål <b>${pct(star.p)}</b>` : ''}` : '';
   return `<button class="hero" data-match="${m.id}">
@@ -68,11 +68,11 @@ function matchRow(m) {
   } else if (m.final?.home != null) {
     const ks = [['home', 'h', '1'], ['draw', 'd', 'X'], ['away', 'a', '2']];
     const top = ks.reduce((a, b) => (m.final[a[0]] >= m.final[b[0]] ? a : b))[0];
-    const vals = new Set(m.values.map(v => v.pick));
+    const vals = new Set(valuesOf(m).map(v => v.pick));
     side = `<div class="probs">${ks.map(([k, c, l]) =>
       `<span class="k-${c}${vals.has(k) ? ' val' : k === top ? ' top' : ''}"><span><small>${l}</small>${pct(m.final[k])}</span><i style="width:${Math.round(m.final[k] * 100)}%"></i></span>`).join('')}</div>`;
   }
-  return `<button class="match${m.values?.length ? ' has-val' : ''}" data-match="${m.id}">
+  return `<button class="match${valuesOf(m).length ? ' has-val' : ''}" data-match="${m.id}">
     ${time}
     <span class="teams">
       <span class="team ${res('h')}">${crest(m.home)}<span>${esc(m.home.short)}</span></span>
@@ -181,4 +181,5 @@ document.addEventListener('click', e => {
 });
 window.addEventListener('hashchange', () => { if (readHash()) { render(); window.scrollTo({ top: 0 }); } });
 
+document.addEventListener('auth:changed', () => { renderTicker(); render(); });
 boot('matcher', () => { if (readHash()) render(); });

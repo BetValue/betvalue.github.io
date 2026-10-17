@@ -53,6 +53,12 @@ function pickLabel(m, pick) {
   return PICK[pick] + ' mål';
 }
 
+// Värdebets, bet builders och målskyttechanser visas bara för inloggade (auth.js).
+const premium = () => typeof AUTH !== 'undefined' && !!AUTH.user;
+const valuesOf = m => (premium() ? m.values : []);
+const lockedBox = text => `<div class="box lockbox"><span>🔒</span><div><b>${esc(text)}</b>
+  <a href="konto.html?next=${encodeURIComponent(location.pathname)}">Logga in</a> eller <a href="konto.html?next=${encodeURIComponent(location.pathname)}">skapa konto</a> för att se det.</div></div>`;
+
 const everyMatch = () => DATA.latest.competitions.flatMap(c => c.matches.map(m => ({ ...m, comp: c })));
 const findMatch = id => everyMatch().find(x => String(x.id) === String(id));
 
@@ -137,7 +143,7 @@ function renderTicker() {
   const all = everyMatch();
   const items = [
     ...all.filter(m => LIVE.has(m.status)).map(m => ['live', 'Live', m, `${m.score?.h ?? 0}–${m.score?.a ?? 0}`]),
-    ...all.filter(m => UPCOMING.has(m.status)).flatMap(m => m.values.map(v => ({ m, v })))
+    ...all.filter(m => UPCOMING.has(m.status)).flatMap(m => valuesOf(m).map(v => ({ m, v })))
       .sort((a, b) => b.v.edge - a.v.edge).slice(0, 6)
       .map(({ m, v }) => ['val', 'Värde ' + signed(v.edge), m, `${PICK[v.pick]} @ ${odd(v.odds)}`]),
     ...all.filter(m => m.status === 'FINISHED' && m.score && now - Date.parse(m.utc) < 3 * 864e5)
@@ -154,7 +160,7 @@ function renderTicker() {
 // ---------- Byggstenar ----------
 
 function bigBar(m) {
-  const f = m.final, vals = new Set(m.values.map(v => v.pick));
+  const f = m.final, vals = new Set(valuesOf(m).map(v => v.pick));
   const parts = [['home', 'h'], ['draw', 'd'], ['away', 'a']];
   return `<div class="bigbar"><div class="bar">${parts.map(([k, c]) =>
     `<div class="${c}${vals.has(k) ? ' v' : ''}" style="flex:${Math.max(f[k] * 100, 1)}">${pct(f[k])}</div>`).join('')}</div>
@@ -220,14 +226,17 @@ function matchHtml(m) {
   const c = m.comp, f = m.final ?? {}, mo = m.model, mk = m.market;
   const done = m.score && !UPCOMING.has(m.status);
   const sh = standing(c, m.home.id), sa = standing(c, m.away.id);
-  const vals = new Set(m.values.map(v => v.pick));
+  const vals = new Set(valuesOf(m).map(v => v.pick));
 
   let html = `<div class="board">
     <div class="sub">${esc(c.name)}${m.matchday && m.stage === 'REGULAR_SEASON' ? ' · Omgång ' + m.matchday : ''} · ${dayText(m.utc)}</div>
     ${scoreboard(m, true)}
   </div>`;
 
-  if (m.values.length) {
+  if (!premium() && UPCOMING.has(m.status) && (m.values.length || m.extras)) {
+    html += lockedBox('Värdebets, bet builders och målskyttar är bara för inloggade.');
+  }
+  if (premium() && m.values.length) {
     html += `<div class="box valbox"><span class="label">Värdebet</span>${m.values.map(v => `<div class="valrow">
       <div><b>${esc(pickLabel(m, v.pick))} @ ${odd(v.odds)}</b><br><small>hos ${esc(v.book)} · vår chans ${pct(v.p)} · marknaden ${pct(v.fair)}</small></div>
       <em>${signed(v.edge)}</em>${saveBtn(m, v.pick, pickLabel(m, v.pick), v.p, v.odds, v.book)}</div>`).join('')}</div>`;
@@ -255,7 +264,7 @@ function matchHtml(m) {
 
   html += '<div id="espn-slot"></div>';
 
-  if (m.extras && !done) {
+  if (premium() && m.extras && !done) {
     const builders = marketsFor(m).filter(x => x.legs && fair(x.p) >= 1.8 && fair(x.p) <= 9).sort((a, b) => b.p - a.p).slice(0, 4);
     if (builders.length) {
       html += `<div class="box"><span class="label">Bet builders · modellens bästa</span>${builders.map(b => `<div class="bb">
@@ -296,7 +305,7 @@ function matchHtml(m) {
       <thead><tr><th>Spel</th><th>Bäst</th><th>Hos</th><th>Vår chans</th><th>Värde</th></tr></thead>
       <tbody>${rows.map(([k, o]) => `<tr class="${vals.has(k) ? 'val' : ''}"><td>${esc(name(k))}</td>
         <td class="best">${odd(o.odds)}</td><td>${esc(o.book)}</td><td>${pct(f[k])}</td>
-        <td>${f[k] != null ? signed(f[k] * o.odds - 1) : '–'}</td></tr>`).join('')}</tbody></table></div>
+        <td>${premium() && f[k] != null ? signed(f[k] * o.odds - 1) : '🔒'}</td></tr>`).join('')}</tbody></table></div>
       ${mk.books?.length ? `<details><summary class="note">Alla spelbolag (1X2)</summary><div class="odds-wrap"><table class="odds-table">
         <tbody>${mk.books.map(b => `<tr><td>${esc(b.name)}</td><td>${odd(b.home)}</td><td>${odd(b.draw)}</td><td>${odd(b.away)}</td></tr>`).join('')}</tbody></table></div></details>` : ''}
     </div>`;
@@ -367,6 +376,7 @@ async function boot(page, start) {
   const ts = iso => new Date(iso).toLocaleString('sv-SE', { dateStyle: 'short', timeStyle: 'short', timeZone: TZ });
   $('#updated').textContent = `Statistik uppdaterad ${ts(DATA.latest.updated)}` +
     (DATA.latest.oddsUpdated ? ` · odds ${ts(DATA.latest.oddsUpdated)}` : '');
+  if (typeof AUTH !== 'undefined') await AUTH.ready;
   renderTicker();
   await start();
   // Direktlänkar: ?match=ID, ?player=ESPN-ID&slug=eng.1&team=Arsenal, ?club=LAG-ID&comp=PL

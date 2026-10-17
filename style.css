@@ -838,3 +838,8 @@ footer p { margin: 4px auto; max-width: 70ch; }
 .gate-btns { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 6px; }
 .gate-btns .btn-gold { width: auto; padding: 14px 28px; text-decoration: none; }
 .gate-btns .btn-ghost { display: inline-flex; align-items: center; text-decoration: none; }
+
+.lockbox { display: flex; align-items: center; gap: 14px; border-color: rgba(255, 207, 74, .3); background: linear-gradient(120deg, var(--gold-soft), transparent 70%), var(--glass); }
+.lockbox > span { font-size: 26px; }
+.lockbox b { display: block; margin-bottom: 2px; }
+.lockbox div { color: var(--muted); font-size: 14px; }
