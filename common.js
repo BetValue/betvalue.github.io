@@ -57,7 +57,9 @@ function pickLabel(m, pick) {
 const premium = () => typeof AUTH !== 'undefined' && !!AUTH.premium;
 const valuesOf = m => (premium() ? m.values : []);
 const lockedBox = text => `<div class="box lockbox"><span>★</span><div><b>${esc(text)}</b>
-  <a href="medlem.html">Bli medlem för 9 kr/mån</a> för att se det.</div></div>`;
+  ${typeof AUTH !== 'undefined' && AUTH.user
+    ? '<a href="medlem.html">Slutför betalningen (9 kr/mån)</a> för att se det.'
+    : `<a href="konto.html?tab=signup&next=${encodeURIComponent(location.pathname)}">Skapa konto – 9 kr/mån</a> eller <a href="konto.html?next=${encodeURIComponent(location.pathname)}">logga in</a>.`}</div></div>`;
 
 const everyMatch = () => DATA.latest.competitions.flatMap(c => c.matches.map(m => ({ ...m, comp: c })));
 const findMatch = id => everyMatch().find(x => String(x.id) === String(id));
@@ -234,7 +236,7 @@ function matchHtml(m) {
   </div>`;
 
   if (!premium() && UPCOMING.has(m.status) && m.model) {
-    html += lockedBox('Värdebets, bet builders och målskyttar är bara för medlemmar.');
+    html += lockedBox('Värdebets, bet builders och målskyttar ingår i kontot.');
   }
   if (premium() && m.values.length) {
     html += `<div class="box valbox"><span class="label">Värdebet</span>${m.values.map(v => `<div class="valrow">

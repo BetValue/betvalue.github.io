@@ -109,7 +109,7 @@ function builderCard(b, i) {
 }
 
 async function render() {
-  if (!(await requirePremium('Logga in för att se Dagens värde', 'Dagens bästa bet, enskilda spel, bet builders och målskyttar är bara för inloggade.'))) return;
+  if (!(await requirePremium('Skapa konto för att se Dagens värde', 'Dagens bästa bet, enskilda spel, bet builders och målskyttar.'))) return;
   const days = upcomingDays();
   if (!days.includes(dstate.day)) dstate.day = days[0] ?? null;
   $('#days').innerHTML = days.map(d => {

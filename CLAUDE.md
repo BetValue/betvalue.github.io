@@ -12,6 +12,7 @@ Privat fotbollssida (för användaren och kompisar): statistik à la FotMob + v�
 
 - **Före varje commit som ändrar CSS/JS: kör `node scripts/stamp.mjs`.** Den sätter `?v=` på sidans filer i alla HTML-sidor; annars kör besökarnas webbläsare gammal kod från cachen (GitHub Pages cachar i 10 min) – det fick inloggningen att hänga.
 
+- **Ett konto kostar 9 kr/mån och ger allt.** Utloggad → "Skapa konto – 9 kr/mån" (konto.html?tab=signup) → registrering → medlem.html (kassan) → betalt = allt. Kassan körs i TESTLÄGE (`app_settings.payments_test_mode`, RPC `activate_test_subscription`/`cancel_test_subscription`, 30 dagar) tills Stripe finns; sätt då STRIPE_LINK i medlem.js och test_mode=false.
 - **Medlemskap 9 kr/mån** (`medlem.html` + `medlem.js`): tabell `subscriptions` (status owner/active/…; Simon och Casper = owner), `is_premium()`. Dagens värde, Boostar, värdebets, bet builders och målskyttar kräver medlemskap (`requirePremium()`/`premium()`). Premiuminnehållet laddas av fetch.mjs upp till `premium_matches` (RLS: bara medlemmar) och tas bort ur latest.json när GitHub-secret `SUPABASE_SERVICE_KEY` finns; `applyPremium()` i auth.js lägger tillbaka det för medlemmar. Betalning: Stripe Payment Link (`STRIPE_LINK` i medlem.js, `client_reference_id`=user id) + webhook `supabase/functions/stripe-webhook` (secrets STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET; Verify JWT av). Får inte använda Tidvatten UF:s Stripe-konto.
 
 ## Data

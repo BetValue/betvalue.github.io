@@ -1,8 +1,8 @@
-// Bli medlem: 9 kr/mån via Stripe. Betalningen görs på Stripes egen sida (Payment Link);
-// webhooken supabase/functions/stripe-webhook aktiverar medlemskapet när betalningen gått igenom.
+// Medlemskap: ett konto kostar 9 kr/mån och ger allt.
+// Utloggad → skapa konto. Inloggad utan betalning → kassan. Betalt → allt är upplåst.
 //
-// STRIPE_LINK sätts till BetValues Payment Link när Stripe-kontot finns
-// (t.ex. https://buy.stripe.com/test_… i testläge). Tom = betalningen är inte öppen än.
+// Betalningen körs i TESTLÄGE (inga riktiga pengar) tills BetValue har ett eget Stripe-konto.
+// Då sätts STRIPE_LINK till Payment Link-adressen och payments_test_mode till false i Supabase.
 const STRIPE_LINK = '';
 const STRIPE_PORTAL = ''; // Stripes kundportal, där man avslutar prenumerationen
 
@@ -12,37 +12,94 @@ const PERKS = [
   ['⚽', 'Målskyttar', 'Chans att göra mål för nyckelspelarna i varje match.'],
   ['%', 'Värdebets', 'Odds som är högre än vad statistiken säger att de borde vara.'],
   ['⚡', 'Boostar', 'Boost-kalkylatorn och de rekommenderade boostarna.'],
+  ['💬', 'Vänner, chatt och sparade bets', 'Dela bets med kompisarna och följ hur de går.'],
 ];
+const perksHtml = () => `<ul class="perks">${PERKS.map(([i, t, d]) => `<li><span>${i}</span><div><b>${esc(t)}</b><small>${esc(d)}</small></div></li>`).join('')}</ul>`;
+const fmtDate = iso => new Date(iso).toLocaleDateString('sv-SE', { day: 'numeric', month: 'long', year: 'numeric', timeZone: TZ });
+
+async function testMode() {
+  const { data } = await sb.from('app_settings').select('value').eq('key', 'payments_test_mode').maybeSingle();
+  return data?.value === true;
+}
+
+function signedOutHtml() {
+  return `<section class="plan">
+    <div class="plan-price"><span class="label">BetValue Medlem</span><b>9 kr</b><small>per månad · avsluta när du vill</small></div>
+    <p class="plan-lead">Ett konto kostar <b>9 kr i månaden</b> och ger dig <b>allt</b> på BetValue:</p>
+    ${perksHtml()}
+    <div class="plan-action">
+      <a class="btn-gold" href="konto.html?tab=signup&next=${encodeURIComponent(location.pathname)}">Skapa konto – 9 kr/mån</a>
+      <a class="linkbtn" href="konto.html?next=${encodeURIComponent(location.pathname)}">Har du redan ett konto? Logga in</a>
+    </div>
+  </section>`;
+}
+
+function checkoutHtml(test) {
+  return `<section class="checkout">
+    <div class="co-head"><span class="label">Steg 2 av 2 · Betalning</span><h2>Slutför ditt konto</h2>
+      ${test ? '<span class="test-badge">TESTLÄGE – inga riktiga pengar dras</span>' : ''}</div>
+    <div class="co-order">
+      <div class="co-row"><span>BetValue Medlem</span><b>9,00 kr</b></div>
+      <div class="co-row sub"><span>Varje månad, avsluta när du vill</span><span>moms ingår</span></div>
+      <div class="co-row total"><span>Att betala idag</span><b>9,00 kr</b></div>
+    </div>
+    ${perksHtml()}
+    <label class="age"><input type="checkbox" id="age18"> Jag är 18 år eller äldre</label>
+    <button class="btn-gold" id="pay">${test ? 'Betala 9 kr (test)' : 'Till betalning – 9 kr/mån'}</button>
+    <p class="note" id="pay-msg">${test
+      ? 'Det här är en testkassa. Inget kort behövs och inga pengar dras – kontot blir medlem i 30 dagar så att vi kan testa hur allt fungerar.'
+      : 'Du skickas till Stripe för att betala säkert med kort.'}</p>
+  </section>`;
+}
+
+function memberHtml(test) {
+  const sub = AUTH.subscription;
+  const owner = sub?.status === 'owner';
+  return `<section class="checkout done">
+    <div class="done-check">✓</div>
+    <h2>Du har allt upplåst</h2>
+    <p>${owner ? 'Du är ägare av BetValue och har allt gratis.'
+      : `Medlemskapet är aktivt${sub?.current_period_end ? ' till <b>' + esc(fmtDate(sub.current_period_end)) + '</b>' : ''}${test ? ' (testläge)' : ''}.`}</p>
+    <div class="gate-btns">
+      <a class="btn-gold" href="dagens-varde.html">Till Dagens värde</a>
+      <a class="btn-ghost" href="boostar.html">Boostar</a>
+    </div>
+    ${!owner && test ? '<button class="linkbtn" id="cancel-test">Avsluta medlemskapet (test)</button>' : ''}
+    ${!owner && !test && STRIPE_PORTAL ? `<a class="linkbtn" href="${STRIPE_PORTAL}" target="_blank" rel="noopener">Hantera eller avsluta prenumerationen</a>` : ''}
+  </section>`;
+}
 
 async function render() {
   await AUTH.ready;
-  const user = AUTH.user;
-  const member = AUTH.premium;
-  const payUrl = STRIPE_LINK && user ? `${STRIPE_LINK}?client_reference_id=${encodeURIComponent(user.id)}` : '';
-
-  let action;
-  if (!user) {
-    action = `<a class="btn-gold" href="konto.html?next=${encodeURIComponent(location.pathname)}">Skapa konto eller logga in först</a>`;
-  } else if (member) {
-    action = `<div class="member-ok">✓ Du är medlem${AUTH.subscription?.status === 'owner' ? ' (ägare)' : ''}</div>
-      ${STRIPE_PORTAL && AUTH.subscription?.status !== 'owner' ? `<a class="btn-ghost" href="${STRIPE_PORTAL}" target="_blank" rel="noopener">Hantera eller avsluta prenumerationen</a>` : ''}`;
-  } else {
-    action = `<label class="age"><input type="checkbox" id="age18"> Jag är 18 år eller äldre</label>
-      <button class="btn-gold" id="pay" ${payUrl ? '' : 'disabled'}>${payUrl ? 'Bli medlem – 9 kr/mån' : 'Betalningen öppnar snart'}</button>
-      <p class="note" id="pay-msg">${payUrl ? 'Du skickas till Stripe för att betala säkert med kort. Avsluta när du vill.' : 'Vi håller på att koppla in betalningen. Titta in snart igen!'}</p>`;
+  if (!AUTH.user) { $('#main').innerHTML = signedOutHtml(); return; }
+  const test = await testMode();
+  if (AUTH.premium) {
+    $('#main').innerHTML = memberHtml(test);
+    $('#cancel-test')?.addEventListener('click', async e => {
+      e.currentTarget.disabled = true;
+      await sb.rpc('cancel_test_subscription');
+      await loadProfile();
+      render();
+    });
+    return;
   }
-
-  $('#main').innerHTML = `<section class="plan">
-      <div class="plan-price"><span class="label">BetValue Medlem</span><b>9 kr</b><small>per månad · avsluta när du vill</small></div>
-      <ul class="perks">${PERKS.map(([i, t, d]) => `<li><span>${i}</span><div><b>${esc(t)}</b><small>${esc(d)}</small></div></li>`).join('')}</ul>
-      <div class="plan-action">${action}</div>
-    </section>
-    <p class="note plan-fine">Matcher, tabeller, startelvor, spelar- och klubbstatistik, chatt och vänner är gratis för alla med konto.
-      Statistiken är ingen garanti – spela aldrig för mer än du har råd att förlora. 18+ · <a href="https://www.stodlinjen.se" target="_blank" rel="noopener">Stödlinjen.se</a></p>`;
-
-  $('#pay')?.addEventListener('click', () => {
-    if (!$('#age18').checked) { $('#pay-msg').textContent = 'Du måste vara 18 år för att bli medlem.'; return; }
-    location.href = payUrl;
+  $('#main').innerHTML = checkoutHtml(test);
+  $('#pay').addEventListener('click', async e => {
+    const msg = $('#pay-msg');
+    if (!$('#age18').checked) { msg.textContent = 'Du måste vara 18 år eller äldre för att bli medlem.'; return; }
+    if (!test) {
+      if (!STRIPE_LINK) { msg.textContent = 'Betalningen är inte öppen än. Titta in snart igen!'; return; }
+      location.href = `${STRIPE_LINK}?client_reference_id=${encodeURIComponent(AUTH.user.id)}`;
+      return;
+    }
+    const btn = e.currentTarget;
+    btn.disabled = true;
+    btn.textContent = 'Betalar…';
+    const { error } = await sb.rpc('activate_test_subscription');
+    if (error) { btn.disabled = false; btn.textContent = 'Betala 9 kr (test)'; msg.textContent = 'Något gick fel: ' + error.message; return; }
+    await loadProfile();
+    paintAccountLink();
+    render();
   });
 }
 

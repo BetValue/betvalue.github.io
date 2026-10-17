@@ -2,7 +2,7 @@
 
 // Mejlbekräftelse är avstängd i Supabase (Confirm email = av). Sätt till false om den slås på igen.
 const AUTH_NO_EMAIL = true;
-const kstate = { view: 'login', email: '', notice: '' };
+const kstate = { view: new URLSearchParams(location.search).get('tab') === 'signup' ? 'signup' : 'login', email: '', notice: '' };
 const next = new URLSearchParams(location.search).get('next');
 
 const field = (id, label, type = 'text', attrs = '') =>
@@ -51,22 +51,23 @@ function viewLogin() {
       ${errBox}
       <button class="btn-gold" type="submit">Logga in</button>
     </form>
-    <p class="auth-alt">Inget konto än? <button class="linkbtn" data-kview="signup">Skapa ett här</button></p>
+    <p class="auth-alt">Inget konto än? <button class="linkbtn" data-kview="signup">Skapa ett för 9 kr/mån</button></p>
   </div>`;
 }
 
 function viewSignup() {
   return `<div class="auth-card">
     <div class="auth-tabs"><button data-kview="login">Logga in</button><button class="on">Skapa konto</button></div>
+    <div class="price-head"><b>9 kr</b><span>per månad<br>allt ingår</span></div>
     <form id="signup-form" novalidate>
       ${field('s-user', 'Användarnamn', 'text', 'autocomplete="nickname" minlength="3" maxlength="20" required')}
       <p class="hint-sm">3–20 tecken: bokstäver a–z, siffror, punkt, bindestreck eller understreck.</p>
       ${field('s-pw', 'Lösenord', 'password', 'autocomplete="new-password" minlength="8" required')}
       ${field('s-pw2', 'Upprepa lösenordet', 'password', 'autocomplete="new-password" minlength="8" required')}
       ${errBox}
-      <button class="btn-gold" type="submit">Skapa konto</button>
+      <button class="btn-gold" type="submit">Skapa konto och gå till betalning</button>
     </form>
-    <p class="auth-alt">Det räcker med användarnamn och lösenord. Du loggar in direkt.</p>
+    <p class="auth-alt">Steg 1 av 2: välj användarnamn och lösenord. Sedan betalar du 9 kr/mån och har allt.</p>
   </div>`;
 }
 
@@ -181,8 +182,8 @@ async function viewAccount() {
       <div><span class="label">Inloggad som</span><h2>${esc(AUTH.profile?.username ?? '')}</h2><small>${esc(AUTH.user.email)}</small></div>
       <button class="btn-ghost" id="logout">Logga ut</button>
     </div>
-    <a class="sb-link member-link${AUTH.premium ? ' on' : ''}" href="medlem.html"><b>${AUTH.premium ? '★ Medlem' : 'Bli medlem'}</b>
-      <span>${AUTH.premium ? (AUTH.subscription?.status === 'owner' ? 'Ägare · gratis medlemskap' : 'Aktivt medlemskap') : '9 kr/mån · Dagens värde, värdebets och boostar'}</span><i>→</i></a>
+    <a class="sb-link member-link${AUTH.premium ? ' on' : ' unpaid'}" href="medlem.html"><b>${AUTH.premium ? '★ Medlem' : 'Slutför betalningen'}</b>
+      <span>${AUTH.premium ? (AUTH.subscription?.status === 'owner' ? 'Ägare · allt ingår' : 'Allt är upplåst') : 'Kontot är inte betalt – 9 kr/mån låser upp allt'}</span><i>→</i></a>
     ${await friendsHtml()}
     <a class="sb-link" href="sparade.html"><b>Sparade bets</b><span>${AUTH.saved.size} sparade · se resultat och träffprocent</span><i>→</i></a>
     <section class="sec"><div class="sec-head"><h2>Favoritlag</h2><span>${teams.length}</span></div>
@@ -260,7 +261,7 @@ function wire() {
       return showErr('Användarnamnet är upptaget. Välj ett annat.');
     }
     // Utan mejlbekräftelse är man inloggad direkt. Annars (om bekräftelse slås på igen) visas kodsteget.
-    if (data.session) { done(); return; }
+    if (data.session) { location.href = 'medlem.html'; return; }
     kstate.email = email;
     kstate.notice = '';
     kstate.view = 'verify';

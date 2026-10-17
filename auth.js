@@ -205,9 +205,9 @@ async function requirePremium(title, text) {
   if (days) days.innerHTML = '';
   $('#main').innerHTML = `<div class="locked gate">
     <span class="gate-lock">★</span>
-    <b>${esc(title.replace(/^Logga in för att/, 'Bli medlem för att'))}</b>
-    <span>${esc(text.replace('bara för inloggade', 'bara för medlemmar'))}</span>
-    <div class="gate-btns"><a class="btn-gold" href="medlem.html">Bli medlem – 9 kr/mån</a></div>
+    <b>Slutför betalningen</b>
+    <span>Ditt konto är skapat men inte betalt än. Betala 9 kr/mån så låses allt upp direkt.</span>
+    <div class="gate-btns"><a class="btn-gold" href="medlem.html">Slutför betalningen</a></div>
   </div>`;
   return false;
 }
@@ -222,12 +222,12 @@ async function requireLogin(title, text) {
   const days = document.getElementById('days');
   if (days) days.innerHTML = '';
   $('#main').innerHTML = `<div class="locked gate">
-    <span class="gate-lock">🔒</span>
+    <span class="gate-lock">★</span>
     <b>${esc(title)}</b>
-    <span>${esc(text)}</span>
+    <span>${esc(text)} Ett konto kostar <strong>9 kr/mån</strong> och ger dig allt.</span>
     <div class="gate-btns">
-      <a class="btn-gold" href="konto.html?next=${encodeURIComponent(location.pathname)}">Logga in</a>
-      <a class="btn-ghost" href="konto.html?next=${encodeURIComponent(location.pathname)}">Skapa konto</a>
+      <a class="btn-gold" href="konto.html?tab=signup&next=${encodeURIComponent(location.pathname)}">Skapa konto – 9 kr/mån</a>
+      <a class="btn-ghost" href="konto.html?next=${encodeURIComponent(location.pathname)}">Logga in</a>
     </div>
   </div>`;
   return false;
