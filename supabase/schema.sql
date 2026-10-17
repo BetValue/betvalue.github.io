@@ -296,3 +296,39 @@ create policy "Medlemmar läser premium" on public.premium_matches for select to
 insert into public.subscriptions (user_id, status)
 select id, 'owner' from auth.users where email in ('simonjonhed@gmail.com', 'casperalbertnilsson@gmail.com')
 on conflict (user_id) do update set status = 'owner', updated_at = now();
+
+-- ---------- Testbetalning (inga riktiga pengar) ----------
+-- Så länge payments_test_mode är true kan en inloggad användare "betala" i testkassan och få
+-- ett medlemskap i 30 dagar. Sätt till false när Stripe tar över:
+--   update public.app_settings set value = 'false' where key = 'payments_test_mode';
+create table if not exists public.app_settings (key text primary key, value jsonb not null);
+alter table public.app_settings enable row level security;
+drop policy if exists "Alla läser inställningar" on public.app_settings;
+create policy "Alla läser inställningar" on public.app_settings for select using (true);
+insert into public.app_settings (key, value) values ('payments_test_mode', 'true') on conflict (key) do nothing;
+
+create or replace function public.activate_test_subscription() returns timestamptz
+language plpgsql security definer set search_path = '' as $$
+declare ends timestamptz := now() + interval '30 days';
+begin
+  if auth.uid() is null then raise exception 'Du måste vara inloggad'; end if;
+  if coalesce((select value::text from public.app_settings where key = 'payments_test_mode'), 'false') <> 'true' then
+    raise exception 'Testbetalning är avstängd'; end if;
+  insert into public.subscriptions (user_id, status, current_period_end, updated_at)
+  values (auth.uid(), 'active', ends, now())
+  on conflict (user_id) do update set status = case when public.subscriptions.status = 'owner' then 'owner' else 'active' end,
+    current_period_end = case when public.subscriptions.status = 'owner' then null else ends end, updated_at = now();
+  return ends;
+end $$;
+
+create or replace function public.cancel_test_subscription() returns void
+language plpgsql security definer set search_path = '' as $$
+begin
+  if coalesce((select value::text from public.app_settings where key = 'payments_test_mode'), 'false') <> 'true' then
+    raise exception 'Testbetalning är avstängd'; end if;
+  update public.subscriptions set status = 'canceled', current_period_end = now(), updated_at = now()
+  where user_id = auth.uid() and status <> 'owner';
+end $$;
+
+revoke all on function public.activate_test_subscription(), public.cancel_test_subscription() from public;
+grant execute on function public.activate_test_subscription(), public.cancel_test_subscription() to authenticated;
