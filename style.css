@@ -843,3 +843,25 @@ footer p { margin: 4px auto; max-width: 70ch; }
 .lockbox > span { font-size: 26px; }
 .lockbox b { display: block; margin-bottom: 2px; }
 .lockbox div { color: var(--muted); font-size: 14px; }
+
+/* ---------- Medlemskap ---------- */
+.plan { display: grid; gap: 18px; max-width: 560px; margin: 0 auto; padding: 26px; border-radius: 28px; color: var(--chalk);
+  background: linear-gradient(160deg, rgba(255, 207, 74, .14), transparent 55%), var(--night-2); border: 1px solid rgba(255, 207, 74, .4);
+  box-shadow: 0 40px 90px -45px rgba(255, 190, 40, .6); animation: rise .5s both; }
+.plan-price { display: grid; justify-items: center; text-align: center; }
+.plan-price .label { color: var(--gold); }
+.plan-price b { font: 900 96px/.9 var(--display); background: linear-gradient(100deg, #fff1bf, var(--gold) 45%, #e3a015); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.plan-price small { color: var(--muted); }
+.perks { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.perks li { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 14px; background: var(--glass); }
+.perks li > span { display: grid; place-items: center; flex: none; width: 36px; height: 36px; border-radius: 50%; background: var(--gold); color: #241900; font-weight: 900; }
+.perks b { display: block; }
+.perks small { color: var(--muted); }
+.plan-action { display: grid; gap: 10px; justify-items: center; text-align: center; }
+.plan-action .btn-gold { text-decoration: none; text-align: center; }
+.plan-action .btn-gold:disabled { opacity: .55; cursor: not-allowed; }
+.age { display: flex; align-items: center; gap: 8px; font-weight: 600; }
+.age input { width: 18px; height: 18px; accent-color: var(--gold); }
+.member-ok { padding: 12px 18px; border-radius: 999px; background: var(--home); color: var(--night); font-weight: 800; }
+.plan-fine { max-width: 560px; margin: 14px auto 0; text-align: center; }
+.member-link.on b { color: var(--gold); }

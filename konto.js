@@ -181,6 +181,8 @@ async function viewAccount() {
       <div><span class="label">Inloggad som</span><h2>${esc(AUTH.profile?.username ?? '')}</h2><small>${esc(AUTH.user.email)}</small></div>
       <button class="btn-ghost" id="logout">Logga ut</button>
     </div>
+    <a class="sb-link member-link${AUTH.premium ? ' on' : ''}" href="medlem.html"><b>${AUTH.premium ? '★ Medlem' : 'Bli medlem'}</b>
+      <span>${AUTH.premium ? (AUTH.subscription?.status === 'owner' ? 'Ägare · gratis medlemskap' : 'Aktivt medlemskap') : '9 kr/mån · Dagens värde, värdebets och boostar'}</span><i>→</i></a>
     ${await friendsHtml()}
     <a class="sb-link" href="sparade.html"><b>Sparade bets</b><span>${AUTH.saved.size} sparade · se resultat och träffprocent</span><i>→</i></a>
     <section class="sec"><div class="sec-head"><h2>Favoritlag</h2><span>${teams.length}</span></div>

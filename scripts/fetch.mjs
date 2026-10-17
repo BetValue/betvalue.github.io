@@ -13,6 +13,10 @@ import { teamMarkets, playerMarkets } from './markets.mjs';
 
 const FD_KEY = process.env.FOOTBALL_DATA_KEY;
 const ODDS_KEY = process.env.ODDS_API_KEY;
+// Service-nyckeln (Supabase) gör att premiuminnehållet laddas upp till den låsta tabellen
+// premium_matches och tas bort ur den öppna data/latest.json.
+const SB_URL = 'https://avtmxbqqjkrcwbpkaihr.supabase.co';
+const SB_KEY = process.env.SUPABASE_SERVICE_KEY;
 const FORCE_ODDS = process.argv.includes('--odds');
 const ODDS_MAX_AGE_H = 20;
 const PAST_DAYS = 10, AHEAD_DAYS = 14;
@@ -317,6 +321,31 @@ async function addHeadToHead(competitions) {
   console.log(`Inbördes möten: ${fetched} nya, ${Object.keys(cache).length} sparade`);
 }
 
+// Värdebets, bet builders och målskyttar → Supabase (bara medlemmar kan läsa).
+async function uploadPremium(competitions) {
+  const started = new Date();
+  const headers = { apikey: SB_KEY, 'Content-Type': 'application/json' };
+  if (SB_KEY.startsWith('eyJ')) headers.Authorization = 'Bearer ' + SB_KEY;
+  const rows = competitions.flatMap(c => c.matches
+    .filter(m => m.values?.length || m.extras)
+    .map(m => ({ match_id: String(m.id), comp: c.id, data: { values: m.values ?? [], extras: m.extras ?? null }, updated_at: started.toISOString() })));
+  try {
+    for (let i = 0; i < rows.length; i += 200) {
+      const res = await fetch(`${SB_URL}/rest/v1/premium_matches?on_conflict=match_id`, {
+        method: 'POST', headers: { ...headers, Prefer: 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify(rows.slice(i, i + 200)),
+      });
+      if (!res.ok) throw new Error(`${res.status} ${(await res.text()).slice(0, 200)}`);
+    }
+    const old = new Date(started.getTime() - 3 * DAY).toISOString();
+    await fetch(`${SB_URL}/rest/v1/premium_matches?updated_at=lt.${old}`, { method: 'DELETE', headers });
+  } catch (err) {
+    console.warn('Premium-uppladdning misslyckades, innehållet ligger kvar i latest.json:', err.message);
+    return;
+  }
+  for (const c of competitions) for (const m of c.matches) { m.values = []; m.extras = null; }
+  console.log(`Premium: ${rows.length} matcher uppladdade och borttagna ur den öppna filen`);
+}
+
 async function main() {
   await mkdir(DATA, { recursive: true });
   if (!FD_KEY) console.warn('FOOTBALL_DATA_KEY saknas – statistiken uppdateras inte.');
@@ -338,6 +367,7 @@ async function main() {
   }
 
   if (FD_KEY) await addHeadToHead(competitions);
+  if (SB_KEY) await uploadPremium(competitions);
 
   await writeJson('latest.json', {
     updated: new Date().toISOString(),

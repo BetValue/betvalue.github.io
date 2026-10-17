@@ -54,10 +54,10 @@ function pickLabel(m, pick) {
 }
 
 // Värdebets, bet builders och målskyttechanser visas bara för inloggade (auth.js).
-const premium = () => typeof AUTH !== 'undefined' && !!AUTH.user;
+const premium = () => typeof AUTH !== 'undefined' && !!AUTH.premium;
 const valuesOf = m => (premium() ? m.values : []);
-const lockedBox = text => `<div class="box lockbox"><span>🔒</span><div><b>${esc(text)}</b>
-  <a href="konto.html?next=${encodeURIComponent(location.pathname)}">Logga in</a> eller <a href="konto.html?next=${encodeURIComponent(location.pathname)}">skapa konto</a> för att se det.</div></div>`;
+const lockedBox = text => `<div class="box lockbox"><span>★</span><div><b>${esc(text)}</b>
+  <a href="medlem.html">Bli medlem för 9 kr/mån</a> för att se det.</div></div>`;
 
 const everyMatch = () => DATA.latest.competitions.flatMap(c => c.matches.map(m => ({ ...m, comp: c })));
 const findMatch = id => everyMatch().find(x => String(x.id) === String(id));
@@ -233,8 +233,8 @@ function matchHtml(m) {
     ${scoreboard(m, true)}
   </div>`;
 
-  if (!premium() && UPCOMING.has(m.status) && (m.values.length || m.extras)) {
-    html += lockedBox('Värdebets, bet builders och målskyttar är bara för inloggade.');
+  if (!premium() && UPCOMING.has(m.status) && m.model) {
+    html += lockedBox('Värdebets, bet builders och målskyttar är bara för medlemmar.');
   }
   if (premium() && m.values.length) {
     html += `<div class="box valbox"><span class="label">Värdebet</span>${m.values.map(v => `<div class="valrow">
@@ -376,7 +376,7 @@ async function boot(page, start) {
   const ts = iso => new Date(iso).toLocaleString('sv-SE', { dateStyle: 'short', timeStyle: 'short', timeZone: TZ });
   $('#updated').textContent = `Statistik uppdaterad ${ts(DATA.latest.updated)}` +
     (DATA.latest.oddsUpdated ? ` · odds ${ts(DATA.latest.oddsUpdated)}` : '');
-  if (typeof AUTH !== 'undefined') await AUTH.ready;
+  if (typeof AUTH !== 'undefined') { await AUTH.ready; await applyPremium().catch(() => {}); }
   renderTicker();
   await start();
   // Direktlänkar: ?match=ID, ?player=ESPN-ID&slug=eng.1&team=Arsenal, ?club=LAG-ID&comp=PL

@@ -12,7 +12,7 @@ Privat fotbollssida (för användaren och kompisar): statistik à la FotMob + v�
 
 - **Före varje commit som ändrar CSS/JS: kör `node scripts/stamp.mjs`.** Den sätter `?v=` på sidans filer i alla HTML-sidor; annars kör besökarnas webbläsare gammal kod från cachen (GitHub Pages cachar i 10 min) – det fick inloggningen att hänga.
 
-- Dagens värde och Boostar kräver inloggning (`requireLogin()` i auth.js). Spärren är bara i webbläsaren – `data/latest.json` är fortfarande öppen.
+- **Medlemskap 9 kr/mån** (`medlem.html` + `medlem.js`): tabell `subscriptions` (status owner/active/…; Simon och Casper = owner), `is_premium()`. Dagens värde, Boostar, värdebets, bet builders och målskyttar kräver medlemskap (`requirePremium()`/`premium()`). Premiuminnehållet laddas av fetch.mjs upp till `premium_matches` (RLS: bara medlemmar) och tas bort ur latest.json när GitHub-secret `SUPABASE_SERVICE_KEY` finns; `applyPremium()` i auth.js lägger tillbaka det för medlemmar. Betalning: Stripe Payment Link (`STRIPE_LINK` i medlem.js, `client_reference_id`=user id) + webhook `supabase/functions/stripe-webhook` (secrets STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET; Verify JWT av). Får inte använda Tidvatten UF:s Stripe-konto.
 
 ## Data
 - `scripts/fetch.mjs` (Node 22, inga beroenden) → `data/latest.json`. football-data.org (gratis: PL, PD, BL1, SA, FL1, CL, EC, WC – 10 anrop/min, matcher + tabell + skytteliga per liga, inbördes möten för matcher inom 48 h cachas i `data/h2h.json`). The Odds API (gratis 500 anrop/mån; h2h+totals = 2 anrop per liga, därför en gång per dygn, `--odds` tvingar) → `data/odds.json`. Nations League bara odds.

@@ -10,10 +10,16 @@ const SUPABASE_KEY = 'sb_publishable_kl5iy4KG88gg8Shzm4_G-w_A-8JL6xw';
 const sb = window.supabase?.createClient(SUPABASE_URL, SUPABASE_KEY, {
   auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false, lock: (_name, _timeout, fn) => fn() },
 });
-const AUTH = { user: null, profile: null, favs: new Map(), saved: new Set(), ready: null };
+const AUTH = { user: null, profile: null, favs: new Map(), saved: new Set(), premium: false, subscription: null, ready: null };
 
 async function loadProfile() {
-  if (!AUTH.user) { AUTH.profile = null; AUTH.favs.clear(); AUTH.saved.clear(); return; }
+  if (!AUTH.user) { AUTH.profile = null; AUTH.favs.clear(); AUTH.saved.clear(); AUTH.premium = false; AUTH.subscription = null; return; }
+  const [{ data: sub }, { data: premium }] = await Promise.all([
+    sb.from('subscriptions').select('status, current_period_end').maybeSingle(),
+    sb.rpc('is_premium'),
+  ]);
+  AUTH.subscription = sub ?? null;
+  AUTH.premium = !!premium;
   const [{ data: profile }, { data: favs }, { data: saved }] = await Promise.all([
     sb.from('profiles').select('username').eq('id', AUTH.user.id).maybeSingle(),
     sb.from('favorites').select('kind, ref, label, extra').order('created_at'),
@@ -171,6 +177,40 @@ new MutationObserver(() => {
   syncQueued = true;
   requestAnimationFrame(() => { syncQueued = false; syncSaveButtons(document); syncFavButtons(document); });
 }).observe(document.documentElement, { childList: true, subtree: true });
+
+// ---------- Premiuminnehåll ----------
+
+// Värdebets, bet builders och målskyttar ligger i tabellen premium_matches som bara medlemmar
+// kan läsa. De läggs in i matcherna i DATA.latest när sidan startar.
+async function applyPremium() {
+  if (!AUTH.premium || !DATA.latest) return;
+  const { data } = await sb.from('premium_matches').select('match_id, data').limit(1000);
+  if (!data?.length) return;
+  const byId = new Map(data.map(r => [String(r.match_id), r.data]));
+  for (const c of DATA.latest.competitions) {
+    for (const m of c.matches) {
+      const extra = byId.get(String(m.id));
+      if (!extra) continue;
+      if (extra.values) m.values = extra.values;
+      if (extra.extras) m.extras = extra.extras;
+    }
+  }
+}
+
+// Sidor som bara medlemmar ser. Returnerar true om sidan får visas.
+async function requirePremium(title, text) {
+  if (!(await requireLogin(title, text))) return false;
+  if (AUTH.premium) return true;
+  const days = document.getElementById('days');
+  if (days) days.innerHTML = '';
+  $('#main').innerHTML = `<div class="locked gate">
+    <span class="gate-lock">★</span>
+    <b>${esc(title.replace(/^Logga in för att/, 'Bli medlem för att'))}</b>
+    <span>${esc(text.replace('bara för inloggade', 'bara för medlemmar'))}</span>
+    <div class="gate-btns"><a class="btn-gold" href="medlem.html">Bli medlem – 9 kr/mån</a></div>
+  </div>`;
+  return false;
+}
 
 // ---------- Sidor som kräver inloggning ----------
 
