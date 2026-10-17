@@ -256,3 +256,43 @@ do $$ begin
     alter publication supabase_realtime add table public.messages;
   end if;
 end $$;
+
+-- ---------- Medlemskap (9 kr/mån via Stripe) ----------
+-- Raderna skrivs av Stripe-webhooken (supabase/functions/stripe-webhook) med service-nyckeln.
+-- Användaren kan bara läsa sin egen rad.
+create table if not exists public.subscriptions (
+  user_id uuid primary key references auth.users on delete cascade,
+  status text not null check (status in ('active', 'trialing', 'past_due', 'canceled', 'incomplete', 'owner')),
+  current_period_end timestamptz,
+  stripe_customer text,
+  stripe_subscription text,
+  updated_at timestamptz not null default now()
+);
+alter table public.subscriptions enable row level security;
+drop policy if exists "Se eget medlemskap" on public.subscriptions;
+create policy "Se eget medlemskap" on public.subscriptions for select to authenticated using (user_id = auth.uid());
+
+create or replace function public.is_premium() returns boolean
+language sql security definer set search_path = '' stable as $$
+  select exists (select 1 from public.subscriptions s where s.user_id = auth.uid()
+    and (s.status = 'owner' or (s.status in ('active', 'trialing', 'past_due') and (s.current_period_end is null or s.current_period_end > now() - interval '3 days'))));
+$$;
+revoke all on function public.is_premium() from public;
+grant execute on function public.is_premium() to authenticated;
+
+-- De rekommenderade spelen (värdebets, bet builders, målskyttar) per match.
+-- Skrivs av datahämtningen (GitHub Actions) med service-nyckeln, läses bara av medlemmar.
+create table if not exists public.premium_matches (
+  match_id text primary key,
+  comp text not null,
+  data jsonb not null,
+  updated_at timestamptz not null default now()
+);
+alter table public.premium_matches enable row level security;
+drop policy if exists "Medlemmar läser premium" on public.premium_matches;
+create policy "Medlemmar läser premium" on public.premium_matches for select to authenticated using (public.is_premium());
+
+-- Ägarna har gratis medlemskap.
+insert into public.subscriptions (user_id, status)
+select id, 'owner' from auth.users where email in ('simonjonhed@gmail.com', 'casperalbertnilsson@gmail.com')
+on conflict (user_id) do update set status = 'owner', updated_at = now();
