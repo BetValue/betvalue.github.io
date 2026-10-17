@@ -73,4 +73,4 @@ document.addEventListener('click', async e => {
 }, true);
 document.addEventListener('auth:changed', () => render());
 
-boot('sparade', render);
+boot('sparade', render).then(startLive);

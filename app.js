@@ -56,7 +56,7 @@ function hero(m) {
 function matchRow(m) {
   const live = LIVE.has(m.status);
   const done = m.score && !UPCOMING.has(m.status);
-  const time = live ? '<span class="time live"><span class="livedot"></span>LIVE</span>'
+  const time = live ? `<span class="time live"><span class="livedot"></span>${esc(m.minute || 'LIVE')}</span>`
     : m.status === 'FINISHED' ? '<span class="time ft">SLUT</span>'
     : m.status === 'POSTPONED' ? '<span class="time ft">UPPSK.</span>'
     : `<span class="time">${clock(m.utc)}</span>`;
@@ -182,4 +182,5 @@ document.addEventListener('click', e => {
 window.addEventListener('hashchange', () => { if (readHash()) { render(); window.scrollTo({ top: 0 }); } });
 
 document.addEventListener('auth:changed', () => { renderTicker(); render(); });
-boot('matcher', () => { if (readHash()) render(); });
+document.addEventListener('live:update', () => render());
+boot('matcher', () => { if (readHash()) render(); startLive(); });

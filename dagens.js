@@ -162,4 +162,4 @@ document.addEventListener('click', e => {
 });
 
 document.addEventListener('auth:changed', () => render());
-boot('dagens', render);
+boot('dagens', render).then(startLive);

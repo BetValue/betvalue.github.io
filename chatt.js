@@ -386,4 +386,4 @@ async function start() {
 }
 
 document.addEventListener('auth:changed', () => start());
-boot('chatt', start);
+boot('chatt', start).then(startLive);

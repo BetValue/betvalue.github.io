@@ -174,12 +174,17 @@ const clubAttrs = (c, t) => `data-cteam="${t.id ?? ''}" data-ccomp="${c.id}" dat
 // Attribut som öppnar spelarprofilen via namnet (espn.js letar upp spelaren).
 const playerAttrs = (c, teamName, name) => `data-pname="${esc(name)}" data-pcomp="${c.id}" data-pteamname="${esc(teamName)}"`;
 
-function scoreboard(m, clickable = false) {
+// Mitten av resultattavlan: ställning + minut (live), slutresultat eller avsparkstid.
+function midHtml(m) {
   const done = m.score && !UPCOMING.has(m.status);
   const live = LIVE.has(m.status);
-  const mid = done
-    ? `<b>${m.score.h}–${m.score.a}</b><small>${live ? '<span class="livedot"></span> Live' : 'Slutresultat'}</small>`
+  return done
+    ? `<b>${m.score.h}–${m.score.a}</b><small${live ? ' class="live-min"' : ''}>${live ? `<span class="livedot"></span> ${esc(m.minute || 'Live')}` : 'Slutresultat'}</small>`
     : `<b>${clock(m.utc)}</b><small class="count">${countdown(m.utc)}</small>`;
+}
+
+function scoreboard(m, clickable = false) {
+  const mid = midHtml(m);
   const sh = standing(m.comp, m.home.id), sa = standing(m.comp, m.away.id);
   const side = (t, s) => clickable && t.id
     ? `<button class="side-t club" ${clubAttrs(m.comp, t)}>${crest(t)}<span>${esc(t.short)}</span><small>${s ? `${ord(s.pos)} · ${s.pts} p · ` : ''}Klubbsida →</small></button>`
@@ -230,7 +235,7 @@ function matchHtml(m) {
   const sh = standing(c, m.home.id), sa = standing(c, m.away.id);
   const vals = new Set(valuesOf(m).map(v => v.pick));
 
-  let html = `<div class="board">
+  let html = `<div class="board" data-board="${m.id}">
     <div class="sub">${esc(c.name)}${m.matchday && m.stage === 'REGULAR_SEASON' ? ' · Omgång ' + m.matchday : ''} · ${dayText(m.utc)}</div>
     ${scoreboard(m, true)}
   </div>`;

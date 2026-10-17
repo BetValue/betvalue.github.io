@@ -104,4 +104,4 @@ async function render() {
 }
 
 document.addEventListener('auth:changed', () => render());
-boot('medlem', render);
+boot('medlem', render).then(startLive);

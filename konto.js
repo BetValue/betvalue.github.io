@@ -352,4 +352,4 @@ document.addEventListener('click', async e => {
 });
 
 
-boot('konto', render);
+boot('konto', render).then(startLive);

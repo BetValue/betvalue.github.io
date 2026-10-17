@@ -919,3 +919,7 @@ footer p { margin: 4px auto; max-width: 70ch; }
 @media (max-width: 760px) { .search-btn b { display: none; } .search-btn { padding: 7px 10px; } }
 
 .boost-best { margin-bottom: 14px; }
+
+/* Matchminut live */
+.time.live { font-variant-numeric: tabular-nums; }
+.mid small.live-min { color: var(--live); font-weight: 800; letter-spacing: .04em; }

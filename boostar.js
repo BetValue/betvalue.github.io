@@ -190,4 +190,4 @@ document.addEventListener('click', e => {
 });
 document.addEventListener('auth:changed', () => render());
 
-boot('boostar', render);
+boot('boostar', render).then(startLive);
