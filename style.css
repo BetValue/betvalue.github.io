@@ -425,16 +425,16 @@ footer p { margin: 4px auto; max-width: 70ch; }
 .calc-result.meh .cr-main b { color: var(--draw); }
 .calc-result.no .cr-main b, .calc-result.no .cr-main .label { color: var(--live); }
 .boost { position: relative; display: grid; gap: 10px; align-content: start; padding: 16px; border-radius: var(--r); background: var(--night-2); border: 1px solid var(--line); animation: rise .45s both; }
-.boost.yes { border-color: rgba(255, 207, 74, .5); background: linear-gradient(170deg, rgba(255, 207, 74, .12), transparent 55%), var(--night-2); }
+.boost.yes { border-color: rgba(61, 220, 132, .45); background: linear-gradient(170deg, rgba(61, 220, 132, .1), transparent 55%), var(--night-2); }
 .b-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 .b-top small { color: var(--dim); font-size: 12px; }
 .b-book { padding: 4px 10px; border-radius: 999px; background: var(--chalk); color: var(--night); font-size: 12px; font-weight: 700; }
 .b-pick { font: 800 24px/1.05 var(--display); text-transform: uppercase; }
 .b-odds { display: flex; align-items: baseline; gap: 10px; }
 .b-odds s { color: var(--dim); font: 700 20px/1 var(--display); }
-.b-odds b { font: 900 44px/1 var(--display); color: var(--gold); }
+.b-odds b { font: 900 44px/1 var(--display); color: var(--chalk); }
 .b-verdict { font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
-.boost.yes .b-verdict { color: var(--gold); }
+.boost.yes .b-verdict { color: var(--home); }
 .boost.no .b-verdict { color: var(--live); }
 @media (max-width: 600px) {
   .calc-form { grid-template-columns: 1fr; }
@@ -917,3 +917,5 @@ footer p { margin: 4px auto; max-width: 70ch; }
 .sr:hover, .sr.on { background: var(--glass-2); }
 .sr.on i { color: var(--gold); }
 @media (max-width: 760px) { .search-btn b { display: none; } .search-btn { padding: 7px 10px; } }
+
+.boost-best { margin-bottom: 14px; }

@@ -85,6 +85,26 @@ async function removeBoost(id) {
   render();
 }
 
+// Den bästa boosten: stort guldkort överst.
+function bestBoostHtml(b) {
+  const m = findMatch(b.match);
+  const mk = m && marketsFor(m).find(x => x.key === b.pick);
+  const p = mk?.p ?? b.p;
+  return `<div class="goldhero boost-best">
+    <span class="shine" aria-hidden="true"></span>
+    <div class="gh-top"><span class="ribbon">★ Bästa boosten</span><span class="gh-meta">${esc(b.book)}${m ? " · " + esc(dayText(m.utc)) + " " + esc(clock(m.utc)) : ""}</span></div>
+    ${m ? `<div class="gh-match">${crest(m.home)}<span>${esc(m.home.short)}</span><i>vs</i><span>${esc(m.away.short)}</span>${crest(m.away)}</div>` : ""}
+    <h2 class="gh-pick">${esc(b.title ?? mk?.label ?? "Boost")}</h2>
+    <div class="gh-nums">
+      <div><small>Boostat odds</small><b>${odd(b.odds)}</b>${b.was ? `<em>var ${odd(b.was)}</em>` : ""}</div>
+      <div><small>Värde</small><b>${signed(b.edge)}</b></div>
+      <div><small>Vår chans</small><b>${pct(p)}</b></div>
+      <div><small>Rättvist odds</small><b>${odd(fair(p))}</b></div>
+    </div>
+    <div class="gh-save">${m && mk ? saveBtn(m, mk.key, mk.label, mk.p, b.odds, b.book) : ""}</div>
+  </div>`;
+}
+
 function boostCard(b, i) {
   const m = findMatch(b.match);
   const mk = m && marketsFor(m).find(x => x.key === b.pick);
@@ -124,6 +144,8 @@ async function render() {
       return { ...b, edge: p ? p * b.odds - 1 : -1 };
     })
     .sort((a, b) => b.edge - a.edge);
+  // Guldkortet går bara till den boost som ger mest värde för oddset (och bara om den har värde).
+  const best = boosts[0]?.edge > 0 ? boosts[0] : null;
 
   $('#main').innerHTML = `
     <section class="calc">
@@ -149,7 +171,8 @@ async function render() {
 
     <section class="sec">
       <div class="sec-head"><h2>Aktuella boostar</h2><span>${boosts.length ? 'Bäst värde först' : ''}</span></div>
-      ${boosts.length ? `<div class="cgrid">${boosts.map(boostCard).join('')}</div>`
+      ${best ? bestBoostHtml(best) : ''}
+      ${boosts.length ? `<div class="cgrid">${(best ? boosts.slice(1) : boosts).map(boostCard).join('')}</div>`
         : `<div class="locked"><b>Inga boostar inlagda</b><span>Ser du en boost hos ${BOOKS.slice(0, 3).join(', ')} eller något annat bolag? Testa den i kalkylatorn ovan, eller be Claude lägga in den i listan så att kompisarna ser den också.</span></div>`}
     </section>`;
 
