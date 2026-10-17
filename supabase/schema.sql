@@ -332,3 +332,16 @@ end $$;
 
 revoke all on function public.activate_test_subscription(), public.cancel_test_subscription() from public;
 grant execute on function public.activate_test_subscription(), public.cancel_test_subscription() to authenticated;
+
+-- ---------- Gratis medlemskap (kompisar som inte ska betala, men inte är ägare) ----------
+alter table public.subscriptions drop constraint if exists subscriptions_status_check;
+alter table public.subscriptions add constraint subscriptions_status_check
+  check (status in ('active', 'trialing', 'past_due', 'canceled', 'incomplete', 'owner', 'free'));
+create or replace function public.is_premium() returns boolean
+language sql security definer set search_path = '' stable as $$
+  select exists (select 1 from public.subscriptions s where s.user_id = auth.uid()
+    and (s.status in ('owner', 'free') or (s.status in ('active', 'trialing', 'past_due') and (s.current_period_end is null or s.current_period_end > now() - interval '3 days'))));
+$$;
+-- Ge någon gratis medlemskap (byt användarnamnet):
+-- insert into public.subscriptions (user_id, status) select id, 'free' from public.profiles where lower(username) = lower('Freddie')
+-- on conflict (user_id) do update set status = 'free', current_period_end = null, updated_at = now();
