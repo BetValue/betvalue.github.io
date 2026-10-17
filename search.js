@@ -38,8 +38,9 @@ function loadPlayers() {
   return SEARCH.players;
 }
 
-// 3 = namnet börjar med sökningen, 2 = något ord gör det, 1 = finns någonstans.
+// 4 = ett helt ord är exakt sökningen, 3 = namnet börjar med den, 2 = något ord gör det, 1 = finns någonstans.
 function score(k, q) {
+  if (k.split(/[s-]+/).includes(q)) return 4;
   if (k.startsWith(q)) return 3;
   if (k.split(/[\s-]+/).some(w => w.startsWith(q))) return 2;
   return k.includes(q) ? 1 : 0;
