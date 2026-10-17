@@ -109,6 +109,7 @@ function boostCard(b, i) {
 }
 
 async function render() {
+  if (!(await requireLogin('Logga in för att se boostarna', 'Boost-kalkylatorn och de rekommenderade boostarna är bara för inloggade.'))) return;
   let boosts = [];
   try {
     const res = await fetch('data/boosts.json?t=' + Date.now());

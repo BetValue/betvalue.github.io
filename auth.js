@@ -172,6 +172,27 @@ new MutationObserver(() => {
   requestAnimationFrame(() => { syncQueued = false; syncSaveButtons(document); syncFavButtons(document); });
 }).observe(document.documentElement, { childList: true, subtree: true });
 
+// ---------- Sidor som kräver inloggning ----------
+
+// Visar en "logga in"-ruta i stället för sidans innehåll om man inte är inloggad.
+// Returnerar true om sidan får visas.
+async function requireLogin(title, text) {
+  await AUTH.ready;
+  if (AUTH.user) return true;
+  const days = document.getElementById('days');
+  if (days) days.innerHTML = '';
+  $('#main').innerHTML = `<div class="locked gate">
+    <span class="gate-lock">🔒</span>
+    <b>${esc(title)}</b>
+    <span>${esc(text)}</span>
+    <div class="gate-btns">
+      <a class="btn-gold" href="konto.html?next=${encodeURIComponent(location.pathname)}">Logga in</a>
+      <a class="btn-ghost" href="konto.html?next=${encodeURIComponent(location.pathname)}">Skapa konto</a>
+    </div>
+  </div>`;
+  return false;
+}
+
 // ---------- Delade boostar ----------
 
 async function sharedBoosts() {

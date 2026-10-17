@@ -830,3 +830,11 @@ footer p { margin: 4px auto; max-width: 70ch; }
   .msg { max-width: 88%; }
   .composer .share-btn { padding: 0 10px; }
 }
+
+/* Inloggningsspärr */
+.locked.gate { gap: 12px; padding: 48px 20px; border-style: solid; border-color: rgba(255, 207, 74, .3);
+  background: linear-gradient(160deg, var(--gold-soft), transparent 60%), var(--night-2); }
+.gate-lock { font-size: 34px; }
+.gate-btns { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 6px; }
+.gate-btns .btn-gold { width: auto; padding: 14px 28px; text-decoration: none; }
+.gate-btns .btn-ghost { display: inline-flex; align-items: center; text-decoration: none; }

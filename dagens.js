@@ -108,7 +108,8 @@ function builderCard(b, i) {
   </div>`;
 }
 
-function render() {
+async function render() {
+  if (!(await requireLogin('Logga in för att se Dagens värde', 'Dagens bästa bet, enskilda spel, bet builders och målskyttar är bara för inloggade.'))) return;
   const days = upcomingDays();
   if (!days.includes(dstate.day)) dstate.day = days[0] ?? null;
   $('#days').innerHTML = days.map(d => {
@@ -160,4 +161,5 @@ document.addEventListener('click', e => {
   render();
 });
 
+document.addEventListener('auth:changed', () => render());
 boot('dagens', render);
