@@ -73,7 +73,7 @@ async function runSearch(text) {
       return `<button class="sr" data-sr="${i}">${crest(r.t)}<span class="sr-main"><b>${esc(r.t.name)}</b><small>Klubb · ${esc(r.t.comp.name)}</small></span><i>→</i></button>`;
     }
     return `<button class="sr" data-sr="${i}">${r.team ? crest(r.team) : '<span class="crest blank"></span>'}
-      <span class="sr-main"><b>${esc(r.p.n)}</b><small>${esc([POS_NAME[r.p.p] ?? r.p.p, r.team?.short, r.p.j && '#' + r.p.j].filter(Boolean).join(' · '))}</small></span><i>→</i></button>`;
+      <span class="sr-main"><b>${esc(r.p.n)}</b><small>${esc([POS_NAME[r.p.p] ?? r.p.p, r.team?.short && (['EC', 'WC'].includes(r.p.c) ? r.team.short + ' (landslag)' : r.team.short), r.p.j && '#' + r.p.j].filter(Boolean).join(' · '))}</small></span><i>→</i></button>`;
   };
   list.innerHTML = (clubs.length ? `<span class="label">Klubbar</span>${SEARCH.results.filter(r => r.type === 'club').map(row).join('')}` : '')
     + (players.length ? `<span class="label">Spelare</span>${SEARCH.results.filter(r => r.type === 'player').map(row).join('')}` : '');

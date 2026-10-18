@@ -347,7 +347,13 @@ async function playerHtml(id, slug, teamName) {
     getJson(`${ESPN_WEB}${slug}/athletes/${id}/gamelog`).catch(() => null),
   ]);
   const a = ath.athlete;
-  const team = await findTeam(slug, teamName);
+  let team = await findTeam(slug, teamName);
+  // Hittades spelaren bara via ett landslag (han spelar i en liga vi inte har, t.ex. Turkiet)
+  // visas hans riktiga klubb från ESPN i stället för landslaget.
+  const national = /fifa|uefa\.(euro|nations)/.test(slug);
+  if ((national || !team) && a.team?.displayName) {
+    team = { displayName: a.team.displayName, color: a.team.color ?? team?.color, logos: a.team.logos?.length ? a.team.logos : (a.team.logo ? [{ href: a.team.logo }] : []) };
+  }
   const color = team?.color, ink = inkFor(color);
 
   // Match för match (alla turneringar den här säsongen).

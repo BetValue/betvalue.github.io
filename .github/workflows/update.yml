@@ -21,8 +21,8 @@ jobs:
   update:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
       - name: Hämta statistik och odds
@@ -36,4 +36,11 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
           git add data
-          git diff --cached --quiet || (git commit -m "Uppdatera data" && git push)
+          git diff --cached --quiet && exit 0
+          git commit -m "Uppdatera data"
+          # Om någon hunnit ladda upp kod under tiden: hämta det senaste och försök igen.
+          for i in 1 2 3; do
+            git push && exit 0
+            git pull --rebase --no-edit || exit 1
+          done
+          exit 1
