@@ -96,7 +96,9 @@ export async function addGoals(competitions) {
   for (const c of competitions) {
     const slug = c.espn?.slug;
     if (!slug) continue;
-    const need = c.matches.filter(m => m.status === 'FINISHED' && m.score && !cache[m.id]);
+    // Spelade matcher, och matcher som borde vara slut men som football-data inte hunnit uppdatera.
+    const late = m => !m.score && ['SCHEDULED', 'TIMED', 'IN_PLAY', 'PAUSED'].includes(m.status) && Date.parse(m.utc) < now - 2.5 * 36e5;
+    const need = c.matches.filter(m => (!cache[m.id] || late(m) && !cache[m.id].score) && (m.status === 'FINISHED' && m.score || late(m)));
     const days = [...new Set(need.flatMap(m => [ymd(Date.parse(m.utc)), ymd(Date.parse(m.utc) - 864e5)]))];
     for (const day of days) {
       let sb;
@@ -110,11 +112,12 @@ export async function addGoals(competitions) {
         const comp = ev.competitions?.[0];
         if (comp?.status?.type?.state !== 'post') continue;
         const home = comp.competitors.find(x => x.homeAway === 'home'), away = comp.competitors.find(x => x.homeAway === 'away');
-        const m = need.find(x => !cache[x.id] && c.espn.teams[x.home.id]?.id === String(home?.team?.id) && c.espn.teams[x.away.id]?.id === String(away?.team?.id)
+        const m = need.find(x => !cache[x.id]?.score && c.espn.teams[x.home.id]?.id === String(home?.team?.id) && c.espn.teams[x.away.id]?.id === String(away?.team?.id)
           && Math.abs(Date.parse(ev.date) - Date.parse(x.utc)) < 6 * 36e5);
         if (!m) continue;
         cache[m.id] = {
           until: m.utc,
+          score: { h: Number(home.score) || 0, a: Number(away.score) || 0 },
           goals: (comp.details ?? []).filter(d => d.scoringPlay).map(d => ({
             side: String(d.team?.id) === String(home.team.id) ? 'home' : 'away',
             name: d.athletesInvolved?.[0]?.displayName ?? null, og: !!d.ownGoal, min: d.clock?.displayValue ?? null,
@@ -124,7 +127,13 @@ export async function addGoals(competitions) {
     }
   }
   for (const [id, v] of Object.entries(cache)) if (Date.parse(v.until) < now - KEEP_DAYS * 864e5) delete cache[id];
-  for (const c of competitions) for (const m of c.matches) if (cache[m.id]) m.goals = cache[m.id].goals;
+  for (const c of competitions) for (const m of c.matches) {
+    const g = cache[m.id];
+    if (!g) continue;
+    m.goals = g.goals;
+    // football-data släpar ibland efter: ESPN säger att matchen är slut.
+    if (m.status !== 'FINISHED' && g.score) { m.status = 'FINISHED'; m.score = g.score; m.values = []; }
+  }
   await writeFile(new URL('goals.json', DATA), JSON.stringify(cache));
   console.log(`Målskyttar: ${fetched} ESPN-anrop, ${Object.keys(cache).length} matcher sparade`);
   return cache;
@@ -141,7 +150,7 @@ export async function updateTrack(competitions, goals = {}) {
 
   // Nya tips: för matcher som ännu inte börjat men börjar snart. Tips för matcher som inte
   // har börjat byts ut mot dagens aktuella urval varje körning.
-  const upcoming = all.filter(m => UPCOMING.has(m.status) && (m.model || m.values?.length));
+  const upcoming = all.filter(m => UPCOMING.has(m.status) && Date.parse(m.utc) > now && (m.model || m.values?.length));
   const days = [...new Set(upcoming.filter(m => Date.parse(m.utc) - now < LOCK_HOURS * 36e5).map(m => dayKey(m.utc)))];
   let picks = track.picks.filter(p => started(p) || !days.includes(p.day));
 
