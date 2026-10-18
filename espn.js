@@ -381,7 +381,7 @@ async function matchPlayerHtml(slug, evId, athleteId, teamName) {
 
   return `<div class="mp">
     <div class="mp-head" style="--kit:${color}">
-      ${photo ? `<img class="mp-photo" src="${esc(photo.src)}" alt="">` : `<span class="kit mp-kit" style="--kit:${color};--ink:${inkFor(team.color)}">${esc(entry.jersey ?? '')}</span>`}
+      ${photo ? `<img class="mp-photo" ${photoAttrs(photo.src, 110)} data-zoom="${esc(photo.src)}" title="Tryck för full storlek" alt="${esc(a.displayName)}">` : `<span class="kit mp-kit" style="--kit:${color};--ink:${inkFor(team.color)}">${esc(entry.jersey ?? '')}</span>`}
       <div class="mp-who">
         <span class="label">${live ? '<span class="mp-live">● Live ' + esc(clockNow) + '</span>' : 'Matchen är slut'}</span>
         <h2>${esc(a.displayName)}</h2>
@@ -429,6 +429,38 @@ function cm(display) {
 // fotbollsspelare med samma namn – och samma födelseår om Wikipedia anger ett – så att
 // vi inte visar fel person. Tar det för lång tid visas profilen utan bild.
 // Färdig bildlista från datahämtningen (scripts/photos.mjs), laddas en gång per besök.
+// Wikimedia skalar ner bilder mycket skarpare än webbläsaren. Därför får webbläsaren välja en
+// färdig version nära den storlek som visas (srcset), i stället för att själv krympa 960 px till
+// 150 px – det blev suddigt. Tryck på bilden → full storlek (photoZoom).
+const WM_THUMB = /^(https:\/\/[^/]*wikimedia\.org\/.+\/thumb\/.+?)\/\d+px-([^/?]+)(?:\?.*)?$/;
+const wmSized = (url, w) => { const m = WM_THUMB.exec(url ?? ''); return m ? `${m[1]}/${w}px-${m[2]}` : url; };
+function photoAttrs(url, cssWidth) {
+  if (!WM_THUMB.test(url ?? '')) return `src="${esc(url)}"`;
+  // Bilden fyller en ruta (object-fit: cover), så den behöver vara lite bredare än rutan.
+  const set = [120, 250, 330, 500, 960, 1280].map(w => `${esc(wmSized(url, w))} ${w}w`).join(', ');
+  return `src="${esc(wmSized(url, 500))}" srcset="${set}" sizes="${Math.round(cssWidth * 1.5)}px" decoding="async"`;
+}
+
+function photoZoom(url, name) {
+  if (!url) return;
+  document.getElementById('photo-zoom')?.remove();
+  const big = wmSized(url, 1280);
+  document.body.insertAdjacentHTML('beforeend', `<div class="photo-zoom" id="photo-zoom" role="dialog" aria-modal="true" aria-label="${esc(name)}">
+    <img src="${esc(big)}" alt="${esc(name)}" onerror="if(this.src!=='${esc(url)}')this.src='${esc(url)}'">
+    <button class="photo-zoom-x" aria-label="Stäng">✕</button></div>`);
+  const box = document.getElementById('photo-zoom');
+  const close = () => { box.remove(); document.removeEventListener('keydown', onKey, true); };
+  const onKey = e => { if (e.key === 'Escape') { e.stopPropagation(); close(); } };
+  box.addEventListener('click', close);
+  document.addEventListener('keydown', onKey, true);
+}
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-zoom]');
+  if (!t) return;
+  e.stopPropagation();
+  photoZoom(t.dataset.zoom, t.getAttribute('alt') ?? '');
+}, true);
+
 let photoIndex = null;
 function loadPhotoIndex() {
   photoIndex ??= fetch('data/photos.json?d=' + new Date().toISOString().slice(0, 10))
@@ -506,7 +538,7 @@ async function playerHtml(id, slug, teamName) {
 
   return `<div class="phead" style="--kit:${hex(color) ?? '#3ddc84'};--ink:${ink}">
       <div class="ph-photo">${photo
-        ? `<img src="${esc(photo.src)}" alt="${esc(a.displayName)}" onerror="this.parentNode.classList.add('nophoto');this.remove()"><span class="ph-no">${esc(a.jersey ?? initials(a.displayName))}</span>`
+        ? `<img ${photoAttrs(photo.src, 190)} data-zoom="${esc(photo.src)}" title="Tryck för full storlek" alt="${esc(a.displayName)}" onerror="this.parentNode.classList.add('nophoto');this.remove()"><span class="ph-no">${esc(a.jersey ?? initials(a.displayName))}</span>`
         : `<span class="ph-no">${esc(a.jersey ?? initials(a.displayName))}</span>`}</div>
       <div class="ph-main">
         <span class="label">${esc(POS_SV[a.position?.displayName] ?? a.position?.displayName ?? 'Spelare')}${team ? ' · ' + esc(team.displayName) : ''}</span>

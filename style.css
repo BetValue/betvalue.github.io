@@ -509,7 +509,7 @@ footer p { margin: 4px auto; max-width: 70ch; }
   margin: -6px 0 14px; padding: 20px 20px 0; border-radius: 24px; color: var(--ink);
   background: radial-gradient(120% 120% at 100% 0%, rgba(255, 255, 255, .18), transparent 55%), linear-gradient(135deg, var(--kit), color-mix(in srgb, var(--kit) 40%, #06110c) 75%); }
 .phead::after { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(115deg, transparent 0 20px, rgba(255, 255, 255, .05) 20px 21px); pointer-events: none; }
-.ph-photo { position: relative; z-index: 1; align-self: end; width: 150px; height: 186px; border-radius: 18px 18px 0 0; overflow: hidden;
+.ph-photo { position: relative; z-index: 1; align-self: end; width: 190px; height: 236px; border-radius: 18px 18px 0 0; overflow: hidden;
   background: rgba(0, 0, 0, .2); box-shadow: 0 -2px 0 rgba(255, 255, 255, .3) inset; }
 .ph-photo img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 18%; image-rendering: auto; }
 .ph-photo .ph-no { display: none; }
@@ -527,13 +527,13 @@ footer p { margin: 4px auto; max-width: 70ch; }
 .ph-key div:nth-child(-n+2) b { color: var(--gold); }
 .ph-key small { margin-top: 4px; font-size: 11px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
 .ph-key em { font-style: normal; font-size: 11px; color: var(--muted); }
-.ph-credit { position: absolute; z-index: 2; left: 24px; top: 168px; font-size: 9px; color: rgba(255, 255, 255, .7); text-decoration: none; text-shadow: 0 1px 2px #000; }
+.ph-credit { position: absolute; z-index: 2; left: 24px; top: 218px; font-size: 9px; color: rgba(255, 255, 255, .7); text-decoration: none; text-shadow: 0 1px 2px #000; }
 @media (max-width: 560px) {
   .phead { grid-template-columns: auto minmax(0, 1fr); padding: 16px 16px 0; }
-  .ph-photo { width: 96px; height: 120px; }
+  .ph-photo { width: 116px; height: 146px; }
   .ph-logo { display: none; }
   .ph-key { margin: 0 -16px; }
-  .ph-credit { top: 124px; left: 20px; }
+  .ph-credit { top: 150px; left: 20px; }
 }
 /* Tydliga statistikrutor i spelarprofilen */
 .stgroup + .stgroup { margin-top: 14px; }
@@ -1012,3 +1012,9 @@ footer p { margin: 4px auto; max-width: 70ch; }
 .mp-evs div { display: flex; align-items: center; gap: 10px; font-size: 14px; }
 .mp-full { justify-self: start; }
 @media (max-width: 480px) { .mp-photo { width: 78px; height: 98px; } .mp-who h2 { font-size: 24px; } }
+
+/* Spelarbild i full storlek */
+[data-zoom] { cursor: zoom-in; }
+.photo-zoom { position: fixed; inset: 0; z-index: 200; display: grid; place-items: center; padding: 24px 16px; background: rgba(2, 8, 5, .92); cursor: zoom-out; animation: fade .2s both; }
+.photo-zoom img { max-width: min(100%, 900px); max-height: 100%; object-fit: contain; border-radius: 16px; box-shadow: 0 20px 60px rgba(0, 0, 0, .6); }
+.photo-zoom-x { position: absolute; top: 14px; right: 14px; width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--glass-2); background: var(--glass-2); color: var(--chalk); font-size: 18px; cursor: pointer; }
