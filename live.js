@@ -56,6 +56,12 @@ async function liveTick() {
         const orig = m.comp.matches.find(x => x.id === m.id);
         const score = { h: Number(home.score) || 0, a: Number(away.score) || 0 };
         const minute = status === 'PAUSED' ? 'Paus' : status === 'IN_PLAY' ? (ev.status?.displayClock ?? comp.status?.displayClock ?? '') : null;
+        // Målskyttar (för rättning av målskyttebets).
+        const goals = (comp.details ?? []).filter(d => d.scoringPlay).map(d => ({
+          side: String(d.team?.id) === String(home.team?.id) ? 'home' : 'away',
+          name: d.athletesInvolved?.[0]?.displayName ?? null, og: !!d.ownGoal, min: d.clock?.displayValue ?? null,
+        }));
+        if (goals.length || !orig.goals) orig.goals = goals;
         const bigChange = orig.status !== status || orig.score?.h !== score.h || orig.score?.a !== score.a;
         if (bigChange || orig.minute !== minute) {
           Object.assign(orig, { status, score, minute, liveFromEspn: true });

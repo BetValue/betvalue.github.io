@@ -145,17 +145,21 @@ function lines(starters, formation) {
   return out.filter(Boolean).map(l => l.sort((a, b) => sideOf(a.position?.abbreviation) - sideOf(b.position?.abbreviation)));
 }
 
-function dot(p, team, slug, x, y) {
+// Med evId (matchen pågår eller är spelad) öppnar ett tryck spelarens statistik i just den matchen.
+const playerAttrs = (p, team, slug, evId) =>
+  `data-player="${p.athlete.id}" data-slug="${slug}" data-pteam="${esc(team.displayName)}"${evId ? ` data-mevent="${evId}"` : ''}`;
+
+function dot(p, team, slug, x, y, evId) {
   const s = statMap(p.stats);
   const name = p.athlete.lastName || p.athlete.shortName || p.athlete.displayName;
   const marks = `${'<i class="m-goal">⚽</i>'.repeat(Math.min(s.totalGoals || 0, 3))}${s.yellowCards ? '<i class="m-yc"></i>' : ''}${s.redCards ? '<i class="m-rc"></i>' : ''}${p.subbedOut ? '<i class="m-sub">▼</i>' : ''}`;
   return `<button class="pdot" style="left:${x}%;top:${y}%;--kit:${hex(team.color) ?? '#3ddc84'};--ink:${inkFor(team.color)}"
-    data-player="${p.athlete.id}" data-slug="${slug}" data-pteam="${esc(team.displayName)}">
+    ${playerAttrs(p, team, slug, evId)}>
     <span class="kit">${esc(p.jersey ?? '')}</span>${marks ? `<span class="marks">${marks}</span>` : ''}
     <span class="pname">${esc(name)}</span></button>`;
 }
 
-function pitchHtml(rosters, slug) {
+function pitchHtml(rosters, slug, evId = null) {
   const home = rosters.find(r => r.homeAway === 'home') ?? rosters[0];
   const away = rosters.find(r => r.homeAway === 'away') ?? rosters[1];
   let dots = '';
@@ -165,12 +169,12 @@ function pitchHtml(rosters, slug) {
       const step = 36 / Math.max(ls.length - 1, 1);
       const y = isHome ? 93 - k * step : 7 + k * step;
       const ordered = isHome ? line : line.slice().reverse();
-      ordered.forEach((p, i) => { dots += dot(p, r.team, slug, ((i + 1) / (ordered.length + 1)) * 100, y); });
+      ordered.forEach((p, i) => { dots += dot(p, r.team, slug, ((i + 1) / (ordered.length + 1)) * 100, y, evId); });
     });
   }
   const bench = r => r.roster.filter(p => !p.starter);
   const benchList = r => `<div class="bench"><div class="bench-head">${r.team.logo ? `<img src="${esc(r.team.logo)}" alt="">` : ''}<b>${esc(r.team.shortDisplayName ?? r.team.displayName)}</b><small>${esc(r.formation ?? '')}</small></div>
-    ${bench(r).map(p => `<button class="bench-p" data-player="${p.athlete.id}" data-slug="${slug}" data-pteam="${esc(r.team.displayName)}">
+    ${bench(r).map(p => `<button class="bench-p" ${playerAttrs(p, r.team, slug, evId)}>
       <span class="kit sm" style="--kit:${hex(r.team.color) ?? '#3ddc84'};--ink:${inkFor(r.team.color)}">${esc(p.jersey ?? '')}</span>
       <span>${esc(p.athlete.displayName)}</span>${p.subbedIn ? '<em>▲ in</em>' : ''}</button>`).join('')}</div>`;
   return `<div class="pitchwrap">
@@ -290,13 +294,101 @@ async function loadMatchExtras(m, root) {
     const events = matchEvents(sum);
     const scorersSlot = root.querySelector('#board-scorers');
     if (scorersSlot) scorersSlot.innerHTML = scorersHtml(events);
+    const state = sum.header?.competitions?.[0]?.status?.type?.state;
+    const inMatch = !note && (state === 'in' || state === 'post') ? ev.id : null;
     slot.innerHTML = eventsHtml(events) + matchStatsHtml(sum) + (rosters.length === 2
-      ? `<div class="box"><span class="label">Startelvor</span>${note}${pitchHtml(rosters, ev.slug)}<p class="note">Tryck på en spelare för all statistik.</p></div>`
+      ? `<div class="box"><span class="label">Startelvor</span>${note}${pitchHtml(rosters, ev.slug, inMatch)}<p class="note">${inMatch
+        ? `Tryck på en spelare för hens statistik i matchen${state === 'in' ? ' (uppdateras live)' : ''}: skott, mål, assist, fouls med mera.`
+        : 'Tryck på en spelare för all statistik.'}</p></div>`
       : `<div class="box"><span class="label">Startelvor</span><p class="note">Startelvorna släpps ungefär en timme före avspark.</p></div>`);
   } catch (err) {
     console.warn("ESPN:", err);
     if (slot.isConnected) slot.innerHTML = '<div class="box"><span class="label">Startelvor</span><p class="note">Kunde inte hämta startelvor just nu.</p></div>';
   }
+}
+
+// ---------- En spelares statistik i en match ----------
+
+const MATCH_STATS = [
+  ['totalGoals', 'Mål'], ['goalAssists', 'Assist'], ['totalShots', 'Skott'], ['shotsOnTarget', 'Skott på mål'],
+  ['foulsCommitted', 'Fouls'], ['foulsSuffered', 'Fouls mot'], ['offsides', 'Offside'],
+  ['yellowCards', 'Gula kort'], ['redCards', 'Röda kort'], ['ownGoals', 'Självmål', true],
+];
+const KEEPER_STATS = [['saves', 'Räddningar'], ['goalsConceded', 'Insläppta mål'], ['shotsFaced', 'Skott mot']];
+// "67'" → 67, "90'+4'" → 94
+const minuteOf = s => { const m = /(\d+)'?(?:\s*\+\s*(\d+))?/.exec(s ?? ''); return m ? Number(m[1]) + Number(m[2] ?? 0) : null; };
+
+async function matchPlayerHtml(slug, evId, athleteId, teamName) {
+  // Ny hämtning högst var 30:e sekund, så att siffrorna följer med under matchen.
+  const sum = await getJson(`${ESPN}${slug}/summary?event=${evId}&_=${Math.floor(Date.now() / 3e4)}`);
+  let entry = null, side = null;
+  for (const r of sum.rosters ?? []) {
+    const p = r.roster?.find(x => String(x.athlete?.id) === String(athleteId));
+    if (p) { entry = p; side = r; break; }
+  }
+  if (!entry) return playerHtml(athleteId, slug, teamName);
+  const a = entry.athlete, team = side.team, s = statMap(entry.stats);
+  const comp = sum.header?.competitions?.[0];
+  const live = comp?.status?.type?.state === 'in';
+  const clockNow = comp?.status?.displayClock ?? '';
+  const home = comp?.competitors?.find(c => c.homeAway === 'home'), away = comp?.competitors?.find(c => c.homeAway === 'away');
+  const events = matchEvents(sum);
+  const same = n => !!n && nameSim(n, a.displayName) >= 0.8;
+
+  // Speltid: från avspark (eller inbytet) till utbytet/utvisningen (eller nu / slutsignalen).
+  const now = live ? (minuteOf(clockNow) ?? 0) : 90;
+  const subIn = events.find(e => e.kind === 'sub' && same(e.who[0]));
+  const subOut = events.find(e => e.kind === 'sub' && same(e.who[1]));
+  const red = events.find(e => e.kind === 'red' && same(e.who[0]));
+  const from = entry.starter ? 0 : subIn ? minuteOf(subIn.minute) : null;
+  const to = subOut ? minuteOf(subOut.minute) : red ? minuteOf(red.minute) : now;
+  const mins = from == null ? null : Math.max(0, Math.min(to, 90) - Math.min(from, 90)) || (to > from ? 1 : 0);
+  const played = entry.starter || from != null || entry.subbedIn;
+
+  // Spelarens händelser: mål, assist, kort, byten.
+  const mine = events.filter(e => e.kind !== 'ht' && (same(e.who[0]) || ((e.kind === 'goal' || e.kind === 'sub') && same(e.who[1]))));
+  const evText = e => {
+    if (e.kind === 'goal' && !same(e.who[0])) return ['👟', 'Assist' + (e.who[0] ? ' till ' + e.who[0] : '')];
+    if (e.kind === 'sub') return same(e.who[0]) ? ['▲', 'Inbytt' + (e.who[1] ? ' mot ' + e.who[1] : '')] : ['▼', 'Utbytt'];
+    return {
+      goal: ['⚽', 'Mål'], pen: ['⚽', 'Straffmål'], og: ['⚽', 'Självmål'], penmiss: ['✖', 'Missad straff'],
+      yellow: ['<i class="card y"></i>', 'Gult kort'], red: ['<i class="card r"></i>', 'Rött kort'],
+    }[e.kind] ?? ['', e.kind];
+  };
+
+  const keeper = entry.position?.abbreviation === 'G';
+  const rows = [...(keeper ? KEEPER_STATS : []), ...MATCH_STATS].filter(([k, , onlyIfAny]) => k in s && (!onlyIfAny || s[k]));
+  const photo = await playerPhoto(a).catch(() => null);
+  const color = hex(team.color) ?? '#3ddc84';
+  const tname = t => esc(t?.team?.shortDisplayName ?? t?.team?.displayName ?? '');
+  const when = entry.starter ? 'Startade' : 'Inbytt' + (subIn ? ' ' + esc(subIn.minute) : '');
+  const end = subOut ? ' · utbytt ' + esc(subOut.minute) : red ? ' · utvisad ' + esc(red.minute) : live ? ' · på planen nu' : '';
+
+  return `<div class="mp">
+    <div class="mp-head" style="--kit:${color}">
+      ${photo ? `<img class="mp-photo" src="${esc(photo.src)}" alt="">` : `<span class="kit mp-kit" style="--kit:${color};--ink:${inkFor(team.color)}">${esc(entry.jersey ?? '')}</span>`}
+      <div class="mp-who">
+        <span class="label">${live ? '<span class="mp-live">● Live ' + esc(clockNow) + '</span>' : 'Matchen är slut'}</span>
+        <h2>${esc(a.displayName)}</h2>
+        <small>${team.logo ? `<img src="${esc(team.logo)}" alt="">` : ''}${esc(team.displayName)}${entry.position?.displayName ? ' · ' + esc(entry.position.displayName) : ''}${entry.jersey ? ' · #' + esc(entry.jersey) : ''}</small>
+        <div class="mp-score">${tname(home)} <b>${esc(home?.score ?? '0')}–${esc(away?.score ?? '0')}</b> ${tname(away)}</div>
+      </div>
+    </div>
+    ${played
+      ? `<div class="mp-mins"><b>${mins ?? '–'}'</b><span>${when}${end}</span></div>
+         <div class="mp-grid">${rows.map(([k, label]) => `<div class="${s[k] ? 'nz' : ''}${(k === 'redCards' || k === 'ownGoals') && s[k] ? ' bad' : ''}"><b>${s[k]}</b><small>${label}</small></div>`).join('')}</div>`
+      : '<p class="note">Satt på bänken och har inte spelat i matchen.</p>'}
+    ${mine.length ? `<div class="box"><span class="label">I matchen</span><div class="mp-evs">${mine.map(e => {
+      const [ic, t] = evText(e);
+      return `<div><span class="ev-min">${esc(e.minute)}</span><span class="ev-ic">${ic}</span><span>${esc(t)}</span></div>`;
+    }).join('')}</div></div>` : ''}
+    ${live ? '<p class="note">Siffrorna hämtas på nytt var 30:e sekund – öppna spelaren igen för senaste läget.</p>' : ''}
+    <button class="btn-ghost mp-full" data-player="${a.id}" data-slug="${slug}" data-pteam="${esc(team.displayName)}">Hela profilen och säsongen →</button>
+  </div>`;
+}
+
+function openMatchPlayer(slug, evId, athleteId, teamName) {
+  pushSheet(async () => matchPlayerHtml(slug, evId, athleteId, teamName));
 }
 
 // ---------- Spelarprofil ----------
@@ -549,7 +641,8 @@ document.addEventListener('click', e => {
   const t = e.target.closest('[data-player],[data-pname],[data-cteam]');
   if (!t) return;
   e.stopPropagation();
-  if (t.dataset.player) openPlayer(t.dataset.player, t.dataset.slug, t.dataset.pteam);
+  if (t.dataset.mevent) openMatchPlayer(t.dataset.slug, t.dataset.mevent, t.dataset.player, t.dataset.pteam);
+  else if (t.dataset.player) openPlayer(t.dataset.player, t.dataset.slug, t.dataset.pteam);
   else if (t.dataset.pname) openPlayerByName(t.dataset.pcomp, t.dataset.pteamname, t.dataset.pname);
   else openClub(t.dataset.ccomp, t.dataset.cteam ? Number(t.dataset.cteam) || null : null, t.dataset.cname);
 }, true);

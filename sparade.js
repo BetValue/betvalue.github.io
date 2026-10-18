@@ -8,7 +8,7 @@ async function savedBetsHtml() {
   const { data: rows } = await sb.from('saved_bets').select('*').order('kickoff', { ascending: false }).limit(200);
   const bets = (rows ?? []).map(r => {
     const m = findMatch(r.match_id);
-    const res = r.result ?? betResult(m, r.pick);
+    const res = r.result ?? betResult(m, r.pick, r.label);
     if (!r.result && (res === 'won' || res === 'lost')) sb.from('saved_bets').update({ result: res }).eq('id', r.id).then(() => {});
     return { ...r, m, res };
   });
@@ -72,5 +72,6 @@ document.addEventListener('click', async e => {
   render();
 }, true);
 document.addEventListener('auth:changed', () => render());
+document.addEventListener('live:update', e => { if (e.detail?.some(c => c.bigChange)) render(); });
 
 boot('sparade', render).then(startLive);

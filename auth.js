@@ -208,7 +208,8 @@ async function requirePremium(title, text) {
     <b>Slutför betalningen</b>
     <span>Ditt konto är skapat men inte betalt än. Betala 9 kr/mån så låses allt upp direkt.</span>
     <div class="gate-btns"><a class="btn-gold" href="medlem.html">Slutför betalningen</a></div>
-  </div>`;
+  </div><div class="track-slot" id="track-slot"></div>`;
+  fillTrack('#track-slot');
   return false;
 }
 
@@ -229,7 +230,8 @@ async function requireLogin(title, text) {
       <a class="btn-gold" href="konto.html?tab=signup&next=${encodeURIComponent(location.pathname)}">Skapa konto – 9 kr/mån</a>
       <a class="btn-ghost" href="konto.html?next=${encodeURIComponent(location.pathname)}">Logga in</a>
     </div>
-  </div>`;
+  </div><div class="track-slot" id="track-slot"></div>`;
+  fillTrack('#track-slot');
   return false;
 }
 

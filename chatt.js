@@ -74,7 +74,7 @@ function listHtml() {
 
 function betCard(bet) {
   const m = findMatch(bet.match_id);
-  const res = betResult(m, bet.pick);
+  const res = betResult(m, bet.pick, bet.label);
   return `<div class="msg-bet r-${res}" ${m ? `role="button" tabindex="0" data-match="${m.id}"` : ''}>
     <div class="mb-top"><span class="sb-res">${RESULT_SHORT[res] ?? res}</span><small>${esc(bet.comp ?? '')}${bet.kickoff ? ' · ' + esc(dayText(bet.kickoff)) + ' ' + esc(clock(bet.kickoff)) : ''}</small></div>
     <b>${esc(bet.label)}</b>

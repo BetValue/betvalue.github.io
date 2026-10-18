@@ -142,7 +142,7 @@ async function friendBetsHtml(userId) {
   if (!data?.length) return '<p class="note">Inga sparade bets än.</p>';
   return data.map(b => {
     const m = findMatch(b.match_id);
-    const res = b.result ?? betResult(m, b.pick);
+    const res = b.result ?? betResult(m, b.pick, b.label);
     return `<div class="fr-bet r-${res}" ${m ? `role="button" tabindex="0" data-match="${m.id}"` : ''}>
       <span class="sb-res">${RESULT_SHORT[res] ?? res}</span>
       <span class="fb-main"><b>${esc(b.label)}</b><small>${esc(b.match_label)}${b.kickoff ? ' · ' + esc(dayText(b.kickoff)) : ''}</small></span>

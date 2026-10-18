@@ -25,13 +25,14 @@ async function testMode() {
 function signedOutHtml() {
   return `<section class="plan">
     <div class="plan-price"><span class="label">BetValue Medlem</span><b>9 kr</b><small>per månad · avsluta när du vill</small></div>
+    <a class="plan-proof" id="plan-proof" href="#track-slot" hidden></a>
     <p class="plan-lead">Ett konto kostar <b>9 kr i månaden</b> och ger dig <b>allt</b> på BetValue:</p>
     ${perksHtml()}
     <div class="plan-action">
       <a class="btn-gold" href="konto.html?tab=signup&next=${encodeURIComponent(location.pathname)}">Skapa konto – 9 kr/mån</a>
       <a class="linkbtn" href="konto.html?next=${encodeURIComponent(location.pathname)}">Har du redan ett konto? Logga in</a>
     </div>
-  </section>`;
+  </section><div class="track-slot" id="track-slot"></div>`;
 }
 
 function checkoutHtml(test) {
@@ -49,7 +50,7 @@ function checkoutHtml(test) {
     <p class="note" id="pay-msg">${test
       ? 'Det här är en testkassa. Inget kort behövs och inga pengar dras – kontot blir medlem i 30 dagar så att vi kan testa hur allt fungerar.'
       : 'Du skickas till Stripe för att betala säkert med kort.'}</p>
-  </section>`;
+  </section><div class="track-slot" id="track-slot"></div>`;
 }
 
 function memberHtml(test) {
@@ -71,7 +72,7 @@ function memberHtml(test) {
 
 async function render() {
   await AUTH.ready;
-  if (!AUTH.user) { $('#main').innerHTML = signedOutHtml(); return; }
+  if (!AUTH.user) { $('#main').innerHTML = signedOutHtml(); fillTrack('#track-slot'); return; }
   const test = await testMode();
   if (AUTH.premium) {
     $('#main').innerHTML = memberHtml(test);
@@ -84,6 +85,7 @@ async function render() {
     return;
   }
   $('#main').innerHTML = checkoutHtml(test);
+  fillTrack('#track-slot');
   $('#pay').addEventListener('click', async e => {
     const msg = $('#pay-msg');
     if (!$('#age18').checked) { msg.textContent = 'Du måste vara 18 år eller äldre för att bli medlem.'; return; }

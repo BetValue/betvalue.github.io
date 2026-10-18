@@ -12,6 +12,7 @@ import { findEvent, similarity, tokens } from './match.mjs';
 import { teamMarkets, playerMarkets } from './markets.mjs';
 import { buildPlayerIndex } from './players.mjs';
 import { buildPhotos } from './photos.mjs';
+import { addGoals, updateTrack } from './track.mjs';
 
 const FD_KEY = process.env.FOOTBALL_DATA_KEY;
 const ODDS_KEY = process.env.ODDS_API_KEY;
@@ -314,6 +315,19 @@ async function buildCompetition(c, odds, prev) {
       return { ...out, ...analyze(out, out.model, event) };
     });
 
+  // Tipsstatistiken (track.mjs) kan räkna fram gamla tips i efterhand: modellen byggs då bara
+  // av matcher spelade före avspark. Inte uppräknelig, så den skrivs inte till latest.json.
+  Object.defineProperty(base, 'backtest', {
+    value: () => base.matches.filter(m => m.status === 'FINISHED' && m.score).map(m => {
+      const t = Date.parse(m.utc);
+      const pred = predict(buildModel(finished.filter(f => f.time < t - 36e5), t), m.home.id, m.away.id);
+      if (!pred) return null;
+      const { grid, ...rest } = pred;
+      const { home, draw, away, over, under } = rest.p;
+      return { ...m, model: rest, final: { home, draw, away, over, under }, values: [], extras: { ...teamMarkets(grid), players: [] } };
+    }).filter(Boolean),
+  });
+
   const matched = base.matches.filter(m => m.market).length;
   const open = base.matches.filter(m => UPCOMING.has(m.status)).length;
   console.log(`${c.name}: ${base.matches.length} matcher, odds kopplade till ${matched}/${open} kommande (${events.length} odds-event)`);
@@ -396,6 +410,9 @@ async function main() {
   }
 
   if (FD_KEY) await addHeadToHead(competitions);
+  // Före uploadPremium: tipsen räknas ur värdebets/extras som sedan tas bort ur den öppna filen.
+  const goals = await addGoals(competitions).catch(err => { console.warn('Målskyttar:', err.message); return {}; });
+  await updateTrack(competitions, goals).catch(err => console.warn('Tipsstatistik:', err.message));
   if (SB_KEY) await uploadPremium(competitions);
   await buildPlayerIndex(competitions).catch(err => console.warn('Spelarindex:', err.message));
   await buildPhotos().catch(err => console.warn('Spelarbilder:', err.message));

@@ -105,24 +105,14 @@ function marketsFor(m) {
 
 // ---------- Sparade bets ----------
 
-// Vann betet? Samma villkor som scripts/markets.mjs. Spelarspel kan vi inte avgöra (ingen målskyttedata).
-const BET_TESTS = {
-  home: (h, a) => h > a, draw: (h, a) => h === a, away: (h, a) => a > h,
-  over: (h, a) => h + a >= 3, under: (h, a) => h + a <= 2,
-  's:o15': (h, a) => h + a >= 2, 's:u35': (h, a) => h + a <= 3, 's:btts': (h, a) => h > 0 && a > 0,
-  's:hscore': h => h > 0, 's:ascore': (h, a) => a > 0, 's:1x': (h, a) => h >= a, 's:x2': (h, a) => a >= h,
-  'b:1-o15': (h, a) => h > a && h + a >= 2, 'b:1-o25': (h, a) => h > a && h + a >= 3, 'b:1-btts': (h, a) => h > a && a > 0, 'b:1-cs': (h, a) => h > a && a === 0,
-  'b:2-o15': (h, a) => a > h && h + a >= 2, 'b:2-o25': (h, a) => a > h && h + a >= 3, 'b:2-btts': (h, a) => a > h && h > 0, 'b:2-cs': (h, a) => a > h && h === 0,
-  'b:btts-o25': (h, a) => h > 0 && a > 0 && h + a >= 3, 'b:1x-u35': (h, a) => h >= a && h + a <= 3, 'b:x2-u35': (h, a) => a >= h && h + a <= 3, 'b:x-u25': (h, a) => h === a && h + a <= 2,
-};
-
+// Vann betet? Rättningen finns i grade.js (samma kod som tipsstatistiken i fetch.mjs).
+// m.goals (målskyttar) kommer från datahämtningen och live.js; utan dem kan spelarspel inte rättas.
 // 'won' | 'lost' | 'live' | 'open' | 'unknown'
-function betResult(m, key) {
+function betResult(m, key, label = '') {
   if (!m) return 'unknown';
-  if (LIVE.has(m.status)) return 'live';
-  if (m.status !== 'FINISHED' || !m.score) return 'open';
-  const test = BET_TESTS[key];
-  return test ? (test(m.score.h, m.score.a) ? 'won' : 'lost') : 'unknown';
+  const started = LIVE.has(m.status) || m.status === 'FINISHED';
+  if (!started || !m.score && m.status === 'FINISHED') return 'open';
+  return gradeBet(key, label, { started, done: m.status === 'FINISHED', h: m.score?.h ?? 0, a: m.score?.a ?? 0, goals: m.goals ?? null });
 }
 
 // Knapp som sparar betet på kontot (auth.js sköter klicket).
@@ -392,4 +382,56 @@ async function boot(page, start) {
   if (q.get('match')) openMatch(q.get('match'));
   else if (q.get('player') && typeof openPlayer === 'function') openPlayer(q.get('player'), q.get('slug') ?? 'eng.1', q.get('team'));
   else if (q.get('club') && typeof openClub === 'function') openClub(q.get('comp') ?? 'PL', Number(q.get('club')), null);
+}
+
+// ---------- Vår tipsstatistik (öppen för alla) ----------
+// data/track.json byggs av scripts/track.mjs: alla tips från Dagens värde, rättade efter matchen.
+
+const TRACK_KIND = { best: 'Dagens bästa bet', single: 'Enskilda spel', builder: 'Bet builders', scorer: 'Målskyttar' };
+let trackData = null;
+const loadTrack = () => (trackData ??= fetch('data/track.json?t=' + Math.floor(Date.now() / 6e5))
+  .then(r => (r.ok ? r.json() : { picks: [] })).catch(() => ({ picks: [] })));
+
+async function trackHtml(days = 30) {
+  const { picks = [] } = await loadTrack();
+  const since = Date.now() - days * 864e5;
+  const recent = picks.filter(p => Date.parse(p.utc) > since);
+  const done = recent.filter(p => p.result === 'won' || p.result === 'lost');
+  if (!done.length) return '';
+  const won = done.filter(p => p.result === 'won').length;
+  const rate = won / done.length;
+  const expected = done.reduce((s, p) => s + (Number(p.p) || 0), 0) / done.length;
+  const waiting = recent.filter(p => !p.result).length;
+  const kinds = Object.entries(TRACK_KIND).map(([k, name]) => {
+    const list = done.filter(p => p.kind === k);
+    if (!list.length) return '';
+    const w = list.filter(p => p.result === 'won').length;
+    return `<div><small>${esc(name)}</small><b>${w}<i>/${list.length}</i></b></div>`;
+  }).join('');
+  const row = p => `<div class="tr-row r-${p.result}">
+      <span class="tr-mark">${p.result === 'won' ? '✓' : '✗'}</span>
+      <span class="tr-main"><b>${esc(p.label)}</b><small>${esc(p.home)} – ${esc(p.away)}${p.score ? ' · ' + esc(p.score) : ''} · ${esc(dayText(p.utc))}</small></span>
+      <em>${pct(Number(p.p))}</em></div>`;
+  const back = done.some(p => p.back);
+  return `<section class="box track">
+    <span class="label">Så har våra tips gått</span>
+    <div class="tr-big"><b>${won} av ${done.length}</b><span>av våra tips gick in senaste ${days} dagarna</span><em>${Math.round(rate * 100)}%</em></div>
+    <div class="tr-bar" role="img" aria-label="${won} vunna, ${done.length - won} förlorade"><i style="width:${rate * 100}%"></i></div>
+    <div class="tr-legend"><span class="w">✓ ${won} gick in</span><span class="l">✗ ${done.length - won} gick inte in</span><span>Modellen räknade med ${pct(expected)}</span></div>
+    <div class="tr-kinds">${kinds}</div>
+    <div class="tr-list">${done.slice(0, 8).map(row).join('')}</div>
+    ${done.length > 8 ? `<details class="tr-more"><summary class="note">Visa alla ${done.length} avgjorda tips</summary><div class="tr-list">${done.slice(8).map(row).join('')}</div></details>` : ''}
+    <p class="note">Alla tips från Dagens värde räknas – även de som inte gick in. Procenten till höger är modellens chans före matchen.${waiting ? ` ${waiting} tips väntar på matcher som inte är klara.` : ''}${back ? ' Tips före ' + esc(dayText(picks.filter(p => !p.back).map(p => p.utc).sort()[0] ?? new Date().toISOString())) + ' är räknade i efterhand med samma modell, som då bara fick se matcher spelade före avspark.' : ''}</p>
+  </section>`;
+}
+
+// Fyller en plats på sidan med tipsstatistiken (tom om det inte finns några avgjorda tips än).
+async function fillTrack(sel) {
+  const html = await trackHtml();
+  const el = document.querySelector(sel);
+  if (el) el.innerHTML = html;
+  // Kort rad vid priset: "✓ 34 av 56 tips gick in senaste 30 dagarna".
+  const proof = document.getElementById('plan-proof');
+  const big = el?.querySelector('.tr-big b');
+  if (proof && big) { proof.innerHTML = `✓ <b>${big.textContent}</b> av våra tips gick in senaste 30 dagarna (${el.querySelector('.tr-big em').textContent})`; proof.hidden = false; }
 }
