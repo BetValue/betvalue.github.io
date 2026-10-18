@@ -437,3 +437,20 @@ async function fillTrack(sel) {
   const big = el?.querySelector('.tr-big b');
   if (proof && big) { proof.innerHTML = `✓ <b>${big.textContent}</b> av våra tips gick in senaste 30 dagarna (${el.querySelector('.tr-big em').textContent})`; proof.hidden = false; }
 }
+
+// Liten länk vid "skapa konto" och betalningen: de senaste tipsen som prickar + träffprocent.
+// Öppnas i ny flik så att man inte tappar det man fyllt i.
+async function fillTeaser(sel) {
+  const el = document.querySelector(sel);
+  if (!el) return;
+  const { picks = [] } = await loadTrack();
+  const since = Date.now() - 30 * 864e5;
+  const done = picks.filter(p => (p.result === 'won' || p.result === 'lost') && Date.parse(p.utc) > since);
+  if (!done.length) return;
+  const won = done.filter(p => p.result === 'won').length;
+  const dots = done.slice(0, 10).reverse().map(p => `<i class="${p.result === 'won' ? 'w' : 'l'}" title="${esc(p.label)} – ${p.result === 'won' ? 'gick in' : 'gick inte in'}"></i>`).join('');
+  el.innerHTML = `<a class="teaser" href="tips.html" target="_blank" rel="noopener">
+    <span class="teaser-dots" aria-hidden="true">${dots}</span>
+    <span class="teaser-txt"><b>Se hur våra senaste bets har gått</b><small>${won} av ${done.length} gick in senaste 30 dagarna · ${Math.round((won / done.length) * 100)}%</small></span>
+    <span class="teaser-go" aria-hidden="true">→</span></a>`;
+}

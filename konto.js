@@ -67,6 +67,7 @@ function viewSignup() {
       ${errBox}
       <button class="btn-gold" type="submit">Skapa konto och gå till betalning</button>
     </form>
+    <div class="teaser-slot" id="teaser-slot"></div>
     <p class="auth-alt">Steg 1 av 2: välj användarnamn och lösenord. Sedan betalar du 9 kr/mån och har allt.</p>
   </div>`;
 }
@@ -204,6 +205,7 @@ async function render() {
   if (!AUTH.user && kstate.view === 'account') kstate.view = 'login';
   const html = kstate.view === 'signup' ? viewSignup() : kstate.view === 'verify' ? viewVerify() : kstate.view === 'account' ? await viewAccount() : viewLogin();
   $('#main').innerHTML = html;
+  fillTeaser('#teaser-slot');
   wire();
 }
 

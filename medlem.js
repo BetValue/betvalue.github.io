@@ -44,6 +44,7 @@ function checkoutHtml(test) {
       <div class="co-row sub"><span>Varje månad, avsluta när du vill</span><span>moms ingår</span></div>
       <div class="co-row total"><span>Att betala idag</span><b>9,00 kr</b></div>
     </div>
+    <div class="teaser-slot" id="teaser-slot"></div>
     ${perksHtml()}
     <label class="age"><input type="checkbox" id="age18"> Jag är 18 år eller äldre</label>
     <button class="btn-gold" id="pay">${test ? 'Betala 9 kr (test)' : 'Till betalning – 9 kr/mån'}</button>
@@ -85,6 +86,7 @@ async function render() {
     return;
   }
   $('#main').innerHTML = checkoutHtml(test);
+  fillTeaser('#teaser-slot');
   fillTrack('#track-slot');
   $('#pay').addEventListener('click', async e => {
     const msg = $('#pay-msg');
