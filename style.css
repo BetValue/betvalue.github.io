@@ -1019,3 +1019,7 @@ footer p { margin: 4px auto; max-width: 70ch; }
 .photo-zoom img { max-width: min(100%, 900px); max-height: calc(100vh - 48px); max-height: calc(100dvh - 48px); object-fit: contain; border-radius: 16px; box-shadow: 0 20px 60px rgba(0, 0, 0, .6); }
 .photo-zoom-x { position: absolute; top: 14px; right: 14px; width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--glass-2); background: var(--glass-2); color: var(--chalk); font-size: 18px; cursor: pointer; }
 .track-slot.wide { max-width: none; margin-top: 28px; }
+.tr-day { display: flex; justify-content: space-between; align-items: baseline; margin: 10px 0 0; font: 800 18px/1.2 var(--display); text-transform: uppercase; }
+.tr-day small { font: 600 12px var(--body); text-transform: none; color: var(--muted); }
+.tips-periods { margin-bottom: 14px; }
+.tips-periods .day { min-width: 92px; }

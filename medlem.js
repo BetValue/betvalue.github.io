@@ -25,7 +25,7 @@ async function testMode() {
 function signedOutHtml() {
   return `<section class="plan">
     <div class="plan-price"><span class="label">BetValue Medlem</span><b>9 kr</b><small>per månad · avsluta när du vill</small></div>
-    <a class="plan-proof" id="plan-proof" href="#track-slot" hidden></a>
+    <a class="plan-proof" id="plan-proof" href="tips.html" hidden></a>
     <p class="plan-lead">Ett konto kostar <b>9 kr i månaden</b> och ger dig <b>allt</b> på BetValue:</p>
     ${perksHtml()}
     <div class="plan-action">
@@ -75,8 +75,7 @@ async function render() {
   if (!AUTH.user) { $('#main').innerHTML = signedOutHtml(); fillTrack('#track-slot'); return; }
   const test = await testMode();
   if (AUTH.premium) {
-    $('#main').innerHTML = memberHtml(test) + '<div class="track-slot" id="track-slot"></div>';
-    fillTrack('#track-slot');
+    $('#main').innerHTML = memberHtml(test);
     $('#cancel-test')?.addEventListener('click', async e => {
       e.currentTarget.disabled = true;
       await sb.rpc('cancel_test_subscription');

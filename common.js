@@ -392,7 +392,8 @@ let trackData = null;
 const loadTrack = () => (trackData ??= fetch('data/track.json?t=' + Math.floor(Date.now() / 6e5))
   .then(r => (r.ok ? r.json() : { picks: [] })).catch(() => ({ picks: [] })));
 
-async function trackHtml(days = 30) {
+// full = egna sidan (tips.html): alla tips, grupperade per dag. days = Infinity → hela historiken.
+async function trackHtml(days = 30, full = false) {
   const { picks = [] } = await loadTrack();
   const since = Date.now() - days * 864e5;
   const recent = picks.filter(p => Date.parse(p.utc) > since);
@@ -415,12 +416,13 @@ async function trackHtml(days = 30) {
   const back = done.some(p => p.back);
   return `<section class="box track">
     <span class="label">Så har våra tips gått</span>
-    <div class="tr-big"><b>${won} av ${done.length}</b><span>av våra tips gick in senaste ${days} dagarna</span><em>${Math.round(rate * 100)}%</em></div>
+    <div class="tr-big"><b>${won} av ${done.length}</b><span>av våra tips gick in ${days === Infinity ? 'totalt' : `senaste ${days} dagarna`}</span><em>${Math.round(rate * 100)}%</em></div>
     <div class="tr-bar" role="img" aria-label="${won} vunna, ${done.length - won} förlorade"><i style="width:${rate * 100}%"></i></div>
     <div class="tr-legend"><span class="w">✓ ${won} gick in</span><span class="l">✗ ${done.length - won} gick inte in</span><span>Modellen räknade med ${pct(expected)}</span></div>
     <div class="tr-kinds">${kinds}</div>
-    <div class="tr-list">${done.slice(0, 8).map(row).join('')}</div>
-    ${done.length > 8 ? `<details class="tr-more"><summary class="note">Visa alla ${done.length} avgjorda tips</summary><div class="tr-list">${done.slice(8).map(row).join('')}</div></details>` : ''}
+    ${full ? [...new Set(done.map(p => p.day))].map(d => { const list = done.filter(p => p.day === d), w = list.filter(p => p.result === 'won').length;
+      return `<h3 class="tr-day"><span>${esc(dayText(list[0].utc))}</span><small>${w} av ${list.length} gick in</small></h3><div class="tr-list">${list.map(row).join('')}</div>`; }).join('') : `<div class="tr-list">${done.slice(0, 8).map(row).join('')}</div>`}
+    ${!full && done.length > 8 ? `<details class="tr-more"><summary class="note">Visa alla ${done.length} avgjorda tips</summary><p class="note"><a href="tips.html">Alla tips dag för dag finns under Våra tips →</a></p><div class="tr-list">${done.slice(8).map(row).join('')}</div></details>` : ''}
     <p class="note">Alla tips från Dagens värde räknas – även de som inte gick in. Procenten till höger är modellens chans före matchen.${waiting ? ` ${waiting} tips väntar på matcher som inte är klara.` : ''}${back ? ' Tips före ' + esc(dayText(picks.filter(p => !p.back).map(p => p.utc).sort()[0] ?? new Date().toISOString())) + ' är räknade i efterhand med samma modell, som då bara fick se matcher spelade före avspark.' : ''}</p>
   </section>`;
 }
