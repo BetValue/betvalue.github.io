@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#06110c">
+  <meta name="description" content="BetValue är länken mellan statistik och spel: vi räknar fram chansen i varje match och visar vilka bets som har värde. 9 kr/mån.">
+  <title>Om BetValue · BetValue</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%2306110c'/><circle cx='16' cy='16' r='9' fill='none' stroke='%23f2f5ef' stroke-width='2'/><circle cx='16' cy='16' r='3' fill='%23ffcf4a'/></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800;900&family=Instrument+Sans:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="style.css?v=202610181041">
+</head>
+<body>
+  <div class="atmos" aria-hidden="true">
+    <span class="flood l"></span><span class="flood r"></span>
+    <svg class="pitch" viewBox="0 0 1000 640" preserveAspectRatio="xMidYMid slice">
+      <g fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="40" y="40" width="920" height="560"/>
+        <line x1="500" y1="40" x2="500" y2="600"/>
+        <circle cx="500" cy="320" r="92"/>
+        <rect x="40" y="170" width="150" height="300"/>
+        <rect x="810" y="170" width="150" height="300"/>
+        <rect x="40" y="245" width="52" height="150"/>
+        <rect x="908" y="245" width="52" height="150"/>
+        <path d="M190 262a80 80 0 0 1 0 116M810 262a80 80 0 0 0 0 116"/>
+      </g>
+      <circle cx="500" cy="320" r="5" fill="currentColor"/>
+    </svg>
+    <span class="grain"></span>
+  </div>
+
+  <header class="top">
+    <div class="top-in">
+      <a class="brand" href="./" aria-label="BetValue, startsida">BET<span>VALUE</span><i></i></a>
+      <a href="konto.html" class="acc-mobile" id="nav-account-m">Logga in</a>
+      <nav class="tabs">
+        <a href="./" data-nav="matcher">Matcher</a>
+        <a href="dagens-varde.html" data-nav="dagens" class="goldtab">Dagens värde</a>
+        <a href="tips.html" data-nav="tips">Så har det gått</a>
+        <a href="boostar.html" data-nav="boostar">Boostar</a>
+        <a href="./#tabeller" data-nav="tabeller">Tabeller</a>
+        <a href="sparade.html" data-nav="sparade">Sparade bets</a>
+        <a href="chatt.html" data-nav="chatt" class="chattab">Chatt</a>
+        <a href="om.html" data-nav="om">Om oss</a>
+        <a href="konto.html" data-nav="konto" id="nav-account" class="acctab">Logga in</a>
+      </nav>
+    </div>
+    <div class="ticker" id="ticker" hidden><div class="ticker-track" id="ticker-track"></div></div>
+  </header>
+
+
+  <main id="main" class="about">
+    <section class="about-hero">
+      <span class="label">Om BetValue</span>
+      <h1>Statistiken <em>först.</em><br>Sen spelet.</h1>
+      <p class="about-lead">BetValue är länken mellan fotbollsstatistik och spel. Vi räknar ut hur stor chansen är i varje match och visar vilka bets som har <b>värde</b> – innan du lägger dem.</p>
+      <div class="about-cta" data-cta>
+        <a class="btn-gold" href="konto.html?tab=signup">Skapa konto – 9 kr/mån</a>
+        <a class="btn-ghost" href="tips.html">Se hur det har gått</a>
+      </div>
+      <div class="about-facts" id="about-facts" aria-label="BetValue i siffror">
+        <div><b>8</b><small>ligor och turneringar</small></div>
+        <div><b id="fact-players">4 000+</b><small>spelare med statistik</small></div>
+        <div><b id="fact-hit">–</b><small>av tipsen gick in senaste 30 dagarna</small></div>
+        <div><b>9 kr</b><small>i månaden för allt</small></div>
+      </div>
+    </section>
+
+    <section class="about-sec about-split">
+      <div>
+        <span class="label">Vad vi är</span>
+        <h2>Mellan siffrorna och spelkupongen</h2>
+      </div>
+      <div class="about-text">
+        <p>De flesta spel läggs på känsla: ett lag som "brukar vinna", en spelare som "är i form". Spelbolagen sätter sina odds med statistik. Vi tycker att du ska ha samma verktyg.</p>
+        <p>BetValue samlar matcher, tabeller, form, målskyttar och startelvor och räknar fram sannolikheten för varje utfall. Sedan jämför vi med oddsen och visar var statistiken säger att ett spel är värt mer än vad det betalar – och var det inte är det.</p>
+        <p><b>Vi tar inga spel och vi säljer inga odds.</b> Du ser statistiken och våra rekommendationer här, och om du vill spela gör du det själv hos ett licensierat spelbolag.</p>
+      </div>
+    </section>
+
+    <section class="about-sec">
+      <span class="label">Så fungerar det</span>
+      <h2>Från data till rekommendation</h2>
+      <ol class="about-steps">
+        <li><span>1</span><b>Vi samlar in datan</b><p>Resultat, tabeller, form, skytteligor, inbördes möten och startelvor från Premier League, La Liga, Bundesliga, Serie A, Ligue 1, Champions League, EM och VM. Uppdateras flera gånger om dagen – och live under matcherna.</p></li>
+        <li><span>2</span><b>Modellen räknar</b><p>En statistisk modell väger varje lags anfall och försvar, hemmaplan och aktuell form. Den ger förväntade mål och en chans i procent för varje resultat – vinst, oavgjort, antal mål, båda lagen gör mål, målskyttar.</p></li>
+        <li><span>3</span><b>Vi letar värde</b><p>Ett spel har värde när oddset är högre än vad chansen motiverar. Vi visar exakt vilket odds som behövs, så att du direkt ser om ditt spelbolags odds är bra eller dåligt.</p></li>
+        <li><span>4</span><b>Du bestämmer</b><p>Dagens bästa bet, enskilda spel, bet builders och målskyttar – med siffrorna bakom. Spara dina bets, så rättas de automatiskt när matchen är slut.</p></li>
+      </ol>
+    </section>
+
+    <section class="about-sec about-value">
+      <div class="about-text">
+        <span class="label">Vad är värde?</span>
+        <h2>Det enda som spelar roll i längden</h2>
+        <p>Ett bra spel är inte samma sak som ett säkert spel. Ett bra spel är när du får <b>betalt mer än risken</b>. Det är så professionella spelare tänker – och det är det BetValue räknar på.</p>
+      </div>
+      <div class="value-card" aria-label="Exempel på värde">
+        <div class="vc-row"><span>Vår chans att laget vinner</span><b>50%</b></div>
+        <div class="vc-row"><span>Rättvist odds (1 ÷ 0,50)</span><b>2,00</b></div>
+        <div class="vc-row"><span>Spelbolagets odds</span><b class="gold">2,30</b></div>
+        <div class="vc-row total"><span>Värde</span><b>+15%</b></div>
+        <p>Över tid är det de här spelen som lönar sig – även om vart och ett kan förlora.</p>
+      </div>
+    </section>
+
+    <section class="about-sec">
+      <span class="label">Det här ingår</span>
+      <h2>Allt för 9 kr i månaden</h2>
+      <div class="about-perks">
+        <div><i>★</i><b>Dagens bästa bet</b><p>Varje dag lyfter vi fram det starkaste spelet, med motivering: form, förväntade mål och försvar.</p></div>
+        <div><i>＋</i><b>Enskilda spel och bet builders</b><p>Modellens bästa spel för dagen, med lägsta odds för att spelet ska ha värde.</p></div>
+        <div><i>⚽</i><b>Målskyttar</b><p>Chansen att nyckelspelarna gör mål – räknat från deras andel av lagets mål.</p></div>
+        <div><i>%</i><b>Värdebets</b><p>När spelbolagens odds är högre än statistiken säger att de borde vara.</p></div>
+        <div><i>⚡</i><b>Boostar</b><p>Boost-kalkylatorn visar om en boost verkligen är bra – eller bara ser bra ut.</p></div>
+        <div><i>📊</i><b>Statistik som på FotMob</b><p>Livematcher, startelvor, spelarstatistik per match, tabeller och klubbsidor – öppet för alla.</p></div>
+        <div><i>✓</i><b>Sparade bets</b><p>Spara dina spel och se direkt vilka som gick in, även under matchen.</p></div>
+        <div><i>💬</i><b>Vänner och chatt</b><p>Dela bets med kompisarna, gör grupper och följ hur det går för varandra.</p></div>
+      </div>
+    </section>
+
+    <section class="about-sec about-split">
+      <div>
+        <span class="label">Öppet facit</span>
+        <h2>Vi visar allt – även när vi har fel</h2>
+      </div>
+      <div class="about-text">
+        <p>Alla tips från Dagens värde sparas före avspark och rättas efter matchen. Inget tas bort i efterhand. Det är det enda ärliga sättet att visa om en modell fungerar.</p>
+        <div class="teaser-slot" id="teaser-slot"></div>
+        <p class="note">Ingen modell vinner varje gång. Målet är att över tid träffa oftare än oddsen räknar med.</p>
+      </div>
+    </section>
+
+    <section class="about-price">
+      <span class="label">BetValue Medlem</span>
+      <div class="ap-price"><b>9 kr</b><span>per månad<br>avsluta när du vill</span></div>
+      <p>Mindre än en kaffe. Allt ingår – inga extra köp, inga dolda avgifter.</p>
+      <div class="about-cta center" data-cta>
+        <a class="btn-gold" href="konto.html?tab=signup">Skapa konto – 9 kr/mån</a>
+        <a class="btn-ghost" href="konto.html">Logga in</a>
+      </div>
+    </section>
+
+    <section class="about-sec">
+      <span class="label">Vanliga frågor</span>
+      <h2>Bra att veta</h2>
+      <div class="about-faq">
+        <details><summary>Kan man spela på BetValue?</summary><p>Nej. BetValue är en statistiktjänst. Vi tar inga insatser och hanterar inga pengar för spel. Vill du spela gör du det hos ett spelbolag med svensk licens.</p></details>
+        <details><summary>Är tipsen garanterade?</summary><p>Nej, och var skeptisk mot alla som säger det. Fotboll är oförutsägbar. Det vi gör är att räkna ut chansen så ärligt som möjligt och visa var oddsen är för höga eller för låga. Hur det har gått ser du alltid under <a href="tips.html">Så har det gått</a>.</p></details>
+        <details><summary>Var kommer statistiken ifrån?</summary><p>Matcher, tabeller och skytteligor hämtas från football-data.org, startelvor och spelarstatistik från ESPN och spelarbilder från Wikipedia. Allt uppdateras automatiskt flera gånger om dagen, och live under matcherna.</p></details>
+        <details><summary>Vad är gratis och vad kostar?</summary><p>Matcher, live, tabeller, startelvor, spelarprofiler och hur våra tips har gått är öppet för alla. Dagens värde, bet builders, målskyttar, värdebets, boostar, sparade bets och chatten ingår i medlemskapet för 9 kr/mån.</p></details>
+        <details><summary>Hur avslutar jag?</summary><p>När du vill, på <a href="medlem.html">medlemssidan</a>. Du betalar månad för månad och det finns ingen bindningstid.</p></details>
+      </div>
+    </section>
+
+    <p class="about-safe"><b>18+</b> Spela ansvarsfullt och aldrig för mer än du har råd att förlora. Behöver du prata med någon om spel finns <a href="https://www.stodlinjen.se" target="_blank" rel="noopener">Stödlinjen.se</a>.</p>
+  </main>
+
+  <div class="sheet" id="sheet" hidden>
+    <div class="sheet-bg" data-close></div>
+    <div class="sheet-card" role="dialog" aria-modal="true">
+      <button class="close" data-close aria-label="Stäng">×</button>
+      <div id="sheet-body"></div>
+    </div>
+  </div>
+
+  <footer>
+    <p id="updated"></p>
+    <p>Sannolikheterna kommer från en statistisk modell och är ingen garanti. Här spelar man inte – vill du spela gör du det själv hos ett licensierat bolag. Spela aldrig för mer än du har råd att förlora. 18+ · <a href="https://www.stodlinjen.se" target="_blank" rel="noopener">Stödlinjen.se</a></p>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js"></script>
+  <script src="grade.js?v=202610181041"></script>
+  <script src="common.js?v=202610181041"></script>
+  <script src="espn.js?v=202610181041"></script>
+  <script src="live.js?v=202610181041"></script>
+  <script src="search.js?v=202610181041"></script>
+  <script src="auth.js?v=202610181041"></script>
+  <script src="om.js?v=202610181041"></script>
+</body>
+</html>
