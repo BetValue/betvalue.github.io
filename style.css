@@ -59,13 +59,13 @@ img { display: block; max-width: 100%; }
   backdrop-filter: blur(14px) saturate(140%); -webkit-backdrop-filter: blur(14px) saturate(140%);
   border-bottom: 1px solid var(--line); }
 .top-in { display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
-  max-width: 980px; margin: 0 auto; padding: 12px var(--gutter-r) 12px var(--gutter-l); }
+  max-width: 1180px; margin: 0 auto; padding: 12px var(--gutter-r) 12px var(--gutter-l); }
 .brand { position: relative; font: 900 26px/1 var(--display); letter-spacing: .02em; color: var(--chalk); text-decoration: none; }
 .brand span { color: var(--gold); }
 .brand i { position: absolute; right: -11px; top: 1px; width: 7px; height: 7px; border-radius: 50%; background: var(--gold);
   box-shadow: 0 0 12px var(--gold); }
 .tabs { display: flex; gap: 2px; margin-left: auto; padding: 4px; border-radius: 999px; background: var(--glass); border: 1px solid var(--line); }
-.tabs a { padding: 7px 15px; border-radius: 999px; color: var(--muted); font-weight: 600; font-size: 14px; text-decoration: none; white-space: nowrap; transition: color .2s, background .2s; }
+.tabs a { padding: 7px 13px; border-radius: 999px; color: var(--muted); font-weight: 600; font-size: 14px; text-decoration: none; white-space: nowrap; transition: color .2s, background .2s; }
 .tabs a:hover { color: var(--chalk); }
 .tabs a.active { background: var(--chalk); color: var(--night); }
 .tabs a.goldtab { color: var(--gold); }
