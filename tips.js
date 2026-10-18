@@ -1,4 +1,4 @@
-// Våra tips: hur alla tips från Dagens värde har gått, öppet för alla.
+// Facit: hur alla tips från Dagens värde har gått, öppet för alla.
 
 const tstate = { days: 30 };
 const PERIODS = [[7, '7 dagar'], [30, '30 dagar'], [Infinity, 'Allt']];
