@@ -75,7 +75,8 @@ async function render() {
   if (!AUTH.user) { $('#main').innerHTML = signedOutHtml(); fillTrack('#track-slot'); return; }
   const test = await testMode();
   if (AUTH.premium) {
-    $('#main').innerHTML = memberHtml(test);
+    $('#main').innerHTML = memberHtml(test) + '<div class="track-slot" id="track-slot"></div>';
+    fillTrack('#track-slot');
     $('#cancel-test')?.addEventListener('click', async e => {
       e.currentTarget.disabled = true;
       await sb.rpc('cancel_test_subscription');

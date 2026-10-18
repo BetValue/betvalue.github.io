@@ -63,7 +63,8 @@ async function render() {
       <a class="btn-gold" style="max-width:260px;text-decoration:none;text-align:center" href="konto.html?next=${encodeURIComponent(location.pathname)}">Logga in</a></div>`;
     return;
   }
-  $('#main').innerHTML = await savedBetsHtml();
+  $('#main').innerHTML = await savedBetsHtml() + '<div class="track-slot wide" id="track-slot"></div>';
+  fillTrack('#track-slot');
 }
 
 document.addEventListener('click', async e => {

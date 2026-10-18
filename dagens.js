@@ -151,7 +151,9 @@ async function render() {
       ${sc.length ? `<div class="plist">${sc.map(({ m, pl }) => `<div class="plink" role="button" tabindex="0" data-match="${m.id}">${playerRow(m, pl,
         `<small class="faces">${clock(m.utc)} · ${esc(m.home.short)} – ${esc(m.away.short)} · värde från <b>${odd(minOdds(pl.p))}</b></small>`)}</div>`).join('')}</div>` : '<p class="empty">Ingen spelarstatistik för dagens matcher.</p>'}
       <p class="note lineup">⏱ Startelvan släpps ungefär en timme före avspark. Kolla alltid att spelaren startar innan du spelar på hen.</p>
-    </section>`;
+    </section>
+    <div class="track-slot wide" id="track-slot"></div>`;
+  fillTrack('#track-slot');
 }
 
 document.addEventListener('click', e => {
