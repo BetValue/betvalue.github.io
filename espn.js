@@ -146,7 +146,7 @@ function lines(starters, formation) {
 }
 
 // Med evId (matchen pågår eller är spelad) öppnar ett tryck spelarens statistik i just den matchen.
-const playerAttrs = (p, team, slug, evId) =>
+const lineupAttrs = (p, team, slug, evId) =>
   `data-player="${p.athlete.id}" data-slug="${slug}" data-pteam="${esc(team.displayName)}"${evId ? ` data-mevent="${evId}"` : ''}`;
 
 function dot(p, team, slug, x, y, evId) {
@@ -154,7 +154,7 @@ function dot(p, team, slug, x, y, evId) {
   const name = p.athlete.lastName || p.athlete.shortName || p.athlete.displayName;
   const marks = `${'<i class="m-goal">⚽</i>'.repeat(Math.min(s.totalGoals || 0, 3))}${s.yellowCards ? '<i class="m-yc"></i>' : ''}${s.redCards ? '<i class="m-rc"></i>' : ''}${p.subbedOut ? '<i class="m-sub">▼</i>' : ''}`;
   return `<button class="pdot" style="left:${x}%;top:${y}%;--kit:${hex(team.color) ?? '#3ddc84'};--ink:${inkFor(team.color)}"
-    ${playerAttrs(p, team, slug, evId)}>
+    ${lineupAttrs(p, team, slug, evId)}>
     <span class="kit">${esc(p.jersey ?? '')}</span>${marks ? `<span class="marks">${marks}</span>` : ''}
     <span class="pname">${esc(name)}</span></button>`;
 }
@@ -174,7 +174,7 @@ function pitchHtml(rosters, slug, evId = null) {
   }
   const bench = r => r.roster.filter(p => !p.starter);
   const benchList = r => `<div class="bench"><div class="bench-head">${r.team.logo ? `<img src="${esc(r.team.logo)}" alt="">` : ''}<b>${esc(r.team.shortDisplayName ?? r.team.displayName)}</b><small>${esc(r.formation ?? '')}</small></div>
-    ${bench(r).map(p => `<button class="bench-p" ${playerAttrs(p, r.team, slug, evId)}>
+    ${bench(r).map(p => `<button class="bench-p" ${lineupAttrs(p, r.team, slug, evId)}>
       <span class="kit sm" style="--kit:${hex(r.team.color) ?? '#3ddc84'};--ink:${inkFor(r.team.color)}">${esc(p.jersey ?? '')}</span>
       <span>${esc(p.athlete.displayName)}</span>${p.subbedIn ? '<em>▲ in</em>' : ''}</button>`).join('')}</div>`;
   return `<div class="pitchwrap">
