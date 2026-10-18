@@ -307,6 +307,20 @@ async function loadMatchExtras(m, root) {
   }
 }
 
+// Målskyttar för en spelad/pågående match (för rättning av målskyttebets), om datan saknar dem.
+async function ensureGoals(m) {
+  if (Array.isArray(m.goals) || !SLUG[m.comp.id]) return;
+  try {
+    const ev = await findEvent(m);
+    if (!ev) return;
+    const sum = await getJson(`${ESPN}${ev.slug}/summary?event=${ev.id}`);
+    const goals = matchEvents(sum).filter(e => ['goal', 'pen', 'og'].includes(e.kind))
+      .map(e => ({ side: e.side, name: e.who[0] ?? null, og: e.kind === 'og', min: e.minute }));
+    const orig = m.comp.matches.find(x => x.id === m.id) ?? m;
+    orig.goals = m.goals = goals;
+  } catch { /* rättas nästa gång */ }
+}
+
 // ---------- En spelares statistik i en match ----------
 
 const MATCH_STATS = [
@@ -315,6 +329,7 @@ const MATCH_STATS = [
   ['yellowCards', 'Gula kort'], ['redCards', 'Röda kort'], ['ownGoals', 'Självmål', true],
 ];
 const KEEPER_STATS = [['saves', 'Räddningar'], ['goalsConceded', 'Insläppta mål'], ['shotsFaced', 'Skott mot']];
+const posSv = n => ({ Goalkeeper: 'Målvakt', Defender: 'Försvarare', Midfielder: 'Mittfältare', Forward: 'Anfallare' }[String(n).split(' ').pop()] ?? n);
 // "67'" → 67, "90'+4'" → 94
 const minuteOf = s => { const m = /(\d+)'?(?:\s*\+\s*(\d+))?/.exec(s ?? ''); return m ? Number(m[1]) + Number(m[2] ?? 0) : null; };
 
@@ -370,7 +385,7 @@ async function matchPlayerHtml(slug, evId, athleteId, teamName) {
       <div class="mp-who">
         <span class="label">${live ? '<span class="mp-live">● Live ' + esc(clockNow) + '</span>' : 'Matchen är slut'}</span>
         <h2>${esc(a.displayName)}</h2>
-        <small>${team.logo ? `<img src="${esc(team.logo)}" alt="">` : ''}${esc(team.displayName)}${entry.position?.displayName ? ' · ' + esc(entry.position.displayName) : ''}${entry.jersey ? ' · #' + esc(entry.jersey) : ''}</small>
+        <small>${team.logo ? `<img src="${esc(team.logo)}" alt="">` : ''}${esc(team.displayName)}${entry.position?.displayName ? ' · ' + esc(posSv(entry.position.displayName)) : ''}${entry.jersey ? ' · #' + esc(entry.jersey) : ''}</small>
         <div class="mp-score">${tname(home)} <b>${esc(home?.score ?? '0')}–${esc(away?.score ?? '0')}</b> ${tname(away)}</div>
       </div>
     </div>

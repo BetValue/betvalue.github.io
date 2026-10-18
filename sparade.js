@@ -6,6 +6,9 @@ const RESULT_TEXT = { won: 'Vann', lost: 'Förlorade', live: 'Pågår', open: 'V
 // även när matchen försvunnit ur datan.
 async function savedBetsHtml() {
   const { data: rows } = await sb.from('saved_bets').select('*').order('kickoff', { ascending: false }).limit(200);
+  // Målskyttebets behöver målskyttarna; hämta dem från ESPN för matcher där de saknas.
+  await Promise.all([...new Set((rows ?? []).filter(r => !r.result && /^p[wo]?:/.test(r.pick)).map(r => findMatch(r.match_id))
+    .filter(m => m && (m.status === 'FINISHED' || LIVE.has(m.status))))].map(ensureGoals));
   const bets = (rows ?? []).map(r => {
     const m = findMatch(r.match_id);
     const res = r.result ?? betResult(m, r.pick, r.label);
