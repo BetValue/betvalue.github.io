@@ -56,6 +56,7 @@ async function runSearch(text) {
   }
   const clubs = allClubs().map(t => ({ t, s: score(t.k, q) })).filter(x => x.s)
     .sort((a, b) => b.s - a.s || a.t.name.length - b.t.name.length).slice(0, 6);
+  const photos = typeof loadPhotoIndex === 'function' ? await loadPhotoIndex() : {};
   const players = (await loadPlayers()).map(p => ({ p, s: score(p.k, q) })).filter(x => x.s)
     .sort((a, b) => b.s - a.s || a.p.n.length - b.p.n.length).slice(0, 14);
   if (normName($('#search-input').value.trim()) !== q) return; // användaren hann skriva mer
@@ -72,7 +73,8 @@ async function runSearch(text) {
     if (r.type === 'club') {
       return `<button class="sr" data-sr="${i}">${crest(r.t)}<span class="sr-main"><b>${esc(r.t.name)}</b><small>Klubb · ${esc(r.t.comp.name)}</small></span><i>→</i></button>`;
     }
-    return `<button class="sr" data-sr="${i}">${r.team ? crest(r.team) : '<span class="crest blank"></span>'}
+    const face = photos[r.p.i]?.u;
+    return `<button class="sr" data-sr="${i}">${face ? `<img class="sr-face" src="${esc(face)}" alt="" loading="lazy">` : r.team ? crest(r.team) : '<span class="crest blank"></span>'}
       <span class="sr-main"><b>${esc(r.p.n)}</b><small>${esc([POS_NAME[r.p.p] ?? r.p.p, r.team?.short && (['EC', 'WC'].includes(r.p.c) ? r.team.short + ' (landslag)' : r.team.short), r.p.j && '#' + r.p.j].filter(Boolean).join(' · '))}</small></span><i>→</i></button>`;
   };
   list.innerHTML = (clubs.length ? `<span class="label">Klubbar</span>${SEARCH.results.filter(r => r.type === 'club').map(row).join('')}` : '')

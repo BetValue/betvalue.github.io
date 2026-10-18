@@ -321,11 +321,23 @@ function cm(display) {
 // Spelarbild från Wikipedia (fri licens, CORS öppet). Vi kräver att sidan handlar om en
 // fotbollsspelare med samma namn – och samma födelseår om Wikipedia anger ett – så att
 // vi inte visar fel person. Tar det för lång tid visas profilen utan bild.
+// Färdig bildlista från datahämtningen (scripts/photos.mjs), laddas en gång per besök.
+let photoIndex = null;
+function loadPhotoIndex() {
+  photoIndex ??= fetch('data/photos.json?d=' + new Date().toISOString().slice(0, 10))
+    .then(r => (r.ok ? r.json() : { photos: {} })).then(j => j.photos ?? {}).catch(() => ({}));
+  return photoIndex;
+}
+const wikiLink = title => 'https://en.wikipedia.org/wiki/' + encodeURIComponent(title.replace(/ /g, '_'));
+
 async function playerPhoto(a) {
+  const known = (await loadPhotoIndex())[a.id];
+  if (known) return { src: known.u, credit: known.p ? wikiLink(known.p) : null };
   if (a.headshot?.href) return { src: a.headshot.href, credit: null };
+  // Reserv: sök live (för spelare som inte hunnit få bild i listan än).
   const year = (a.dateOfBirth ?? '').slice(0, 4);
   const url = 'https://en.wikipedia.org/w/api.php?action=query&format=json&origin=*&generator=search&gsrlimit=4'
-    + '&prop=pageimages|description&piprop=thumbnail&pithumbsize=500&gsrsearch=' + encodeURIComponent(a.displayName + ' footballer');
+    + '&prop=pageimages|description&piprop=thumbnail&pithumbsize=600&gsrsearch=' + encodeURIComponent(a.displayName + ' footballer');
   const search = getJson(url).then(j => {
     const pages = Object.values(j.query?.pages ?? {}).sort((x, y) => x.index - y.index);
     const ok = pages.find(p => {
@@ -335,7 +347,7 @@ async function playerPhoto(a) {
         && nameSim(p.title.replace(/\s*\(.*\)$/, ''), a.displayName) >= 0.7
         && (!year || !born || born === year);
     });
-    return ok ? { src: ok.thumbnail.source, credit: 'https://en.wikipedia.org/wiki/' + encodeURIComponent(ok.title.replace(/ /g, '_')) } : null;
+    return ok ? { src: ok.thumbnail.source, credit: wikiLink(ok.title) } : null;
   }).catch(() => null);
   return Promise.race([search, new Promise(r => setTimeout(() => r(null), 3000))]);
 }

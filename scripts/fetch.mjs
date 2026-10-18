@@ -11,6 +11,7 @@ import { buildModel, predict } from './model.mjs';
 import { findEvent, similarity, tokens } from './match.mjs';
 import { teamMarkets, playerMarkets } from './markets.mjs';
 import { buildPlayerIndex } from './players.mjs';
+import { buildPhotos } from './photos.mjs';
 
 const FD_KEY = process.env.FOOTBALL_DATA_KEY;
 const ODDS_KEY = process.env.ODDS_API_KEY;
@@ -397,6 +398,7 @@ async function main() {
   if (FD_KEY) await addHeadToHead(competitions);
   if (SB_KEY) await uploadPremium(competitions);
   await buildPlayerIndex(competitions).catch(err => console.warn('Spelarindex:', err.message));
+  await buildPhotos().catch(err => console.warn('Spelarbilder:', err.message));
 
   await writeJson('latest.json', {
     updated: new Date().toISOString(),
