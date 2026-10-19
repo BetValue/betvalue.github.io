@@ -98,8 +98,8 @@ function viewMatches() {
   // Dagens tips (samma urval som Dagens värde), räknat på alla ligor – inte bara den valda.
   const tips = new Map();
   if (premium()) {
-    const r = recommendations(everyMatch().filter(m => UPCOMING.has(m.status) && dayKey(m.utc) === state.day));
-    for (const t of [r.best, ...r.singles, ...r.builders, ...r.scorers].filter(Boolean)) tips.set(t.m.id, (tips.get(t.m.id) ?? 0) + 1);
+    // Samma tips som sparas i tipsstatistiken (dagens bästa, säkraste, värdespel, bygget, spelarspel).
+    for (const t of PICKS.trackPicks(everyMatch().filter(m => UPCOMING.has(m.status) && dayKey(m.utc) === state.day))) tips.set(t.m.id, (tips.get(t.m.id) ?? 0) + 1);
   }
   const byComp = new Map();
   for (const m of todays) byComp.set(m.comp, [...(byComp.get(m.comp) ?? []), m]);

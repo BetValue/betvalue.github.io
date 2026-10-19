@@ -80,35 +80,8 @@ function glossary(open = false) {
 }
 
 // ---------- Dagens rekommendationer ----------
-// Samma urval i dagens.js, på Matcher (★ Tips) och i scripts/track.mjs (tipsstatistiken) – ändra alla tre tillsammans.
-// Färre men starkare: dagens bästa bet + 3 enskilda spel + 2 bet builders + 3 målskyttar.
-const PICKS_MAX = { single: 3, builder: 2, scorer: 3 };
-
-function recommendations(ms) {
-  const confW = m => (m.model ? CONF_W[m.model.conf] : 0.7);
-  const ss = [
-    // Riktiga värdebets (med spelbolagens odds) går alltid först, mest värde först.
-    ...ms.flatMap(m => valuesOf(m).map(v => ({ m, key: v.pick, label: pickLabel(m, v.pick), p: v.p, odds: v.odds, book: v.book, edge: v.edge, real: true, score: 100 + v.edge * 100 }))),
-    ...ms.flatMap(m => marketsFor(m).filter(x => x.group === 'Matchen' && x.p >= 0.5 && x.p <= 0.8)
-      .map(x => ({ m, key: x.key, label: x.label, p: x.p, real: false, score: x.p * confW(m) }))),
-  ].sort((a, b) => b.score - a.score);
-  // Huvudtipset ska ha ett spelbart odds (minst ~1,40) om det inte är ett riktigt värdebet.
-  const best = ss.find(s => s.real || s.p <= 0.72) ?? ss[0] ?? null;
-  const singles = [];
-  const used = new Set(best ? [best.m.id + best.key] : []);
-  for (const s of ss) {
-    if (used.has(s.m.id + s.key) || singles.some(r => r.m.id === s.m.id && !s.real)) continue;
-    singles.push(s); used.add(s.m.id + s.key);
-    if (singles.length >= PICKS_MAX.single) break;
-  }
-  const bb = new Map(); // ett bygge per match
-  for (const b of ms.flatMap(m => marketsFor(m).filter(x => x.legs && fair(x.p) >= 2.2 && fair(x.p) <= 7).map(x => ({ m, ...x, score: x.p * confW(m) })))
-    .sort((a, b) => b.score - a.score)) if (!bb.has(b.m.id)) bb.set(b.m.id, b);
-  const builders = [...bb.values()].slice(0, PICKS_MAX.builder);
-  const scorers = ms.flatMap(m => (m.extras?.players ?? []).map(pl => ({ m, pl, key: 'p:' + pl.id, label: `${pl.name} gör mål`, p: pl.p, score: pl.p * confW(m) })))
-    .sort((a, b) => b.score - a.score).slice(0, PICKS_MAX.scorer);
-  return { best, singles, builders, scorers };
-}
+// Urvalet görs av picks.js (PICKS.recommend) – samma som tipsstatistiken (PICKS.trackPicks i scripts/track.mjs).
+const recommendations = ms => PICKS.recommend(ms);
 
 const everyMatch = () => DATA.latest.competitions.flatMap(c => c.matches.map(m => ({ ...m, comp: c })));
 const findMatch = id => everyMatch().find(x => String(x.id) === String(id));
@@ -131,25 +104,54 @@ function defence(c, teamId) {
   return { per: per(me), rank, size: rows.length };
 }
 
-// Alla spel vi kan räkna fram för en match, med nyckel, text och sannolikhet.
+// Alla spel vi kan räkna fram för en match (picks.js), plus de gamla målskyttebyggena (pw:/po:)
+// så att äldre sparade bets och boostar fortfarande hittar sitt spel.
 function marketsFor(m) {
-  const out = [];
-  const f = m.final ?? {};
-  for (const k of ['home', 'draw', 'away', 'over', 'under']) {
-    if (f[k] != null) out.push({ key: k, group: 'Matchen', label: pickLabel(m, k), p: f[k] });
-  }
-  const x = m.extras;
-  if (x) {
-    for (const s of x.singles) out.push({ key: 's:' + s.key, group: 'Matchen', label: fill(s.label, m), p: s.p });
-    for (const b of x.builders) out.push({ key: 'b:' + b.key, group: 'Bet builder', label: b.legs.map(l => fill(l, m)).join(' + '), legs: b.legs.map(l => fill(l, m)), p: b.p });
-    for (const pl of x.players) {
-      const team = pl.side === 'home' ? m.home.short : m.away.short;
-      out.push({ key: 'p:' + pl.id, group: 'Målskytt', label: `${pl.name} gör mål`, p: pl.p, player: pl });
-      out.push({ key: 'pw:' + pl.id, group: 'Bet builder', label: `${team} vinner + ${pl.name} gör mål`, legs: [`${team} vinner`, `${pl.name} gör mål`], p: pl.win, player: pl });
-      out.push({ key: 'po:' + pl.id, group: 'Bet builder', label: `${pl.name} gör mål + Över 2,5 mål`, legs: [`${pl.name} gör mål`, 'Över 2,5 mål'], p: pl.o25, player: pl });
-    }
+  const out = PICKS.allMarkets(m).map(x => ({ ...x, group: x.cat }));
+  for (const pl of m.extras?.players ?? []) {
+    const team = pl.side === 'home' ? m.home.short : m.away.short;
+    out.push({ key: 'pw:' + pl.id, group: 'Bet builder', cat: 'Bet builder', label: `${team} vinner + ${pl.name} gör mål`, legs: [{ label: `${team} vinner` }, { label: `${pl.name} gör mål` }], p: pl.win, player: pl });
+    out.push({ key: 'po:' + pl.id, group: 'Bet builder', cat: 'Bet builder', label: `${pl.name} gör mål + Över 2,5 mål`, legs: [{ label: `${pl.name} gör mål` }, { label: 'Över 2,5 mål' }], p: pl.o25, player: pl });
   }
   return out;
+}
+const marketByKey = (m, key) => PICKS.marketByKey(m, key) ?? marketsFor(m).find(x => x.key === key) ?? null;
+
+// Ett spel som rad: huvudsiffrorna syns direkt, underlaget och "vad kan gå fel" fälls ut.
+function marketRow(x, { match = false, save = true } = {}) {
+  const m = x.m;
+  const money = x.odds != null
+    ? `<span class="mr-o"><small>Odds</small><b>${odd(x.odds)}</b></span><span class="mr-ev ${x.ev >= 0 ? 'up' : 'down'}"><small>EV</small><b>${signed(x.ev)}</b></span>`
+    : `<span class="mr-o"><small>Lägsta odds</small><b>${odd(x.min)}</b></span>`;
+  return `<details class="mrow risk-${(x.risk ?? '').toLowerCase()}">
+    <summary>
+      <span class="mr-main"><b>${esc(x.label)}</b>${match ? `<small>${esc(m.home.short)} – ${esc(m.away.short)} · ${clock(m.utc)}</small>` : x.hit ? `<small>${esc(x.hit)} senaste</small>` : ''}</span>
+      <span class="mr-p"><small>Vår chans</small><b>${pct(x.p)}</b></span>${money}
+    </summary>
+    <div class="mr-body">
+      <dl>
+        ${x.odds != null ? `<div><dt>Odds</dt><dd>${odd(x.odds)}${x.book ? ' hos ' + esc(x.book) : ''} · implicit ${pct(x.implied)}${x.marketP ? ' · marknadens chans ' + pct(x.marketP) : ''}</dd></div>` : '<div><dt>Odds</dt><dd>Spelbolagens odds för det här spelet saknas – jämför själv med lägsta odds.</dd></div>'}
+        <div><dt>Vår chans</dt><dd>${pct(x.p)} · rättvist odds ${odd(x.fair)} · lägsta odds ${odd(x.min)}${x.push ? ` · ${pct(x.push)} chans att insatsen kommer tillbaka` : ''}</dd></div>
+        <div><dt>Risk</dt><dd>${esc(x.risk)}${x.conf ? ` · underlag ${esc(x.conf)}` : ''}</dd></div>
+        ${x.basis ? `<div><dt>Underlag</dt><dd>${esc(x.basis)}</dd></div>` : ''}
+        ${x.wrong ? `<div><dt>Kan gå fel</dt><dd>${esc(x.wrong)}</dd></div>` : ''}
+      </dl>
+      <div class="mr-btns">${save ? saveBtn(m, x.key, x.label, x.p, x.odds ?? null, x.book ?? null) : ''}${match ? `<button class="btn-mini" data-match="${m.id}">Hela matchen →</button>` : ''}</div>
+    </div>
+  </details>`;
+}
+
+// Alla spel i en match, grupperade per kategori.
+function allMarketsHtml(m) {
+  const all = PICKS.allMarkets(m).filter(x => x.p >= 0.08 && x.p <= 0.95);
+  if (!all.length) return '';
+  const cats = PICKS.CATS.filter(c => all.some(x => x.cat === c));
+  return `<div class="box allm"><span class="label">Alla spel i matchen</span>
+    <p class="note">Tryck på ett spel för underlag, risk och vad som kan gå fel. Spel utan odds visar lägsta odds – det du minst behöver hos ditt spelbolag.</p>
+    ${cats.map((c, i) => { const list = all.filter(x => x.cat === c); return `<details class="allm-cat"${i === 0 ? ' open' : ''}><summary>${esc(c)}<small>${list.length}</small></summary>
+      <div class="mlist">${list.map(x => marketRow(x)).join('')}</div></details>`; }).join('')}
+    ${m.extras?.stats ? '' : '<p class="note">Hörnor, kort och spelarspel visas när matchen är inom två dygn och vi har lagens statistik.</p>'}
+  </div>`;
 }
 
 // ---------- Sparade bets ----------
@@ -161,7 +163,12 @@ function betResult(m, key, label = '') {
   if (!m) return 'unknown';
   const started = LIVE.has(m.status) || m.status === 'FINISHED';
   if (!started || !m.score && m.status === 'FINISHED') return 'open';
-  return gradeBet(key, label, { started, done: m.status === 'FINISHED', h: m.score?.h ?? 0, a: m.score?.a ?? 0, goals: m.goals ?? null });
+  const post = m.post;
+  return gradeBet(key, label, {
+    started, done: m.status === 'FINISHED', h: m.score?.h ?? 0, a: m.score?.a ?? 0, goals: m.goals ?? null,
+    ht: post?.ht ?? null, stats: post?.c ? { c: post.c, y: post.y } : null,
+    players: post?.pl ? post.pl.map(([id, name, sh, sot, fc, fs, y, g, a]) => ({ id, name, sh, sot, fc, fs, y, g, a })) : null,
+  });
 }
 
 // Knapp som sparar betet på kontot (auth.js sköter klicket).
@@ -323,13 +330,15 @@ function matchHtml(m) {
   html += '<div id="espn-slot"></div>';
 
   if (premium() && m.extras && !done) {
-    const builders = marketsFor(m).filter(x => x.legs && fair(x.p) >= 1.8 && fair(x.p) <= 9).sort((a, b) => b.p - a.p).slice(0, 4);
+    const r = PICKS.recommend([m]);
+    const builders = [r.bbStar, ...r.bbAlts].filter(Boolean).slice(0, 3);
     if (builders.length) {
-      html += `<div class="box"><span class="label">Bet builders · modellens bästa</span>${builders.map(b => `<div class="bb">
-        <ul>${b.legs.map(l => `<li>${esc(l)}</li>`).join('')}</ul>
-        <div class="pl-num"><b>${pct(b.p)}</b><small>lägsta odds ${odd(minOdds(b.p))}</small>${saveBtn(m, b.key, b.label, b.p)}</div></div>`).join('')}
-        <p class="note">Spelbolagen sätter egna odds på bet builders. Är deras odds högre än lägsta odds har spelet värde enligt modellen.</p></div>`;
+      html += `<div class="box"><span class="label">Bet builders · odds runt 2–3</span>${builders.map(b => `<div class="bb">
+        <ul>${b.legs.map(l => `<li>${esc(l.label)}</li>`).join('')}</ul>
+        <div class="pl-num"><b>${pct(b.p)}</b><small>lägsta odds ${odd(b.min)}</small>${saveBtn(m, b.key, b.label, b.p)}</div></div>`).join('')}
+        <p class="note">Spelbolagen sätter egna odds på bet builders. Är deras odds högre än lägsta odds har spelet värde enligt oss. ${esc(builders[0].basis)}</p></div>`;
     }
+    html += allMarketsHtml(m);
     if (m.extras.players.length) {
       html += `<div class="box"><span class="label">Nyckelspelare · chans att göra mål</span>
         ${m.extras.players.slice().sort((a, b) => b.p - a.p).map(pl => playerRow(m, pl)).join('')}
@@ -447,7 +456,7 @@ async function boot(page, start) {
 // ---------- Vår tipsstatistik (öppen för alla) ----------
 // data/track.json byggs av scripts/track.mjs: alla tips från Dagens värde, rättade efter matchen.
 
-const TRACK_KIND = { best: 'Dagens bästa bet', single: 'Enskilda spel', builder: 'Bet builders', scorer: 'Målskyttar' };
+const TRACK_KIND = { best: 'Dagens bästa bet', single: 'Säkraste spelen', value: 'Värdespel', builder: 'Bet builders', player: 'Spelarspel', scorer: 'Målskyttar' };
 let trackData = null;
 const loadTrack = () => (trackData ??= fetch('data/track.json?t=' + Math.floor(Date.now() / 6e5))
   .then(r => (r.ok ? r.json() : { picks: [] })).catch(() => ({ picks: [] })));

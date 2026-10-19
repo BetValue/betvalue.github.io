@@ -3,7 +3,6 @@
 // hämtas de med jämna mellanrum i stället.
 
 const cstate = { convs: [], profiles: new Map(), friends: [], active: null, messages: [], unread: new Map(), live: false };
-const RESULT_SHORT = { won: 'Vann', lost: 'Förlorade', live: 'Pågår', open: 'Väntar', unknown: 'Okänt', void: 'Struken' };
 const params = new URLSearchParams(location.search);
 
 const uname = id => cstate.profiles.get(id) ?? 'Okänd';
@@ -130,7 +129,7 @@ function render() {
   root.innerHTML = `<div class="chat${cstate.active ? ' room-open' : ''}">
     <aside class="chat-side">
       <div class="chat-side-head"><h2>Chattar</h2>
-        <div><button class="btn-mini" data-new-dm>Ny chatt</button><button class="btn-mini gold" data-new-group>Ny grupp</button></div></div>
+        <div><button class="btn-mini fr-open" data-friends-sheet>Vänner${AUTH.requests ? `<em>${AUTH.requests}</em>` : ''}</button><button class="btn-mini" data-new-dm>Ny chatt</button><button class="btn-mini gold" data-new-group>Ny grupp</button></div></div>
       <div class="chat-list" id="chat-list">${listHtml()}</div>
     </aside>
     <section class="chat-room" id="chat-room">${roomHtml()}</section>
@@ -225,11 +224,23 @@ function addMessage(m) {
 // ---------- Ark: ny chatt, ny grupp, lägg till, dela bet ----------
 
 function friendRows(ids, type) {
-  if (!ids.length) return '<p class="note">Du har inga vänner att välja. Lägg till vänner under <a href="konto.html">Mitt konto</a>.</p>';
+  if (!ids.length) return '<p class="note">Du har inga vänner att välja än.</p><button class="btn-gold" data-friends-sheet>Lägg till vänner</button>';
   return `<div class="pick-list">${ids.map(id => type === 'check'
     ? `<label class="pick"><input type="checkbox" value="${id}"><span class="ci-av">${initialsOf(uname(id))}</span><b>${esc(uname(id))}</b></label>`
     : `<button class="pick" data-dm-with="${id}"><span class="ci-av">${initialsOf(uname(id))}</span><b>${esc(uname(id))}</b><i>→</i></button>`).join('')}</div>`;
 }
+
+// Vänner direkt i chatten: lägg till, svara på förfrågningar och starta en chatt.
+function friendsSheet() {
+  pushSheet(() => friendsHtml({ chat: true }));
+}
+document.addEventListener('friends:changed', async () => {
+  await loadProfile().catch(() => {});
+  await loadFriends();
+  paintAccountLink();
+  render();
+  if (!$('#sheet').hidden && $('#friend-form')) { sheetStack.pop(); friendsSheet(); }
+});
 
 function newDmSheet() {
   pushSheet(async () => { await loadFriends(); return `<span class="label">Ny chatt</span><h2 class="sheet-h">Chatta med en vän</h2>${friendRows(cstate.friends, 'button')}`; });
@@ -312,10 +323,11 @@ function shareToSheet(savedId) {
 }
 
 document.addEventListener('click', async e => {
-  const t = e.target.closest('[data-open-conv],[data-close-room],[data-new-dm],[data-new-group],[data-add-members],[data-share-picker],[data-dm-with],[data-share-saved],[data-share-to]');
+  const t = e.target.closest('[data-friends-sheet],[data-open-conv],[data-close-room],[data-new-dm],[data-new-group],[data-add-members],[data-share-picker],[data-dm-with],[data-share-saved],[data-share-to]');
   if (!t) return;
   e.preventDefault();
-  if (t.dataset.openConv) openConv(t.dataset.openConv);
+  if ('friendsSheet' in t.dataset) { if (!$('#sheet').hidden) sheetStack.length = 0; friendsSheet(); }
+  else if (t.dataset.openConv) openConv(t.dataset.openConv);
   else if ('closeRoom' in t.dataset) { cstate.active = null; render(); }
   else if ('newDm' in t.dataset) newDmSheet();
   else if ('newGroup' in t.dataset) newGroupSheet();
