@@ -20,7 +20,11 @@ async function render() {
       ? '<a class="btn-gold" href="medlem.html">Slutför medlemskapet – 9 kr/mån</a><a class="btn-ghost" href="tips.html">Se hur det har gått</a>'
       : null;
   if (cta) document.querySelectorAll('[data-cta]').forEach(el => { el.innerHTML = cta; });
+  // Knapparna göms tills vi vet om besökaren är inloggad – annars blinkar "Skapa konto" förbi.
+  document.querySelectorAll('[data-cta]').forEach(el => el.classList.remove('cta-wait'));
 }
+// Om något går fel ska knapparna ändå synas.
+setTimeout(() => document.querySelectorAll('.cta-wait').forEach(el => el.classList.remove('cta-wait')), 4000);
 
 document.addEventListener('auth:changed', () => render());
 boot('om', render).then(startLive);

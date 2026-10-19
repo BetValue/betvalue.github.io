@@ -1,6 +1,6 @@
 // Startsidan: matcher per dag och tabeller. Delad kod finns i common.js.
 
-const state = { view: 'matcher', comp: 'ALL', day: null };
+const state = { view: 'matcher', comp: 'ALL', day: null, allDays: false };
 
 const comps = () => DATA.latest.competitions.filter(c => state.comp === 'ALL' || c.id === state.comp);
 const allMatches = () => comps().flatMap(c => c.matches.map(m => ({ ...m, comp: c })));
@@ -19,10 +19,14 @@ function renderDays(matches) {
   const days = [...new Set(matches.map(m => dayKey(m.utc)))].sort();
   const today = todayKey();
   if (!days.includes(state.day)) state.day = days.find(d => d >= today) ?? days[days.length - 1] ?? null;
-  $('#days').innerHTML = days.map(d => {
+  // Normalt igår + en vecka framåt; resten bakom "Fler".
+  const near = d => { const diff = dayParts(d).diff; return diff >= -1 && diff <= 6; };
+  const shown = state.allDays ? days : days.filter(d => near(d) || d === state.day);
+  const more = state.allDays || shown.length < days.length;
+  $('#days').innerHTML = shown.map(d => {
     const p = dayParts(d);
     return `<button class="day${d === state.day ? ' active' : ''}${p.today ? ' today' : ''}" data-day="${d}"><small>${esc(p.name)}</small><b>${p.date}</b></button>`;
-  }).join('');
+  }).join('') + (more ? `<button class="day more-days" data-alldays><small>${state.allDays ? 'Färre' : 'Fler'}</small><b>${state.allDays ? '−' : '+'}</b></button>` : '');
   $('#days').querySelector('.active')?.scrollIntoView({ inline: 'center', block: 'nearest' });
 }
 
@@ -53,13 +57,15 @@ function hero(m) {
   </button>`;
 }
 
-function matchRow(m) {
+// tips = antal av dagens tips (Dagens värde) i matchen – visas som ★ för medlemmar.
+function matchRow(m, tips = 0) {
   const live = LIVE.has(m.status);
   const done = m.score && !UPCOMING.has(m.status);
+  const star = tips ? `<em class="tipmark" title="${tips} ${tips === 1 ? 'tips' : 'tips'} i Dagens värde">★ ${tips === 1 ? 'Tips' : tips + ' tips'}</em>` : '';
   const time = live ? `<span class="time live"><span class="livedot"></span>${esc(m.minute || 'LIVE')}</span>`
     : m.status === 'FINISHED' ? '<span class="time ft">SLUT</span>'
     : m.status === 'POSTPONED' ? '<span class="time ft">UPPSK.</span>'
-    : `<span class="time">${clock(m.utc)}</span>`;
+    : `<span class="time">${clock(m.utc)}${star}</span>`;
   const res = side => !done || m.score.h === m.score.a ? ''
     : (side === 'h' ? m.score.h > m.score.a : m.score.a > m.score.h) ? 'win' : 'lose';
   let side = '';
@@ -69,10 +75,12 @@ function matchRow(m) {
     const ks = [['home', 'h', '1'], ['draw', 'd', 'X'], ['away', 'a', '2']];
     const top = ks.reduce((a, b) => (m.final[a[0]] >= m.final[b[0]] ? a : b))[0];
     const vals = new Set(valuesOf(m).map(v => v.pick));
-    side = `<div class="probs">${ks.map(([k, c, l]) =>
-      `<span class="k-${c}${vals.has(k) ? ' val' : k === top ? ' top' : ''}"><span><small>${l}</small>${pct(m.final[k])}</span><i style="width:${Math.round(m.final[k] * 100)}%"></i></span>`).join('')}</div>`;
+    // Spelbolagets bästa odds under procenten, när vi har dem.
+    const o = m.market?.h2h;
+    side = `<div class="probs${o ? ' with-odds' : ''}">${ks.map(([k, c, l]) =>
+      `<span class="k-${c}${vals.has(k) ? ' val' : k === top ? ' top' : ''}"><span><small>${l}</small>${pct(m.final[k])}${o?.[k]?.odds ? `<u>${odd(o[k].odds)}</u>` : ''}</span><i style="width:${Math.round(m.final[k] * 100)}%"></i></span>`).join('')}</div>`;
   }
-  return `<button class="match${valuesOf(m).length ? ' has-val' : ''}" data-match="${m.id}">
+  return `<button class="match${valuesOf(m).length || tips ? ' has-val' : ''}" data-match="${m.id}">
     ${time}
     <span class="teams">
       <span class="team ${res('h')}">${crest(m.home)}<span>${esc(m.home.short)}</span></span>
@@ -86,14 +94,34 @@ function viewMatches() {
   const matches = allMatches();
   renderDays(matches);
   const todays = matches.filter(m => dayKey(m.utc) === state.day).sort((a, b) => a.utc.localeCompare(b.utc));
-  if (!todays.length) return '<p class="empty">Inga matcher de närmaste dagarna.</p>';
+  if (!todays.length) return intro() + '<p class="empty">Inga matcher de närmaste dagarna.</p>';
+  // Dagens tips (samma urval som Dagens värde), räknat på alla ligor – inte bara den valda.
+  const tips = new Map();
+  if (premium()) {
+    // Samma tips som sparas i tipsstatistiken (dagens bästa, säkraste, värdespel, bygget, spelarspel).
+    for (const t of PICKS.trackPicks(everyMatch().filter(m => UPCOMING.has(m.status) && dayKey(m.utc) === state.day))) tips.set(t.m.id, (tips.get(t.m.id) ?? 0) + 1);
+  }
   const byComp = new Map();
   for (const m of todays) byComp.set(m.comp, [...(byComp.get(m.comp) ?? []), m]);
-  return hero(pickFocus(todays)) + [...byComp].map(([c, ms]) => `<section class="group">
+  return intro() + hero(pickFocus(todays)) + (tips.size ? `<a class="tips-link" href="dagens-varde.html"><span>★</span><b>${[...tips.values()].reduce((a, b) => a + b, 0)} tips från Dagens värde</b><small>Matcherna med tips är markerade nedan</small><i>→</i></a>` : '')
+    + [...byComp].map(([c, ms]) => `<section class="group">
     <div class="group-head">${c.emblem ? `<img src="${esc(c.emblem)}" alt="">` : ''}<b>${esc(c.name)}</b><small>${esc(c.area)}</small>
       <small class="n">${ms.length} ${ms.length === 1 ? 'match' : 'matcher'}</small></div>
-    ${ms.map(matchRow).join('')}
+    ${ms.map(m => matchRow(m, tips.get(m.id) ?? 0)).join('')}
   </section>`).join('');
+}
+
+// Kort presentation för den som inte är inloggad (kan stängas – sparas i webbläsaren).
+function intro() {
+  if (typeof AUTH !== 'undefined' && AUTH.user) return '';
+  try { if (localStorage.getItem('bv-intro')) return ''; } catch {}
+  return `<section class="intro" id="intro">
+    <button class="intro-x" data-intro-close aria-label="Stäng">×</button>
+    <span class="label">Ny här?</span>
+    <h2>Statistiken först. Sen spelet.</h2>
+    <p>BetValue räknar ut chansen i varje match och visar vilka spel som är värda att spela – och vilket odds du minst behöver. Matcher, live och tabeller är gratis.</p>
+    <div class="intro-cta"><a class="btn-gold" href="konto.html?tab=signup">Skapa konto – 9 kr/mån</a><a class="btn-ghost" href="om.html">Så funkar det</a><a class="btn-ghost" href="tips.html">Så har det gått</a></div>
+  </section>`;
 }
 
 // ---------- Tabeller ----------
@@ -173,9 +201,11 @@ function readHash() {
 }
 
 document.addEventListener('click', e => {
-  const t = e.target.closest('[data-comp],[data-day]');
+  if (e.target.closest('[data-intro-close]')) { try { localStorage.setItem('bv-intro', '1'); } catch {} $('#intro')?.remove(); return; }
+  const t = e.target.closest('[data-comp],[data-day],[data-alldays]');
   if (!t) return;
   if (t.dataset.comp) state.comp = t.dataset.comp;
+  else if ('alldays' in t.dataset) state.allDays = !state.allDays;
   else state.day = t.dataset.day;
   render();
 });

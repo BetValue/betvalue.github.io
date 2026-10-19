@@ -10,6 +10,7 @@ import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { buildModel, predict } from './model.mjs';
 import { findEvent, similarity, tokens } from './match.mjs';
 import { teamMarkets, playerMarkets } from './markets.mjs';
+import { addStats } from './stats.mjs';
 import { buildPlayerIndex } from './players.mjs';
 import { buildPhotos } from './photos.mjs';
 import { addGoals, updateTrack } from './track.mjs';
@@ -410,6 +411,8 @@ async function main() {
   }
 
   if (FD_KEY) await addHeadToHead(competitions);
+  // Lag- och spelarstatistik från ESPN (hörnor, kort, skott …) för matcher inom 48 h – före tipsen.
+  await addStats(competitions).catch(err => console.warn('Statistik:', err.message));
   // Före uploadPremium: tipsen räknas ur värdebets/extras som sedan tas bort ur den öppna filen.
   const goals = await addGoals(competitions).catch(err => { console.warn('Målskyttar:', err.message); return {}; });
   await updateTrack(competitions, goals).catch(err => console.warn('Tipsstatistik:', err.message));

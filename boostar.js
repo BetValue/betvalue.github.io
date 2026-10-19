@@ -1,17 +1,59 @@
-// Boostar: kalkylator som testar ett boostat odds mot vår modell, plus en lista
-// med inlagda boostar från data/boosts.json.
+// Boostar: analys av boostade odds enligt vår metod – boosten delas upp i sina ben, varje ben får
+// en egen chans ur statistiken (picks.js), benen räknas ihop med hänsyn till att de hänger ihop,
+// och det boostade oddset jämförs med vår chans: implicit sannolikhet, EV och en dom (⭐ / Okej / Undvik).
+// Ett boostat odds är inte automatiskt value.
 //
-// boosts.json: [{ "book": "Unibet", "match": 560603, "pick": "pw:38101", "odds": 4.5, "was": 3.6, "ends": "2026-10-17T13:30:00Z", "note": "..." }]
-// pick-nycklar: home/draw/away/over/under, s:<enkel>, b:<bygge>, p:<spelar-id>, pw:<spelar-id>, po:<spelar-id>
+// Listan: data/boosts.json (läggs in för hand) + boostar som medlemmar delat (tabell boosts).
+// boosts.json: [{ "book": "Unibet", "match": 560603, "pick": "bb:home|x:sh:2:12345", "odds": 4.5, "was": 3.6, "ends": "2026-10-17T13:30:00Z", "note": "..." }]
+// pick-nycklar: se picks.js (home/draw/away/over/under, g:…, c:…, k:…, x:…, p:…, bb:ben|ben|…)
 
-const BOOKS = ['Svenska Spel', 'Bet365', 'ATG', 'Unibet', 'Betsson', 'LeoVegas', 'NordicBet', 'ComeOn', 'Mr Green', 'Coolbet', 'Betway', 'Speedy Bet', 'Annat'];
+const BOOKS = ['Svenska Spel', 'Bet365', 'ATG', 'Unibet', 'Betsson', 'NordicBet', 'LeoVegas', 'ComeOn', 'Expekt', 'Mr Green', 'Coolbet', 'Betway', 'Speedy Bet', 'Annat'];
+const bstate = { legs: [''] };
 
+// Prompten vi själva använder när Claude ska leta boostar hos spelbolagen (kopieras från sidan).
+const BOOST_PROMPT = `Du är en noggrann analytiker av boostade odds. Ta reda på vilka boostade odds och specialer som finns hos svenska spelbolag just nu, och bedöm om de faktiskt har värde. Svara på svenska.
+
+ABSOLUTA REGLER
+- Hitta ALDRIG på en boost, ett odds, ett spel eller ett villkor. Använd bara boostar du faktiskt hittar på spelbolagets webbplats eller app, eller i en skärmdump jag skickar.
+- Ange för varje boost: spelbolag, exakt namn på spelet, ordinarie odds → boostat odds, maxinsats och villkor om de finns, samt var och när du såg den (länk/källa).
+- Kan du inte komma åt en sida (inloggning, geo-blockering, appen visar bara boostarna): säg det tydligt och be mig skicka en skärmdump. Gissa inte vad som finns där.
+- Kontrollera att matcherna i boosten spelas på det datum som anges.
+
+SPELBOLAG ATT KOLLA
+Bet365 (Bet Boost, Guld/Silver-boostar), ATG (Oddsboost, Specialer), Unibet (Odds Boost / Kambi Specials), Svenska Spel (Oddset Boost), LeoVegas (Boost), Betsson och NordicBet (Superodds/Boost), ComeOn, Expekt och andra som jag nämner.
+
+ANALYS AV VARJE BOOST
+1. Bryt ner boosten i alla delar (t.ex. lag vinner + spelare gör mål + över 2.5).
+2. Analysera varje del med statistik: form, hemma/borta, xG, skott, skott på mål, hörnor, kort, fouls, spelarens senaste 5–10 matcher, startelvor, skador och avstängningar. Ange källor.
+3. Uppskatta sannolikheten för varje del och för hela boosten. Ta hänsyn till hur delarna hänger ihop inom samma match.
+4. Jämför:
+   - ordinarie odds hos spelbolaget
+   - bästa marknadsodds för samma kombination (om det finns)
+   - det boostade oddset
+   - din egen uppskattade sannolikhet
+5. Räkna ut implicit sannolikhet (1/odds) och EV = (sannolikhet × boostat odds) − 1.
+6. Ett boostat odds är INTE automatiskt value. Säg tydligt om boosten bara får ett dåligt spel att se bättre ut.
+
+RESULTAT
+1. Kort lista över alla boostar du hittade, med spelbolag och källa. Ange separat de du inte kunde komma åt.
+2. Tabell: spelbolag | boost | ordinarie → boostat odds | maxinsats | min % | implicit % | EV | risk.
+3. ⭐ Stjärnmarkera de boostar som har tydligt positivt EV och rimlig träffchans.
+4. "Okej": ungefär rätt prissatt.
+5. "Undvik": negativt EV, med det svagaste benet utpekat.
+6. För varje rekommenderad boost: varför den är bra och vad som kan få den att gå fel.
+7. Om en boost är dålig men innehåller ett bra ben: föreslå det benet som singel.
+
+Skriv kortfattat med tabeller. Hitta inte på något. Är du osäker, skriv att du är osäker.`;
+
+const num = id => parseFloat(($(id)?.value ?? '').replace(',', '.'));
+
+// Dom över en boost: ⭐ = tydligt positivt EV och rimlig chans, Okej = ungefär rätt prissatt, Undvik = negativt EV.
 function verdict(p, odds) {
   if (!(p > 0) || !(odds > 1)) return null;
-  const edge = p * odds - 1;
-  const cls = edge >= 0.05 ? 'yes' : edge >= 0 ? 'meh' : 'no';
-  const text = edge >= 0.05 ? 'Boosten har värde' : edge >= 0 ? 'Ungefär rättvist' : 'Inget värde';
-  return { edge, cls, text };
+  const ev = p * odds - 1;
+  if (ev >= 0.05 && p >= 0.15) return { ev, cls: 'yes', text: '⭐ Bra boost', short: '⭐ Värde' };
+  if (ev >= -0.03) return { ev, cls: 'meh', text: 'Okej – ungefär rätt prissatt', short: 'Okej' };
+  return { ev, cls: 'no', text: 'Undvik – boosten får ett dåligt spel att se bättre ut', short: 'Undvik' };
 }
 
 function matchOptions() {
@@ -23,56 +65,88 @@ function matchOptions() {
     `<option value="${m.id}">${esc(m.home.short)} – ${esc(m.away.short)} · ${dayText(m.utc)} ${clock(m.utc)}</option>`).join('')}</optgroup>`).join('');
 }
 
-function marketOptions(m) {
-  const groups = new Map();
-  for (const x of marketsFor(m)) groups.set(x.group, [...(groups.get(x.group) ?? []), x]);
-  return [...groups].map(([g, list]) => `<optgroup label="${esc(g)}">${list.map(x =>
-    `<option value="${esc(x.key)}">${esc(x.label)}</option>`).join('')}</optgroup>`).join('');
+function marketOptions(m, selected) {
+  const all = PICKS.allMarkets(m).filter(x => x.p >= 0.03 && x.p <= 0.97);
+  return '<option value="">Välj spel…</option>' + PICKS.CATS.filter(c => all.some(x => x.cat === c)).map(c => `<optgroup label="${esc(c)}">${all.filter(x => x.cat === c)
+    .map(x => `<option value="${esc(x.key)}"${x.key === selected ? ' selected' : ''}>${esc(x.label)}</option>`).join('')}</optgroup>`).join('');
+}
+
+// Boosten som ett spel: ett ben = det spelet, flera ben = bet builder.
+function boostMarket(m, keys) {
+  const legs = keys.filter(Boolean).map(k => PICKS.marketByKey(m, k)).filter(Boolean);
+  if (!legs.length) return null;
+  return legs.length === 1 ? { ...legs[0], legs } : PICKS.builder(m, legs);
+}
+
+// Analysen av en boost – samma för kalkylatorn och korten i listan.
+function analysisHtml(m, mk, odds, was, extra = {}) {
+  const v = verdict(mk.p, odds);
+  const weakest = mk.legs.slice().sort((a, b) => a.p - b.p)[0];
+  const strong = mk.legs.filter(l => l.p >= 0.6).sort((a, b) => b.p - a.p)[0];
+  const row = (k, val, sub = '') => `<div><small>${k}</small><b>${val}</b>${sub ? `<em>${sub}</em>` : ''}</div>`;
+  return `
+    <div class="cr-main">
+      <span class="label">${v ? esc(v.text) : 'Skriv in det boostade oddset'}</span>
+      <b>${v ? signed(v.ev) : '–'}</b>
+    </div>
+    <div class="cr-nums">
+      ${row('Boostat odds', odds > 1 ? odd(odds) : '–', odds > 1 ? `implicit ${pct(1 / odds)}` : '')}
+      ${was > 1 ? row('Ordinarie odds', odd(was), `implicit ${pct(1 / was)} · EV ${signed(mk.p * was - 1)}`) : ''}
+      ${was > 1 && odds > 1 ? row('Boost', '+' + Math.round((odds / was - 1) * 100) + '%') : ''}
+      ${row('Vår chans', pct(mk.p), `risk ${esc((mk.risk ?? '').toLowerCase())}`)}
+      <div class="hl"><small>Lägsta odds</small><b>${odd(mk.min)}</b><em>rättvist ${odd(mk.fair)}</em></div>
+      ${extra.max ? row('Maxinsats', esc(extra.max)) : ''}
+    </div>
+    <div class="legs-an">
+      <span class="label">Benen</span>
+      ${mk.legs.map(l => `<div class="leg-an${l === weakest && mk.legs.length > 1 ? ' weak' : ''}">
+        <div><b>${esc(l.label)}</b>${l === weakest && mk.legs.length > 1 ? '<em>svagaste benet</em>' : ''}<small>${esc(l.basis ?? '')}</small></div>
+        <span>${pct(l.p)}</span></div>`).join('')}
+      ${mk.legs.length > 1 ? `<p class="note">${esc(mk.basis)}</p>` : ''}
+    </div>
+    ${v && v.cls === 'no' && strong && mk.legs.length > 1 ? `<p class="hint">Boosten är dålig, men <b>${esc(strong.label)}</b> (${pct(strong.p)}) är ett bra ben – spela det hellre som singel om du får minst ${odd(strong.min)} i odds.</p>` : ''}
+    ${v && v.cls === 'yes' ? `<p class="note"><b>Varför bra:</b> oddset ${odd(odds)} motsvarar ${pct(1 / odds)} chans, vi räknar med ${pct(mk.p)}. <b>Kan gå fel:</b> ${esc(weakest.wrong ?? '')}</p>` : ''}
+    ${extra.terms ? `<p class="note">Villkor: ${esc(extra.terms)}</p>` : ''}
+    ${mk.legs.some(l => l.cat === 'Spelare') ? '<p class="note">⏱ Kolla startelvan innan du spelar – Byte+ gäller inte om spelaren inte startar.</p>' : ''}`;
+}
+
+function legsHtml(m) {
+  return bstate.legs.map((k, i) => `<div class="leg-pick">
+    <label><span>${bstate.legs.length > 1 ? `Ben ${i + 1}` : 'Spel'}</span><select data-leg="${i}">${m ? marketOptions(m, k) : ''}</select></label>
+    ${bstate.legs.length > 1 ? `<button class="btn-mini" data-leg-remove="${i}" aria-label="Ta bort ben ${i + 1}">×</button>` : ''}
+  </div>`).join('') + (bstate.legs.length < 5 ? '<button class="btn-mini" data-leg-add>＋ Lägg till ben</button>' : '');
 }
 
 function updateCalc() {
   const m = findMatch($('#c-match').value);
-  const mk = m && marketsFor(m).find(x => x.key === $('#c-market').value);
-  const odds = parseFloat($('#c-odds').value.replace(',', '.'));
-  const was = parseFloat($('#c-was').value.replace(',', '.'));
   const out = $('#c-result');
-  if (!mk) { out.innerHTML = ''; return; }
+  const mk = m && boostMarket(m, bstate.legs);
+  if (!mk) { out.className = 'calc-result'; out.innerHTML = '<p class="note">Välj spelet (eller benen) som spelbolaget boostar.</p>'; return; }
+  const odds = num('#c-odds'), was = num('#c-was');
   const v = verdict(mk.p, odds);
   out.className = 'calc-result ' + (v?.cls ?? '');
-  out.innerHTML = `
-    <div class="cr-main">
-      <span class="label">${v ? esc(v.text) : 'Skriv in det boostade oddset'}</span>
-      <b>${v ? signed(v.edge) : '–'}</b>
-    </div>
-    <div class="cr-nums">
-      <div><small>Vår chans</small><b>${pct(mk.p)}</b></div>
-      <div><small>Rättvist odds</small><b>${odd(fair(mk.p))}</b></div>
-      <div><small>Värde från</small><b>${odd(minOdds(mk.p))}</b></div>
-      ${was > 1 && odds > 1 ? `<div><small>Boost</small><b>+${Math.round((odds / was - 1) * 100)}%</b></div>` : ''}
-    </div>
-    <p class="note">${v && v.edge >= 0.05 ? 'Oddset är högre än vad modellen tycker att spelet är värt.' : 'Ett spel har värde när det boostade oddset är högre än "värde från".'}
-      ${mk.player ? ' Kolla att spelaren startar – startelvan släpps cirka en timme före avspark.' : ''}</p>`;
+  out.innerHTML = analysisHtml(m, mk, odds, was, { max: $('#c-max').value.trim(), terms: $('#c-terms').value.trim() });
 }
 
-function fillMarkets() {
+function fillLegs(reset = false) {
+  if (reset) bstate.legs = [''];
   const m = findMatch($('#c-match').value);
-  $('#c-market').innerHTML = m ? marketOptions(m) : '';
+  $('#c-legs').innerHTML = legsHtml(m);
   updateCalc();
 }
 
 // Lägg upp boosten som står i kalkylatorn så att alla ser den (kräver inloggning).
 async function shareBoost(btn) {
   const m = findMatch($('#c-match').value);
-  const mk = m && marketsFor(m).find(x => x.key === $('#c-market').value);
-  const odds = parseFloat($('#c-odds').value.replace(',', '.'));
-  const was = parseFloat($('#c-was').value.replace(',', '.'));
-  const book = $('#c-book').value;
+  const mk = m && boostMarket(m, bstate.legs);
+  const odds = num('#c-odds'), was = num('#c-was');
+  const book = $('#c-book').value, max = $('#c-max').value.trim();
   const msg = $('#share-msg');
   if (!mk || !(odds > 1)) { msg.textContent = 'Välj match och spel och skriv in det boostade oddset först.'; return; }
   if (!book) { msg.textContent = 'Välj vilket spelbolag som har boosten.'; return; }
   btn.disabled = true;
   const { error } = await sb.from('boosts').insert({
-    book, match_id: String(m.id), pick: mk.key, title: mk.label, odds, was: was > 1 ? was : null, ends: m.utc,
+    book, match_id: String(m.id), pick: mk.key, title: mk.label + (max ? ` (max ${max})` : ''), odds, was: was > 1 ? was : null, ends: m.utc,
   });
   btn.disabled = false;
   if (error) { msg.textContent = 'Kunde inte lägga upp boosten: ' + error.message; return; }
@@ -85,43 +159,25 @@ async function removeBoost(id) {
   render();
 }
 
-// Den bästa boosten: stort guldkort överst.
-function bestBoostHtml(b) {
+function boostCard(b, i, best = false) {
   const m = findMatch(b.match);
-  const mk = m && marketsFor(m).find(x => x.key === b.pick);
-  const p = mk?.p ?? b.p;
-  return `<div class="goldhero boost-best">
-    <span class="shine" aria-hidden="true"></span>
-    <div class="gh-top"><span class="ribbon">★ Bästa boosten</span><span class="gh-meta">${esc(b.book)}${m ? " · " + esc(dayText(m.utc)) + " " + esc(clock(m.utc)) : ""}</span></div>
-    ${m ? `<div class="gh-match">${crest(m.home)}<span>${esc(m.home.short)}</span><i>vs</i><span>${esc(m.away.short)}</span>${crest(m.away)}</div>` : ""}
-    <h2 class="gh-pick">${esc(b.title ?? mk?.label ?? "Boost")}</h2>
-    <div class="gh-nums">
-      <div><small>Boostat odds</small><b>${odd(b.odds)}</b>${b.was ? `<em>var ${odd(b.was)}</em>` : ""}</div>
-      <div><small>Värde</small><b>${signed(b.edge)}</b></div>
-      <div><small>Vår chans</small><b>${pct(p)}</b></div>
-      <div><small>Rättvist odds</small><b>${odd(fair(p))}</b></div>
-    </div>
-    <div class="gh-save">${m && mk ? saveBtn(m, mk.key, mk.label, mk.p, b.odds, b.book) : ""}</div>
-  </div>`;
-}
-
-function boostCard(b, i) {
-  const m = findMatch(b.match);
-  const mk = m && marketsFor(m).find(x => x.key === b.pick);
+  const mk = m && (b.pick.startsWith('bb:') ? PICKS.marketByKey(m, b.pick) : boostMarket(m, [b.pick]));
   const p = mk?.p ?? b.p ?? null;
   const v = verdict(p, b.odds);
+  const weakest = mk?.legs?.slice().sort((x, y) => x.p - y.p)[0];
   const label = b.title ?? mk?.label ?? 'Boost';
-  return `<div class="boost ${v?.cls ?? ''}" style="animation-delay:${i * 40}ms">
-    <div class="b-top"><span class="b-book">${esc(b.book)}</span>${b.ends ? `<small>gäller till ${dayText(b.ends)} ${clock(b.ends)}</small>` : ''}</div>
+  return `<div class="boost ${v?.cls ?? ''}${best ? ' best' : ''}" style="animation-delay:${i * 40}ms">
+    <div class="b-top"><span class="b-book">${esc(b.book)}</span>${v ? `<span class="b-tag ${v.cls}">${esc(v.short)}</span>` : ''}${b.ends ? `<small>gäller till ${dayText(b.ends)} ${clock(b.ends)}</small>` : ''}</div>
     ${m ? `<button class="vs" data-match="${m.id}">${crest(m.home)}<span>${esc(m.home.short)}</span><small>–</small><span>${esc(m.away.short)}</span>${crest(m.away)}</button>` : ''}
     <div class="b-pick">${esc(label)}</div>
-    <div class="b-odds">${b.was ? `<s>${odd(b.was)}</s>` : ''}<b>${odd(b.odds)}</b></div>
+    <div class="b-odds">${b.was ? `<s>${odd(b.was)}</s>` : ''}<b>${odd(b.odds)}</b><small>implicit ${pct(1 / b.odds)}</small></div>
     <div class="pc-nums">
       <div><small>Vår chans</small><b>${pct(p)}</b></div>
-      <div><small>Rättvist</small><b>${odd(fair(p))}</b></div>
-      <div class="hl"><small>Värde</small><b>${v ? signed(v.edge) : '–'}</b></div>
+      <div class="hl"><small>EV</small><b>${v ? signed(v.ev) : '–'}</b></div>
+      <div><small>Risk</small><b>${esc(mk?.risk ?? '–')}</b></div>
     </div>
-    ${v ? `<div class="b-verdict">${esc(v.text)}</div>` : ''}
+    ${weakest && mk.legs.length > 1 ? `<p class="note">Svagaste benet: ${esc(weakest.label)} (${pct(weakest.p)})</p>` : ''}
+    ${!mk ? '<p class="note">Vi kan inte räkna på det här spelet – det saknas statistik för matchen.</p>' : ''}
     ${m && mk ? saveBtn(m, mk.key, mk.label, mk.p, b.odds, b.book) : ''}
     ${b.note ? `<p class="note">${esc(b.note)}</p>` : ''}
     ${b.username ? `<div class="b-by">Upplagd av <b>${esc(b.username)}</b>${AUTH.user?.id === b.created_by ? ` · <button class="linkbtn" data-remove-boost="${b.id}">Ta bort</button>` : ''}</div>` : ''}
@@ -129,7 +185,7 @@ function boostCard(b, i) {
 }
 
 async function render() {
-  if (!(await requirePremium('Skapa konto för att se boostarna', 'Boost-kalkylatorn och de rekommenderade boostarna.'))) return;
+  if (!(await requirePremium('Skapa konto för att se boostarna', 'Boost-analysen och boostarna som andra har lagt upp.'))) return;
   let boosts = [];
   try {
     const res = await fetch('data/boosts.json?t=' + Date.now());
@@ -139,26 +195,28 @@ async function render() {
   boosts = boosts.concat(await sharedBoosts());
   boosts = boosts.filter(b => !b.ends || Date.parse(b.ends) > Date.now())
     .map(b => {
-      const m = findMatch(b.match), mk = m && marketsFor(m).find(x => x.key === b.pick);
+      const m = findMatch(b.match);
+      const mk = m && (String(b.pick).startsWith('bb:') ? PICKS.marketByKey(m, b.pick) : boostMarket(m, [b.pick]));
       const p = mk?.p ?? b.p;
-      return { ...b, edge: p ? p * b.odds - 1 : -1 };
+      return { ...b, ev: p ? p * b.odds - 1 : -1 };
     })
-    .sort((a, b) => b.edge - a.edge);
-  // Guldkortet går bara till den boost som ger mest värde för oddset (och bara om den har värde).
-  const best = boosts[0]?.edge > 0 ? boosts[0] : null;
+    .sort((a, b) => b.ev - a.ev);
+  const groups = [['⭐ Värde', boosts.filter(b => b.ev >= 0.05)], ['Okej', boosts.filter(b => b.ev < 0.05 && b.ev >= -0.03)], ['Undvik', boosts.filter(b => b.ev < -0.03)]];
 
   $('#main').innerHTML = `
     <section class="calc">
       <div class="calc-head">
-        <span class="label">Boost-kalkylator</span>
+        <span class="label">Boost-analys</span>
         <h2>Är boosten värd något?</h2>
-        <p>Välj matchen och spelet som spelbolaget boostar och skriv in oddset. Vi jämför med vår modell direkt.</p>
+        <p>Välj matchen och spelet – eller alla benen om boosten är en kombination – och skriv in oddset. Vi räknar varje ben för sig, hur de hänger ihop och om det boostade oddset faktiskt har värde.</p>
       </div>
       <div class="calc-form">
         <label class="f-wide"><span>Match</span><select id="c-match">${matchOptions()}</select></label>
-        <label class="f-wide"><span>Spel</span><select id="c-market"></select></label>
+        <div class="f-wide legs-pick" id="c-legs"></div>
         <label><span>Boostat odds</span><input id="c-odds" inputmode="decimal" placeholder="t.ex. 3,50" autocomplete="off"></label>
-        <label><span>Vanligt odds <i>(valfritt)</i></span><input id="c-was" inputmode="decimal" placeholder="t.ex. 2,90" autocomplete="off"></label>
+        <label><span>Ordinarie odds <i>(valfritt)</i></span><input id="c-was" inputmode="decimal" placeholder="t.ex. 2,90" autocomplete="off"></label>
+        <label><span>Maxinsats <i>(valfritt)</i></span><input id="c-max" placeholder="t.ex. 100 kr" autocomplete="off"></label>
+        <label><span>Villkor <i>(valfritt)</i></span><input id="c-terms" placeholder="t.ex. bara singel, nya kunder" autocomplete="off"></label>
       </div>
       <div id="c-result" class="calc-result"></div>
       <div class="share">
@@ -171,22 +229,38 @@ async function render() {
 
     <section class="sec">
       <div class="sec-head"><h2>Aktuella boostar</h2><span>${boosts.length ? 'Bäst värde först' : ''}</span></div>
-      ${best ? bestBoostHtml(best) : ''}
-      ${boosts.length ? `<div class="cgrid">${(best ? boosts.slice(1) : boosts).map(boostCard).join('')}</div>`
-        : `<div class="locked"><b>Inga boostar inlagda</b><span>Ser du en boost hos ${BOOKS.slice(0, 3).join(', ')} eller något annat bolag? Testa den i kalkylatorn ovan, eller be Claude lägga in den i listan så att kompisarna ser den också.</span></div>`}
-    </section>`;
+      ${boosts.length ? groups.filter(([, l]) => l.length).map(([t, l]) => `<h3 class="sb-h">${t}</h3><div class="cgrid">${l.map((b, i) => boostCard(b, i, t.startsWith('⭐') && i === 0)).join('')}</div>`).join('')
+        : `<p class="empty-small">Inga boostar upplagda just nu. Spelbolagens boostar finns inte att hämta gratis, så vi hittar inte på några – testa en boost du ser i analysen ovan och lägg upp den så att alla ser den.</p>`}
+    </section>
 
-  $('#c-match').addEventListener('change', fillMarkets);
-  $('#c-market').addEventListener('change', updateCalc);
-  $('#c-odds').addEventListener('input', updateCalc);
-  $('#c-was').addEventListener('input', updateCalc);
-  fillMarkets();
+    <details class="box ai-prompt">
+      <summary><b>Låt Claude leta boostar hos spelbolagen</b><small>Vår analysprompt – kopiera och klistra in, gärna med skärmdumpar på boostarna</small></summary>
+      <pre id="boost-prompt">${esc(BOOST_PROMPT)}</pre>
+      <button class="btn-mini gold" data-copy-prompt>Kopiera prompten</button> <span class="note" id="copy-msg" role="status"></span>
+    </details>`;
+
+  $('#c-match').addEventListener('change', () => fillLegs(true));
+  for (const id of ['#c-odds', '#c-was', '#c-max', '#c-terms']) $(id).addEventListener('input', updateCalc);
+  fillLegs();
   $('#share-boost')?.addEventListener('click', e => shareBoost(e.currentTarget));
 }
 
-document.addEventListener('click', e => {
-  const t = e.target.closest('[data-remove-boost]');
-  if (t) removeBoost(t.dataset.removeBoost);
+document.addEventListener('change', e => {
+  const t = e.target.closest('[data-leg]');
+  if (!t) return;
+  bstate.legs[Number(t.dataset.leg)] = t.value;
+  updateCalc();
+});
+document.addEventListener('click', async e => {
+  const t = e.target.closest('[data-remove-boost],[data-leg-add],[data-leg-remove],[data-copy-prompt]');
+  if (!t) return;
+  if (t.dataset.removeBoost) removeBoost(t.dataset.removeBoost);
+  else if ('legAdd' in t.dataset) { bstate.legs.push(''); fillLegs(); }
+  else if (t.dataset.legRemove != null) { bstate.legs.splice(Number(t.dataset.legRemove), 1); fillLegs(); }
+  else {
+    try { await navigator.clipboard.writeText(BOOST_PROMPT); $('#copy-msg').textContent = 'Kopierad!'; }
+    catch { $('#copy-msg').textContent = 'Markera texten ovan och kopiera den.'; }
+  }
 });
 document.addEventListener('auth:changed', () => render());
 

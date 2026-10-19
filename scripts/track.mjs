@@ -2,8 +2,8 @@
 // matchen närmar sig avspark och rättas när den är spelad. Visas öppet för alla (även
 // utloggade) så att man kan se hur många av våra tips som gått in.
 //
-// Urvalet är samma som i dagens.js: dagens bästa bet, upp till 6 enskilda spel, ett bet
-// builder per match (max 6) och de 8 bästa målskyttarna per dag.
+// Urvalet kommer från picks.js (trackPicks): dagens bästa bet, de tre säkraste lagspelen,
+// värdespel (när vi har odds), dagens Bet Builder och två spelarspel.
 //
 // Ett tips läggs in först när matchen börjar inom LOCK_HOURS (så att medlemmarnas tips inte
 // syns öppet långt i förväg) och ändras inte efter avspark.
@@ -14,19 +14,20 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 
-const { gradeBet } = createRequire(import.meta.url)('../grade.js');
+const require = createRequire(import.meta.url);
+const { gradeBet } = require('../grade.js');
+const PICKS = require('../picks.js');
+import { compactSummary } from './stats.mjs';
 const DATA = new URL('../data/', import.meta.url);
 const TZ = 'Europe/Stockholm';
-const LOCK_HOURS = 3.5, KEEP_DAYS = 120;
+const LOCK_HOURS = 3.5, KEEP_DAYS = 120, STATS_DAYS = 21;
 const UPCOMING = new Set(['SCHEDULED', 'TIMED']);
 const LIVE = new Set(['IN_PLAY', 'PAUSED']);
-const CONF_W = { hög: 1, medel: 0.85, låg: 0.6 };
 const PICK = { over: 'Över 2,5', under: 'Under 2,5' };
 const ESPN = 'https://site.api.espn.com/apis/site/v2/sports/soccer/';
 
 const dayKey = iso => new Date(iso).toLocaleDateString('sv-SE', { timeZone: TZ });
 const fill = (s, m) => s.replace('{H}', m.home.short).replace('{A}', m.away.short);
-const fair = p => 1 / p;
 const r3 = x => Math.round(x * 1000) / 1000;
 
 async function readJson(name, fallback) {
@@ -40,49 +41,9 @@ function pickLabel(m, k) {
   return PICK[k] + ' mål';
 }
 
-// Samma som marketsFor() i common.js.
-function marketsFor(m) {
-  const out = [];
-  for (const k of ['home', 'draw', 'away', 'over', 'under']) if (m.final?.[k] != null) out.push({ key: k, group: 'Matchen', label: pickLabel(m, k), p: m.final[k] });
-  const x = m.extras;
-  if (x) {
-    for (const s of x.singles) out.push({ key: 's:' + s.key, group: 'Matchen', label: fill(s.label, m), p: s.p });
-    for (const b of x.builders) out.push({ key: 'b:' + b.key, group: 'Bet builder', label: b.legs.map(l => fill(l, m)).join(' + '), legs: true, p: b.p });
-    for (const pl of x.players) {
-      const team = pl.side === 'home' ? m.home.short : m.away.short;
-      out.push({ key: 'pw:' + pl.id, group: 'Bet builder', label: `${team} vinner + ${pl.name} gör mål`, legs: true, p: pl.win });
-      out.push({ key: 'po:' + pl.id, group: 'Bet builder', label: `${pl.name} gör mål + Över 2,5 mål`, legs: true, p: pl.o25 });
-    }
-  }
-  return out;
-}
-
-// Dagens rekommendationer för en dag, precis som dagens.js räknar fram dem.
+// Dagens rekommendationer: exakt samma urval som sidan (picks.js).
 function recommendations(ms) {
-  const confW = m => (m.model ? CONF_W[m.model.conf] : 0.7);
-  const ss = [
-    ...ms.flatMap(m => (m.values ?? []).map(v => ({ m, key: v.pick, label: pickLabel(m, v.pick), p: v.p, odds: v.odds, book: v.book, real: true, score: 100 + v.edge * 100 }))),
-    ...ms.flatMap(m => marketsFor(m).filter(x => x.group === 'Matchen' && x.p >= 0.5 && x.p <= 0.8)
-      .map(x => ({ m, key: x.key, label: x.label, p: x.p, real: false, score: x.p * confW(m) }))),
-  ].sort((a, b) => b.score - a.score);
-  const out = [];
-  const best = ss.find(s => s.real || s.p <= 0.72) ?? ss[0];
-  if (best) out.push({ ...best, kind: 'best' });
-  const rest = [];
-  const used = new Set(best ? [best.m.id + best.key] : []);
-  for (const s of ss) {
-    if (used.has(s.m.id + s.key) || rest.some(r => r.m.id === s.m.id && !s.real)) continue;
-    rest.push(s); used.add(s.m.id + s.key);
-    if (rest.length >= 6) break;
-  }
-  out.push(...rest.map(s => ({ ...s, kind: 'single' })));
-  const bb = new Map();
-  for (const b of ms.flatMap(m => marketsFor(m).filter(x => x.legs && fair(x.p) >= 2.2 && fair(x.p) <= 7).map(x => ({ m, ...x, score: x.p * confW(m) })))
-    .sort((a, b) => b.score - a.score)) if (!bb.has(b.m.id)) bb.set(b.m.id, b);
-  out.push(...[...bb.values()].slice(0, 6).map(b => ({ ...b, kind: 'builder' })));
-  out.push(...ms.flatMap(m => (m.extras?.players ?? []).map(pl => ({ m, key: 'p:' + pl.id, label: `${pl.name} gör mål`, p: pl.p, score: pl.p * confW(m) })))
-    .sort((a, b) => b.score - a.score).slice(0, 8).map(s => ({ ...s, kind: 'scorer' })));
-  return out;
+  return PICKS.trackPicks(ms);
 }
 
 // ---------- Målskyttar från ESPN ----------
@@ -98,7 +59,9 @@ export async function addGoals(competitions) {
     if (!slug) continue;
     // Spelade matcher, och matcher som borde vara slut men som football-data inte hunnit uppdatera.
     const late = m => !m.score && ['SCHEDULED', 'TIMED', 'IN_PLAY', 'PAUSED'].includes(m.status) && Date.parse(m.utc) < now - 2.5 * 36e5;
-    const need = c.matches.filter(m => (!cache[m.id] || late(m) && !cache[m.id].score) && (m.status === 'FINISHED' && m.score || late(m)));
+    // Äldre poster saknar ESPN-id (behövs för statistiken efter matchen) – hämta igen om matchen är färsk.
+    const noId = m => cache[m.id] && !cache[m.id].espn && Date.parse(m.utc) > now - STATS_DAYS * 864e5;
+    const need = c.matches.filter(m => (!cache[m.id] || late(m) && !cache[m.id].score || noId(m)) && (m.status === 'FINISHED' && m.score || late(m)));
     const days = [...new Set(need.flatMap(m => [ymd(Date.parse(m.utc)), ymd(Date.parse(m.utc) - 864e5)]))];
     for (const day of days) {
       let sb;
@@ -112,12 +75,14 @@ export async function addGoals(competitions) {
         const comp = ev.competitions?.[0];
         if (comp?.status?.type?.state !== 'post') continue;
         const home = comp.competitors.find(x => x.homeAway === 'home'), away = comp.competitors.find(x => x.homeAway === 'away');
-        const m = need.find(x => !cache[x.id]?.score && c.espn.teams[x.home.id]?.id === String(home?.team?.id) && c.espn.teams[x.away.id]?.id === String(away?.team?.id)
+        const m = need.find(x => (!cache[x.id]?.score || !cache[x.id]?.espn) && c.espn.teams[x.home.id]?.id === String(home?.team?.id) && c.espn.teams[x.away.id]?.id === String(away?.team?.id)
           && Math.abs(Date.parse(ev.date) - Date.parse(x.utc)) < 6 * 36e5);
         if (!m) continue;
+        const ht = c => Number(c.linescores?.[0]?.value ?? c.linescores?.[0]?.displayValue);
         cache[m.id] = {
-          until: m.utc,
+          until: m.utc, espn: ev.id, slug,
           score: { h: Number(home.score) || 0, a: Number(away.score) || 0 },
+          ht: Number.isFinite(ht(home)) && Number.isFinite(ht(away)) ? [ht(home), ht(away)] : null,
           goals: (comp.details ?? []).filter(d => d.scoringPlay).map(d => ({
             side: String(d.team?.id) === String(home.team.id) ? 'home' : 'away',
             name: d.athletesInvolved?.[0]?.displayName ?? null, og: !!d.ownGoal, min: d.clock?.displayValue ?? null,
@@ -126,17 +91,47 @@ export async function addGoals(competitions) {
       }
     }
   }
+  // Statistik efter matchen (hörnor, kort, halvtid, spelare) – för att rätta sådana spel.
+  let summaries = 0;
+  for (const [id, v] of Object.entries(cache)) {
+    if (v.st || !v.espn || !v.slug || summaries >= 40 || Date.parse(v.until) < now - STATS_DAYS * 864e5) continue;
+    try {
+      const res = await fetch(`${ESPN}${v.slug}/summary?event=${v.espn}`);
+      if (!res.ok) continue;
+      const ev = compactSummary(await res.json(), v.slug);
+      summaries++;
+      if (!ev) continue;
+      const side = t => (t === ev.h ? 0 : 1);
+      const c = [0, 0], y = [0, 0];
+      for (const [t, arr] of Object.entries(ev.t)) { c[side(t)] = arr[0]; y[side(t)] = arr[1]; }
+      v.st = { c, y, pl: ev.p.map(p => [p[0], p[2], p[6], p[7], p[8], p[9], p[10], p[12], p[13]]) };
+      v.ht ??= ev.ht;
+    } catch {}
+  }
+  for (const [, v] of Object.entries(cache)) if (v.st && Date.parse(v.until) < now - STATS_DAYS * 864e5) delete v.st.pl;
   for (const [id, v] of Object.entries(cache)) if (Date.parse(v.until) < now - KEEP_DAYS * 864e5) delete cache[id];
   for (const c of competitions) for (const m of c.matches) {
     const g = cache[m.id];
     if (!g) continue;
     m.goals = g.goals;
+    if (g.ht || g.st) m.post = { ht: g.ht ?? null, c: g.st?.c ?? null, y: g.st?.y ?? null, pl: g.st?.pl ?? null };
     // football-data släpar ibland efter: ESPN säger att matchen är slut.
     if (m.status !== 'FINISHED' && g.score) { m.status = 'FINISHED'; m.score = g.score; m.values = []; }
   }
   await writeFile(new URL('goals.json', DATA), JSON.stringify(cache));
-  console.log(`Målskyttar: ${fetched} ESPN-anrop, ${Object.keys(cache).length} matcher sparade`);
+  console.log(`Målskyttar: ${fetched} ESPN-anrop, ${summaries} matchstatistik, ${Object.keys(cache).length} matcher sparade`);
   return cache;
+}
+
+// Det som behövs för att rätta spel som inte bara hänger på slutresultatet.
+export function postState(m, g) {
+  const post = m.post ?? (g ? { ht: g.ht, c: g.st?.c, y: g.st?.y, pl: g.st?.pl } : null);
+  return {
+    goals: m.goals ?? g?.goals ?? null,
+    ht: post?.ht ?? null,
+    stats: post?.c ? { c: post.c, y: post.y } : null,
+    players: post?.pl ? post.pl.map(([id, name, sh, sot, fc, fs, y, gl, a]) => ({ id, name, sh, sot, fc, fs, y, g: gl, a })) : null,
+  };
 }
 
 // ---------- Tipsstatistik ----------
@@ -190,8 +185,9 @@ export async function updateTrack(competitions, goals = {}) {
     if (!m) { if (Date.parse(p.utc) < now - 3 * 864e5) p.result = 'void'; continue; }
     if (m.status === 'POSTPONED' || m.status === 'CANCELLED') { p.result = 'void'; continue; }
     if (m.status !== 'FINISHED' || !m.score) continue;
-    const res = gradeBet(p.key, p.label, { started: true, done: true, h: m.score.h, a: m.score.a, goals: m.goals ?? goals[m.id]?.goals ?? null });
-    if (res === 'won' || res === 'lost') { p.result = res; p.score = `${m.score.h}–${m.score.a}`; }
+    const res = gradeBet(p.key, p.label, { started: true, done: true, h: m.score.h, a: m.score.a, ...postState(m, goals[m.id]) });
+    if (res === 'void') p.result = 'void';
+    else if (res === 'won' || res === 'lost') { p.result = res; p.score = `${m.score.h}–${m.score.a}`; }
   }
 
   picks = picks.filter(p => Date.parse(p.utc) > now - KEEP_DAYS * 864e5).sort((a, b) => b.utc.localeCompare(a.utc));
