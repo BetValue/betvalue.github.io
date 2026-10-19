@@ -366,8 +366,10 @@
   function recommend(ms) {
     const all = ms.flatMap(m => allMarkets(m)).filter(useful);
     const byScore = all.slice().sort((a, b) => score(b) - score(a));
-    const star = all.filter(x => x.ev != null && x.ev >= 0.03 && x.p >= 0.5).sort((a, b) => b.ev - a.ev);
-    const value = all.filter(x => x.ev != null && x.ev >= 0.05 && x.p < 0.5).sort((a, b) => b.ev - a.ev);
+    // EV räknas bara där underlaget räcker. Över 30 % EV mot svenska odds är nästan alltid ett modellfel – visas inte.
+    const evOk = x => x.ev != null && x.conf !== 'låg' && x.ev <= 0.3;
+    const star = all.filter(x => evOk(x) && x.ev >= 0.03 && x.p >= 0.5).sort((a, b) => b.ev - a.ev);
+    const value = all.filter(x => evOk(x) && x.ev >= 0.05 && x.p < 0.5 && x.p >= 0.2).sort((a, b) => b.ev - a.ev);
     // Säkraste: högst chans men ett odds som går att spela (lägst ~1,22). Högst tre spelarspel.
     let players = 0;
     const safest = pickDiverse(byScore.filter(x => x.p <= 0.82 && x.key !== 'g:o05' && (x.cat !== 'Spelare' || players++ < 6)), 8)

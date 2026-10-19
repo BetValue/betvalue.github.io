@@ -111,7 +111,11 @@ async function fetchOdds(prev) {
   return out;
 }
 
-// Bästa odds per utfall + marknadens "rättvisa" sannolikhet (snitt över spelbolagen
+// Spelbolag med svensk licens som finns hos The Odds API (Bet365, Svenska Spel och ATG finns inte där).
+// Bästa odds – och därmed värde/EV – räknas bara på dem; marknadens chans på alla bolag.
+const SE_BOOKS = new Set(['Unibet (SE)', 'LeoVegas (SE)', 'Nordic Bet', 'Betsson', 'Coolbet']);
+
+// Bästa svenska odds per utfall + marknadens "rättvisa" sannolikhet (snitt över alla spelbolag
 // efter att deras marginal räknats bort).
 function summarize(books, market, keys) {
   const valid = books.filter(b => b[market] && keys.every(k => b[market][k] > 1));
@@ -122,11 +126,11 @@ function summarize(books, market, keys) {
     const sum = inv.reduce((s, x) => s + x, 0);
     keys.forEach((k, i) => { fair[k] += inv[i] / sum / valid.length; });
   }
-  const out = { books: valid.length };
+  const out = { books: valid.length, se: valid.filter(b => SE_BOOKS.has(b.name)).length };
   for (const k of keys) {
     let best = null;
-    for (const b of valid) if (!best || b[market][k] > best.odds) best = { odds: b[market][k], book: b.name };
-    out[k] = { ...best, fair: r3(fair[k]) };
+    for (const b of valid) if (SE_BOOKS.has(b.name) && (!best || b[market][k] > best.odds)) best = { odds: b[market][k], book: b.name };
+    out[k] = { odds: best?.odds ?? null, book: best?.book ?? null, fair: r3(fair[k]) };
   }
   return out;
 }
@@ -156,7 +160,8 @@ function analyze(match, model, event) {
       const p = m ? w * (pModel ?? m.fair) + (1 - w) * m.fair : pModel;
       if (p == null) continue;
       final[k] = r3(p);
-      if (!m || !UPCOMING.has(match.status)) continue;
+      // Inga värdebets utan svenska odds, eller när modellen har för lite underlag.
+      if (!m?.odds || !UPCOMING.has(match.status) || model?.conf === 'låg') continue;
       const edge = p * m.odds - 1;
       if (edge >= MIN_EDGE && m.odds >= MIN_ODDS && m.odds <= MAX_ODDS) {
         values.push({ pick: k, odds: m.odds, book: m.book, p: r3(p), fair: m.fair, model: pModel ?? null, edge: r3(edge) });

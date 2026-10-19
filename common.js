@@ -369,10 +369,11 @@ function matchHtml(m) {
     if (mk.ou25) for (const k of ['over', 'under']) rows.push([k, mk.ou25[k]]);
     const name = k => k === 'home' ? '1 · ' + m.home.short : k === 'away' ? '2 · ' + m.away.short : k === 'draw' ? 'X · Oavgjort' : PICK[k] + ' mål';
     html += `<div class="box"><span class="label">Odds</span><div class="odds-wrap"><table class="odds-table">
-      <thead><tr><th>Spel</th><th>Bäst</th><th>Hos</th><th>Vår chans</th><th>Värde</th></tr></thead>
+      <thead><tr><th>Spel</th><th>Bäst (SE)</th><th>Hos</th><th>Vår chans</th><th>Värde</th></tr></thead>
       <tbody>${rows.map(([k, o]) => `<tr class="${vals.has(k) ? 'val' : ''}"><td>${esc(name(k))}</td>
         <td class="best">${odd(o.odds)}</td><td>${esc(o.book)}</td><td>${pct(f[k])}</td>
-        <td>${premium() && f[k] != null ? signed(f[k] * o.odds - 1) : '🔒'}</td></tr>`).join('')}</tbody></table></div>
+        <td>${!o.odds ? '–' : premium() && f[k] != null ? signed(f[k] * o.odds - 1) : '🔒'}</td></tr>`).join('')}</tbody></table></div>
+      <p class="note">Bästa odds hos spelbolag med svensk licens (Unibet, LeoVegas, Nordic Bet, Betsson, Coolbet). Marknadens chans räknas på alla bolag.</p>
       ${mk.books?.length ? `<details><summary class="note">Alla spelbolag (1X2)</summary><div class="odds-wrap"><table class="odds-table">
         <tbody>${mk.books.map(b => `<tr><td>${esc(b.name)}</td><td>${odd(b.home)}</td><td>${odd(b.draw)}</td><td>${odd(b.away)}</td></tr>`).join('')}</tbody></table></div></details>` : ''}
     </div>`;
