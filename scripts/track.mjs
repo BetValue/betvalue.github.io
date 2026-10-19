@@ -2,8 +2,8 @@
 // matchen närmar sig avspark och rättas när den är spelad. Visas öppet för alla (även
 // utloggade) så att man kan se hur många av våra tips som gått in.
 //
-// Urvalet är samma som i dagens.js: dagens bästa bet, upp till 6 enskilda spel, ett bet
-// builder per match (max 6) och de 8 bästa målskyttarna per dag.
+// Urvalet är samma som recommendations() i common.js: dagens bästa bet, upp till 3 enskilda
+// spel, 2 bet builders (ett per match) och de 3 bästa målskyttarna per dag (PICKS_MAX).
 //
 // Ett tips läggs in först när matchen börjar inom LOCK_HOURS (så att medlemmarnas tips inte
 // syns öppet långt i förväg) och ändras inte efter avspark.
@@ -22,6 +22,7 @@ const UPCOMING = new Set(['SCHEDULED', 'TIMED']);
 const LIVE = new Set(['IN_PLAY', 'PAUSED']);
 const CONF_W = { hög: 1, medel: 0.85, låg: 0.6 };
 const PICK = { over: 'Över 2,5', under: 'Under 2,5' };
+const PICKS_MAX = { single: 3, builder: 2, scorer: 3 }; // samma som i common.js
 const ESPN = 'https://site.api.espn.com/apis/site/v2/sports/soccer/';
 
 const dayKey = iso => new Date(iso).toLocaleDateString('sv-SE', { timeZone: TZ });
@@ -73,15 +74,15 @@ function recommendations(ms) {
   for (const s of ss) {
     if (used.has(s.m.id + s.key) || rest.some(r => r.m.id === s.m.id && !s.real)) continue;
     rest.push(s); used.add(s.m.id + s.key);
-    if (rest.length >= 6) break;
+    if (rest.length >= PICKS_MAX.single) break;
   }
   out.push(...rest.map(s => ({ ...s, kind: 'single' })));
   const bb = new Map();
   for (const b of ms.flatMap(m => marketsFor(m).filter(x => x.legs && fair(x.p) >= 2.2 && fair(x.p) <= 7).map(x => ({ m, ...x, score: x.p * confW(m) })))
     .sort((a, b) => b.score - a.score)) if (!bb.has(b.m.id)) bb.set(b.m.id, b);
-  out.push(...[...bb.values()].slice(0, 6).map(b => ({ ...b, kind: 'builder' })));
+  out.push(...[...bb.values()].slice(0, PICKS_MAX.builder).map(b => ({ ...b, kind: 'builder' })));
   out.push(...ms.flatMap(m => (m.extras?.players ?? []).map(pl => ({ m, key: 'p:' + pl.id, label: `${pl.name} gör mål`, p: pl.p, score: pl.p * confW(m) })))
-    .sort((a, b) => b.score - a.score).slice(0, 8).map(s => ({ ...s, kind: 'scorer' })));
+    .sort((a, b) => b.score - a.score).slice(0, PICKS_MAX.scorer).map(s => ({ ...s, kind: 'scorer' })));
   return out;
 }
 

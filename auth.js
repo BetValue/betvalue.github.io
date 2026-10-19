@@ -37,25 +37,14 @@ async function loadProfile() {
 function paintAccountLink() {
   const a = document.getElementById('nav-account');
   if (!a) return;
-  for (const link of [a, document.getElementById('nav-account-m')]) {
-    if (!link) continue;
-    link.textContent = AUTH.user ? (AUTH.profile?.username ?? 'Mitt konto') : 'Logga in';
-    link.classList.toggle('signed-in', !!AUTH.user);
-    link.classList.toggle('has-req', !!(AUTH.user && AUTH.requests));
-    if (AUTH.user && AUTH.requests) link.title = AUTH.requests === 1 ? '1 ny vänförfrågan' : AUTH.requests + ' nya vänförfrågningar';
-  }
-  document.querySelectorAll('[data-nav="chatt"]').forEach(tab => {
-    tab.dataset.badge = AUTH.user && AUTH.unread ? (AUTH.unread > 9 ? '9+' : AUTH.unread) : '';
-  });
-  let out = document.getElementById('nav-logout');
-  if (AUTH.user && !out) {
-    out = document.createElement('button');
-    out.id = 'nav-logout';
-    out.className = 'logout-btn';
-    out.textContent = 'Logga ut';
-    out.addEventListener('click', logOut);
-    a.closest('.top-in').appendChild(out);
-  }
+  a.textContent = AUTH.user ? (AUTH.profile?.username ?? 'Mitt konto') : 'Logga in';
+  a.classList.toggle('signed-in', !!AUTH.user);
+  a.classList.toggle('has-req', !!(AUTH.user && AUTH.requests));
+  a.title = AUTH.user && AUTH.requests ? (AUTH.requests === 1 ? '1 ny vänförfrågan' : AUTH.requests + ' nya vänförfrågningar') : '';
+  // Chatten ligger under Mer: olästa syns både på Chatt och på Mer.
+  const badge = AUTH.user && AUTH.unread ? (AUTH.unread > 9 ? '9+' : String(AUTH.unread)) : '';
+  document.querySelectorAll('[data-nav="chatt"], [data-nav-more]').forEach(tab => { tab.dataset.badge = badge; });
+  const out = document.getElementById('nav-logout');
   if (out) out.hidden = !AUTH.user;
 }
 
@@ -63,6 +52,7 @@ async function logOut() {
   await sb.auth.signOut();
   if (/konto.html$/.test(location.pathname)) location.reload();
 }
+document.getElementById('nav-logout')?.addEventListener('click', logOut);
 
 AUTH.ready = (async () => {
   if (!sb) return;

@@ -47,10 +47,10 @@ function updateCalc() {
     <div class="cr-nums">
       <div><small>Vår chans</small><b>${pct(mk.p)}</b></div>
       <div><small>Rättvist odds</small><b>${odd(fair(mk.p))}</b></div>
-      <div><small>Värde från</small><b>${odd(minOdds(mk.p))}</b></div>
+      <div class="hl"><small>Lägsta odds</small><b>${odd(minOdds(mk.p))}</b></div>
       ${was > 1 && odds > 1 ? `<div><small>Boost</small><b>+${Math.round((odds / was - 1) * 100)}%</b></div>` : ''}
     </div>
-    <p class="note">${v && v.edge >= 0.05 ? 'Oddset är högre än vad modellen tycker att spelet är värt.' : 'Ett spel har värde när det boostade oddset är högre än "värde från".'}
+    <p class="note">${v && v.edge >= 0.05 ? 'Oddset är högre än vad modellen tycker att spelet är värt.' : 'Boosten har värde när det boostade oddset är högre än lägsta odds.'}
       ${mk.player ? ' Kolla att spelaren startar – startelvan släpps cirka en timme före avspark.' : ''}</p>`;
 }
 
@@ -99,8 +99,7 @@ function bestBoostHtml(b) {
       <div><small>Boostat odds</small><b>${odd(b.odds)}</b>${b.was ? `<em>var ${odd(b.was)}</em>` : ""}</div>
       <div><small>Värde</small><b>${signed(b.edge)}</b></div>
       <div><small>Vår chans</small><b>${pct(p)}</b></div>
-      <div><small>Rättvist odds</small><b>${odd(fair(p))}</b></div>
-    </div>
+      </div>
     <div class="gh-save">${m && mk ? saveBtn(m, mk.key, mk.label, mk.p, b.odds, b.book) : ""}</div>
   </div>`;
 }
@@ -118,7 +117,6 @@ function boostCard(b, i) {
     <div class="b-odds">${b.was ? `<s>${odd(b.was)}</s>` : ''}<b>${odd(b.odds)}</b></div>
     <div class="pc-nums">
       <div><small>Vår chans</small><b>${pct(p)}</b></div>
-      <div><small>Rättvist</small><b>${odd(fair(p))}</b></div>
       <div class="hl"><small>Värde</small><b>${v ? signed(v.edge) : '–'}</b></div>
     </div>
     ${v ? `<div class="b-verdict">${esc(v.text)}</div>` : ''}
@@ -173,7 +171,7 @@ async function render() {
       <div class="sec-head"><h2>Aktuella boostar</h2><span>${boosts.length ? 'Bäst värde först' : ''}</span></div>
       ${best ? bestBoostHtml(best) : ''}
       ${boosts.length ? `<div class="cgrid">${(best ? boosts.slice(1) : boosts).map(boostCard).join('')}</div>`
-        : `<div class="locked"><b>Inga boostar inlagda</b><span>Ser du en boost hos ${BOOKS.slice(0, 3).join(', ')} eller något annat bolag? Testa den i kalkylatorn ovan, eller be Claude lägga in den i listan så att kompisarna ser den också.</span></div>`}
+        : `<p class="empty-small">Inga boostar upplagda just nu. Ser du en boost hos ${BOOKS.slice(0, 3).join(', ')} eller något annat bolag? Testa den i kalkylatorn ovan och lägg upp den så att alla ser den.</p>`}
     </section>`;
 
   $('#c-match').addEventListener('change', fillMarkets);

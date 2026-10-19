@@ -61,6 +61,55 @@ const lockedBox = text => `<div class="box lockbox"><span>★</span><div><b>${es
     ? '<a href="medlem.html">Slutför betalningen (9 kr/mån)</a> för att se det.'
     : `<a href="konto.html?tab=signup&next=${encodeURIComponent(location.pathname)}">Skapa konto – 9 kr/mån</a> eller <a href="konto.html?next=${encodeURIComponent(location.pathname)}">logga in</a>.`}</div></div>`;
 
+// ---------- Ord på sidan ----------
+// Samma ord betyder alltid samma sak:
+//   Vår chans      – modellens sannolikhet att spelet går in.
+//   Marknadens chans – spelbolagens odds omräknade till chans (utan deras marginal).
+//   Rättvist odds  – 1 ÷ vår chans: oddset där spelet går jämnt ut i längden.
+//   Lägsta odds    – rättvist odds + 5 %: får du minst det här oddset har spelet värde.
+//   Odds           – spelbolagets faktiska odds (bara när de finns).
+//   Värde          – hur mycket mer oddset betalar än chansen motiverar (+6 % = 6 kr per 100 kr i längden).
+function glossary(open = false) {
+  return `<details class="gloss"${open ? ' open' : ''}><summary><i>i</i>Så läser du siffrorna</summary><dl>
+    <div><dt>Vår chans</dt><dd>Hur ofta spelet går in enligt vår modell. 70 % = sju gånger av tio.</dd></div>
+    <div><dt>Lägsta odds</dt><dd>Oddset du minst behöver för att spelet ska vara värt att spela. Hittar du ett högre odds hos ditt spelbolag har spelet värde.</dd></div>
+    <div><dt>Rättvist odds</dt><dd>1 ÷ vår chans. På det oddset går spelet jämnt ut i längden – lägsta odds är rättvist odds + 5 % marginal.</dd></div>
+    <div><dt>Värde</dt><dd>Hur mycket mer spelbolagets odds betalar än chansen motiverar. +6 % betyder 6 kr i plus per 100 kr i längden. Visas bara när vi har spelbolagens odds.</dd></div>
+    <div><dt>Marknadens chans</dt><dd>Spelbolagens odds omräknade till chans, utan deras marginal.</dd></div>
+  </dl></details>`;
+}
+
+// ---------- Dagens rekommendationer ----------
+// Samma urval i dagens.js, på Matcher (★ Tips) och i scripts/track.mjs (tipsstatistiken) – ändra alla tre tillsammans.
+// Färre men starkare: dagens bästa bet + 3 enskilda spel + 2 bet builders + 3 målskyttar.
+const PICKS_MAX = { single: 3, builder: 2, scorer: 3 };
+
+function recommendations(ms) {
+  const confW = m => (m.model ? CONF_W[m.model.conf] : 0.7);
+  const ss = [
+    // Riktiga värdebets (med spelbolagens odds) går alltid först, mest värde först.
+    ...ms.flatMap(m => valuesOf(m).map(v => ({ m, key: v.pick, label: pickLabel(m, v.pick), p: v.p, odds: v.odds, book: v.book, edge: v.edge, real: true, score: 100 + v.edge * 100 }))),
+    ...ms.flatMap(m => marketsFor(m).filter(x => x.group === 'Matchen' && x.p >= 0.5 && x.p <= 0.8)
+      .map(x => ({ m, key: x.key, label: x.label, p: x.p, real: false, score: x.p * confW(m) }))),
+  ].sort((a, b) => b.score - a.score);
+  // Huvudtipset ska ha ett spelbart odds (minst ~1,40) om det inte är ett riktigt värdebet.
+  const best = ss.find(s => s.real || s.p <= 0.72) ?? ss[0] ?? null;
+  const singles = [];
+  const used = new Set(best ? [best.m.id + best.key] : []);
+  for (const s of ss) {
+    if (used.has(s.m.id + s.key) || singles.some(r => r.m.id === s.m.id && !s.real)) continue;
+    singles.push(s); used.add(s.m.id + s.key);
+    if (singles.length >= PICKS_MAX.single) break;
+  }
+  const bb = new Map(); // ett bygge per match
+  for (const b of ms.flatMap(m => marketsFor(m).filter(x => x.legs && fair(x.p) >= 2.2 && fair(x.p) <= 7).map(x => ({ m, ...x, score: x.p * confW(m) })))
+    .sort((a, b) => b.score - a.score)) if (!bb.has(b.m.id)) bb.set(b.m.id, b);
+  const builders = [...bb.values()].slice(0, PICKS_MAX.builder);
+  const scorers = ms.flatMap(m => (m.extras?.players ?? []).map(pl => ({ m, pl, key: 'p:' + pl.id, label: `${pl.name} gör mål`, p: pl.p, score: pl.p * confW(m) })))
+    .sort((a, b) => b.score - a.score).slice(0, PICKS_MAX.scorer);
+  return { best, singles, builders, scorers };
+}
+
 const everyMatch = () => DATA.latest.competitions.flatMap(c => c.matches.map(m => ({ ...m, comp: c })));
 const findMatch = id => everyMatch().find(x => String(x.id) === String(id));
 
@@ -127,10 +176,21 @@ function saveBtn(m, key, label, p = null, odds = null, book = null) {
 // ---------- Sidhuvud och resultatrad ----------
 
 function markNav(page) {
+  document.body.dataset.page = page;
   document.querySelectorAll('[data-nav]').forEach(a => a.classList.toggle('active', a.dataset.nav === page));
+  // Sidorna under Mer: markera Mer.
+  document.querySelector('[data-nav-more]')?.classList.toggle('active', !!document.querySelector('.more-menu .active'));
 }
 
+// Mer-menyn stängs när man trycker utanför den eller väljer något.
+document.addEventListener('click', e => {
+  const more = document.querySelector('details.more[open]');
+  if (more && (!more.contains(e.target) || e.target.closest('.more-menu a, .more-menu button'))) more.open = false;
+});
+
+// Resultatraden visas bara på Matcher – på de andra sidorna tar den bara plats.
 function renderTicker() {
+  if (!['matcher', 'tabeller'].includes(document.body.dataset.page)) return;
   const now = Date.now();
   const all = everyMatch();
   const items = [
@@ -207,7 +267,7 @@ function playerRow(m, pl, extra = '') {
     <div class="pl-main"><b class="plname" ${playerAttrs(m.comp, team.name, pl.name)}>${esc(pl.name)}</b>
       <small>${pl.goals} mål · ${pl.assists} assist · ${pl.played} matcher${pl.pens ? ` · ${pl.pens} straff` : ''}</small>
       <small class="faces">${facing(m, pl.side)}</small>${extra}</div>
-    <div class="pl-num"><b>${pct(pl.p)}</b><small>fair ${odd(fair(pl.p))}</small>${saveBtn(m, 'p:' + pl.id, pl.name + ' gör mål', pl.p)}</div>
+    <div class="pl-num"><b>${pct(pl.p)}</b><small>lägsta odds ${odd(minOdds(pl.p))}</small>${saveBtn(m, 'p:' + pl.id, pl.name + ' gör mål', pl.p)}</div>
   </div>`;
 }
 
@@ -236,7 +296,7 @@ function matchHtml(m) {
   }
   if (premium() && m.values.length) {
     html += `<div class="box valbox"><span class="label">Värdebet</span>${m.values.map(v => `<div class="valrow">
-      <div><b>${esc(pickLabel(m, v.pick))} @ ${odd(v.odds)}</b><br><small>hos ${esc(v.book)} · vår chans ${pct(v.p)} · marknaden ${pct(v.fair)}</small></div>
+      <div><b>${esc(pickLabel(m, v.pick))} @ ${odd(v.odds)}</b><br><small>hos ${esc(v.book)} · vår chans ${pct(v.p)} · marknadens chans ${pct(v.fair)}</small></div>
       <em>${signed(v.edge)}</em>${saveBtn(m, v.pick, pickLabel(m, v.pick), v.p, v.odds, v.book)}</div>`).join('')}</div>`;
   }
 
@@ -267,8 +327,8 @@ function matchHtml(m) {
     if (builders.length) {
       html += `<div class="box"><span class="label">Bet builders · modellens bästa</span>${builders.map(b => `<div class="bb">
         <ul>${b.legs.map(l => `<li>${esc(l)}</li>`).join('')}</ul>
-        <div class="pl-num"><b>${pct(b.p)}</b><small>värde från ${odd(minOdds(b.p))}</small>${saveBtn(m, b.key, b.label, b.p)}</div></div>`).join('')}
-        <p class="note">Spelbolagen sätter egna odds på bet builders. Är deras odds högre än "värde från" har spelet värde enligt modellen.</p></div>`;
+        <div class="pl-num"><b>${pct(b.p)}</b><small>lägsta odds ${odd(minOdds(b.p))}</small>${saveBtn(m, b.key, b.label, b.p)}</div></div>`).join('')}
+        <p class="note">Spelbolagen sätter egna odds på bet builders. Är deras odds högre än lägsta odds har spelet värde enligt modellen.</p></div>`;
     }
     if (m.extras.players.length) {
       html += `<div class="box"><span class="label">Nyckelspelare · chans att göra mål</span>

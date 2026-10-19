@@ -8,10 +8,15 @@
   <meta name="description" content="Matcher, vinstchanser och tabeller.">
   <title>BetValue</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%2306110c'/><circle cx='16' cy='16' r='9' fill='none' stroke='%23f2f5ef' stroke-width='2'/><circle cx='16' cy='16' r='3' fill='%23ffcf4a'/></svg>">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="BetValue">
+  <meta name="mobile-web-app-capable" content="yes">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800;900&family=Instrument+Sans:wght@400;500;600;700&display=swap">
-  <link rel="stylesheet" href="style.css?v=202610181042">
+  <link rel="stylesheet" href="style.css?v=202610191200">
 </head>
 <body>
   <div class="atmos" aria-hidden="true">
@@ -35,18 +40,23 @@
   <header class="top">
     <div class="top-in">
       <a class="brand" href="./" aria-label="BetValue, startsida">BET<span>VALUE</span><i></i></a>
-      <a href="konto.html" class="acc-mobile" id="nav-account-m">Logga in</a>
-      <nav class="tabs">
-        <a href="./" data-nav="matcher">Matcher</a>
-        <a href="dagens-varde.html" data-nav="dagens" class="goldtab">Dagens värde</a>
-        <a href="tips.html" data-nav="tips">Så har det gått</a>
-        <a href="boostar.html" data-nav="boostar">Boostar</a>
-        <a href="./#tabeller" data-nav="tabeller">Tabeller</a>
-        <a href="sparade.html" data-nav="sparade">Sparade bets</a>
-        <a href="chatt.html" data-nav="chatt" class="chattab">Chatt</a>
-        <a href="om.html" data-nav="om">Om oss</a>
-        <a href="konto.html" data-nav="konto" id="nav-account" class="acctab">Logga in</a>
+      <nav class="tabs" aria-label="Huvudmeny">
+        <a href="./" data-nav="matcher"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Zm0 4.2 3.4 2.5-1.3 4H9.9l-1.3-4L12 7.2Z"/></svg><span>Matcher</span></a>
+        <a href="dagens-varde.html" data-nav="dagens" class="goldtab"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5l2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.2-4.1 5.8-.8L12 3.5Z"/></svg><span>Dagens värde</span></a>
+        <a href="tips.html" data-nav="tips"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V9m5.3 10V5m5.4 14v-7M20 19V8"/></svg><span data-short="Så gick det">Så har det gått</span></a>
+        <a href="./#tabeller" data-nav="tabeller"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v14H4zM4 10h16M4 15h16M9 5v14"/></svg><span>Tabeller</span></a>
+        <details class="more">
+          <summary data-nav-more><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h.01M12 12h.01M19 12h.01"/></svg><span>Mer</span></summary>
+          <div class="more-menu">
+            <a href="boostar.html" data-nav="boostar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 3 5 13.5h6L10 21l8-10.5h-6L13 3Z"/></svg><span>Boostar</span></a>
+            <a href="sparade.html" data-nav="sparade"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h10v17l-5-3.6-5 3.6v-17Z"/></svg><span>Sparade bets</span></a>
+            <a href="chatt.html" data-nav="chatt" class="chattab"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14v10H10l-5 4V5Z"/></svg><span>Chatt</span></a>
+            <a href="om.html" data-nav="om"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Zm0 7v6m0-9h.01"/></svg><span>Om BetValue</span></a>
+            <button type="button" class="more-out" id="nav-logout" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4h5v16h-5M10 8l-4 4 4 4M6 12h10"/></svg><span>Logga ut</span></button>
+          </div>
+        </details>
       </nav>
+      <a href="konto.html" data-nav="konto" id="nav-account" class="acctab">Logga in</a>
     </div>
     <div class="ticker" id="ticker" hidden><div class="ticker-track" id="ticker-track"></div></div>
   </header>
@@ -71,12 +81,12 @@
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js"></script>
-  <script src="grade.js?v=202610181042"></script>
-  <script src="common.js?v=202610181042"></script>
-  <script src="espn.js?v=202610181042"></script>
-  <script src="live.js?v=202610181042"></script>
-  <script src="search.js?v=202610181042"></script>
-  <script src="auth.js?v=202610181042"></script>
-  <script src="app.js?v=202610181042"></script>
+  <script src="grade.js?v=202610191200"></script>
+  <script src="common.js?v=202610191200"></script>
+  <script src="espn.js?v=202610191200"></script>
+  <script src="live.js?v=202610191200"></script>
+  <script src="search.js?v=202610191200"></script>
+  <script src="auth.js?v=202610191200"></script>
+  <script src="app.js?v=202610191200"></script>
 </body>
 </html>

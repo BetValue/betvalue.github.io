@@ -47,12 +47,16 @@ export function teamMarkets(grid) {
 }
 
 const PLAY_FACTOR = 0.85; // spelaren byts ut, vilar eller missar ibland
+// Tidigt på säsongen bygger andelen på några få mål (4 av lagets 6 = 67 %). Andelen krymps därför
+// mot en vanlig anfallares andel, som om laget gjort SHRINK_GOALS mål till där spelaren hade SHRINK_SHARE.
+const SHRINK_GOALS = 4, SHRINK_SHARE = 0.1, MAX_SHARE = 0.5;
 
 export function playerMarkets(grid, side, players, teamGoals) {
   const goals = (i, j) => (side === 'home' ? i : j);
   const win = side === 'home' ? (i, j) => i > j : (i, j) => j > i;
   return players.map(pl => {
-    const share = Math.min(pl.goals / Math.max(teamGoals, pl.goals, 1), 0.6) * PLAY_FACTOR;
+    const raw = (pl.goals + SHRINK_GOALS * SHRINK_SHARE) / (Math.max(teamGoals, pl.goals) + SHRINK_GOALS);
+    const share = Math.min(raw, MAX_SHARE) * PLAY_FACTOR;
     const scores = (i, j) => 1 - (1 - share) ** goals(i, j);
     return {
       ...pl, side,

@@ -553,7 +553,7 @@ async function playerHtml(id, slug, teamName) {
 
     ${nm ? `<button class="box nextm" data-match="${nm.m.id}"><span class="label">Nästa match</span>
       <div class="nm-row">${crest(nm.m.home)}<b>${esc(nm.m.home.short)} – ${esc(nm.m.away.short)}</b>${crest(nm.m.away)}<small>${dayText(nm.m.utc)} ${clock(nm.m.utc)}</small></div>
-      <div class="nm-num"><span>Chans att göra mål</span><b>${pct(nm.pl.p)}</b><small>värde från ${odd(minOdds(nm.pl.p))}</small></div></button>` : ''}
+      <div class="nm-num"><span>Chans att göra mål</span><b>${pct(nm.pl.p)}</b><small>lägsta odds ${odd(minOdds(nm.pl.p))}</small></div></button>` : ''}
 
     <div class="box"><span class="label">Säsongen ${esc(DATA.latest.competitions.find(c => c.season)?.season ?? '')} · ${esc(leagueName)}</span>
       <div class="stgroup"><h4>Anfall</h4><div class="sts">
