@@ -8,73 +8,21 @@
   "comp": "Champions League",
   "title": "Harry Kane gör mål",
   "odds": 2.2,
-  "was": 1.77,
+  "was": 1.83,
   "ends": "2026-10-21T19:00:00Z",
-  "pick": null,
-  "p": 0.514,
-  "mp": 0.514,
-  "modelP": null,
+  "pick": "x:g:1:142200",
+  "p": 0.485,
+  "mp": 0.497,
+  "modelP": 0.467,
   "legs": [
    {
     "label": "Harry Kane gör mål",
-    "key": null,
-    "mp": 0.514,
-    "was": 1.77,
-    "p": null
+    "key": "x:g:1:142200",
+    "mp": 0.497,
+    "was": 1.83,
+    "p": 0.467
    }
   ],
   "note": "Spelaren måste starta matchen för att spel ska vara giltiga"
- },
- {
-  "book": "Unibet",
-  "src": "unibet",
-  "match": 575367,
-  "home": "PSG",
-  "away": "FC Barcelona",
-  "comp": "Champions League",
-  "title": "Ousmane Dembele gör mål",
-  "odds": 2.4,
-  "was": 2,
-  "ends": "2026-10-20T19:00:00Z",
-  "pick": null,
-  "p": 0.455,
-  "mp": 0.455,
-  "modelP": null,
-  "legs": [
-   {
-    "label": "Ousmane Dembele gör mål",
-    "key": null,
-    "mp": 0.455,
-    "was": 2,
-    "p": null
-   }
-  ],
-  "note": "Spelaren måste starta matchen för att spel ska vara giltiga"
- },
- {
-  "book": "Unibet",
-  "src": "unibet",
-  "match": 575363,
-  "home": "Liverpool",
-  "away": "Villarreal",
-  "comp": "Champions League",
-  "title": "Alexander Isak minst 2 skott på mål",
-  "odds": 2.1,
-  "was": null,
-  "ends": "2026-10-20T19:00:00Z",
-  "pick": null,
-  "p": null,
-  "mp": null,
-  "modelP": null,
-  "legs": [
-   {
-    "label": "Alexander Isak minst 2 skott på mål",
-    "key": null,
-    "mp": null,
-    "was": null,
-    "p": null
-   }
-  ],
-  "note": "Spel avgörs genom Opta-data. Spelarna måste starta i matchen för att spel ska kvarstå."
  }
 ]
