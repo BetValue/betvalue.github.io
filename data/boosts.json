@@ -36,17 +36,17 @@
   "odds": 2.2,
   "was": 1.81,
   "ends": "2026-10-21T19:00:00Z",
-  "pick": null,
-  "p": 0.502,
+  "pick": "x:g:1:142200",
+  "p": 0.487,
   "mp": 0.502,
-  "modelP": null,
+  "modelP": 0.464,
   "legs": [
    {
     "label": "Harry Kane gör mål",
-    "key": null,
+    "key": "x:g:1:142200",
     "mp": 0.502,
     "was": 1.81,
-    "p": null
+    "p": 0.464
    }
   ],
   "note": "Spelaren måste starta matchen för att spel ska vara giltiga"
@@ -62,17 +62,17 @@
   "odds": 2.1,
   "was": 1.88,
   "ends": "2026-10-20T19:00:00Z",
-  "pick": null,
-  "p": 0.484,
+  "pick": "x:sot:2:235662",
+  "p": 0.41,
   "mp": 0.484,
-  "modelP": null,
+  "modelP": 0.3,
   "legs": [
    {
     "label": "Alexander Isak minst 2 skott på mål",
-    "key": null,
+    "key": "x:sot:2:235662",
     "mp": 0.484,
     "was": 1.88,
-    "p": null
+    "p": 0.3
    }
   ],
   "note": "Spel avgörs genom Opta-data. Spelarna måste starta i matchen för att spel ska kvarstå."
