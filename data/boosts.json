@@ -2,24 +2,24 @@
  {
   "book": "Unibet",
   "src": "unibet",
-  "match": 575367,
-  "home": "PSG",
-  "away": "FC Barcelona",
+  "match": 575372,
+  "home": "Bayern München",
+  "away": "Arsenal",
   "comp": "Champions League",
-  "title": "Ousmane Dembele gör mål",
-  "odds": 2.4,
-  "was": 1.97,
-  "ends": "2026-10-20T19:00:00Z",
+  "title": "Harry Kane gör mål",
+  "odds": 2.2,
+  "was": 1.77,
+  "ends": "2026-10-21T19:00:00Z",
   "pick": null,
-  "p": 0.461,
-  "mp": 0.461,
+  "p": 0.514,
+  "mp": 0.514,
   "modelP": null,
   "legs": [
    {
-    "label": "Ousmane Dembele gör mål",
+    "label": "Harry Kane gör mål",
     "key": null,
-    "mp": 0.461,
-    "was": 1.97,
+    "mp": 0.514,
+    "was": 1.77,
     "p": null
    }
   ],
@@ -28,25 +28,25 @@
  {
   "book": "Unibet",
   "src": "unibet",
-  "match": 575372,
-  "home": "Bayern München",
-  "away": "Arsenal",
+  "match": 575367,
+  "home": "PSG",
+  "away": "FC Barcelona",
   "comp": "Champions League",
-  "title": "Harry Kane gör mål",
-  "odds": 2.2,
-  "was": 1.86,
-  "ends": "2026-10-21T19:00:00Z",
-  "pick": "x:g:1:142200",
-  "p": 0.479,
-  "mp": 0.489,
-  "modelP": 0.464,
+  "title": "Ousmane Dembele gör mål",
+  "odds": 2.4,
+  "was": 2,
+  "ends": "2026-10-20T19:00:00Z",
+  "pick": null,
+  "p": 0.455,
+  "mp": 0.455,
+  "modelP": null,
   "legs": [
    {
-    "label": "Harry Kane gör mål",
-    "key": "x:g:1:142200",
-    "mp": 0.489,
-    "was": 1.86,
-    "p": 0.464
+    "label": "Ousmane Dembele gör mål",
+    "key": null,
+    "mp": 0.455,
+    "was": 2,
+    "p": null
    }
   ],
   "note": "Spelaren måste starta matchen för att spel ska vara giltiga"
@@ -60,19 +60,19 @@
   "comp": "Champions League",
   "title": "Alexander Isak minst 2 skott på mål",
   "odds": 2.1,
-  "was": 1.85,
+  "was": null,
   "ends": "2026-10-20T19:00:00Z",
-  "pick": "x:sot:2:235662",
-  "p": 0.413,
-  "mp": 0.491,
-  "modelP": 0.295,
+  "pick": null,
+  "p": null,
+  "mp": null,
+  "modelP": null,
   "legs": [
    {
     "label": "Alexander Isak minst 2 skott på mål",
-    "key": "x:sot:2:235662",
-    "mp": 0.491,
-    "was": 1.85,
-    "p": 0.295
+    "key": null,
+    "mp": null,
+    "was": null,
+    "p": null
    }
   ],
   "note": "Spel avgörs genom Opta-data. Spelarna måste starta i matchen för att spel ska kvarstå."
