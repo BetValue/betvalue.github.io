@@ -8,18 +8,18 @@
   "comp": "Champions League",
   "title": "Ousmane Dembele gör mål",
   "odds": 2.4,
-  "was": 1.97,
+  "was": 1.98,
   "ends": "2026-10-20T19:00:00Z",
   "pick": null,
-  "p": 0.461,
-  "mp": 0.461,
+  "p": 0.459,
+  "mp": 0.459,
   "modelP": null,
   "legs": [
    {
     "label": "Ousmane Dembele gör mål",
     "key": null,
-    "mp": 0.461,
-    "was": 1.97,
+    "mp": 0.459,
+    "was": 1.98,
     "p": null
    }
   ],
@@ -63,16 +63,16 @@
   "was": 1.88,
   "ends": "2026-10-20T19:00:00Z",
   "pick": "x:sot:2:235662",
-  "p": 0.41,
+  "p": 0.408,
   "mp": 0.484,
-  "modelP": 0.3,
+  "modelP": 0.295,
   "legs": [
    {
     "label": "Alexander Isak minst 2 skott på mål",
     "key": "x:sot:2:235662",
     "mp": 0.484,
     "was": 1.88,
-    "p": 0.3
+    "p": 0.295
    }
   ],
   "note": "Spel avgörs genom Opta-data. Spelarna måste starta i matchen för att spel ska kvarstå."
