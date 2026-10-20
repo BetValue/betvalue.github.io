@@ -60,18 +60,18 @@
   "comp": "Champions League",
   "title": "Alexander Isak minst 2 skott på mål",
   "odds": 2.1,
-  "was": 1.86,
+  "was": 1.85,
   "ends": "2026-10-20T19:00:00Z",
   "pick": "x:sot:2:235662",
-  "p": 0.411,
-  "mp": 0.489,
+  "p": 0.413,
+  "mp": 0.491,
   "modelP": 0.295,
   "legs": [
    {
     "label": "Alexander Isak minst 2 skott på mål",
     "key": "x:sot:2:235662",
-    "mp": 0.489,
-    "was": 1.86,
+    "mp": 0.491,
+    "was": 1.85,
     "p": 0.295
    }
   ],
