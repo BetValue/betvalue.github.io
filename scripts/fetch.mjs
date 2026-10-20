@@ -14,6 +14,7 @@ import { addStats } from './stats.mjs';
 import { buildPlayerIndex } from './players.mjs';
 import { buildPhotos } from './photos.mjs';
 import { addGoals, updateTrack } from './track.mjs';
+import { updateBoosts } from './boosts.mjs';
 
 const FD_KEY = process.env.FOOTBALL_DATA_KEY;
 const ODDS_KEY = process.env.ODDS_API_KEY;
@@ -421,6 +422,8 @@ async function main() {
   // Före uploadPremium: tipsen räknas ur värdebets/extras som sedan tas bort ur den öppna filen.
   const goals = await addGoals(competitions).catch(err => { console.warn('Målskyttar:', err.message); return {}; });
   await updateTrack(competitions, goals).catch(err => console.warn('Tipsstatistik:', err.message));
+  // Spelbolagens boostar (Unibet) – före uploadPremium så att modellens spelarspel finns med.
+  await updateBoosts(competitions).catch(err => console.warn('Boostar:', err.message));
   if (SB_KEY) await uploadPremium(competitions);
   await buildPlayerIndex(competitions).catch(err => console.warn('Spelarindex:', err.message));
   await buildPhotos().catch(err => console.warn('Spelarbilder:', err.message));

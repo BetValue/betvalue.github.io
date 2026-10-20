@@ -159,26 +159,38 @@ async function removeBoost(id) {
   render();
 }
 
+// Spelet bakom en boost: vår modell för nyckeln (pick), annars inget.
+const boostPick = (m, b) => (m && b.pick ? (String(b.pick).startsWith('bb:') ? PICKS.marketByKey(m, b.pick) : boostMarket(m, [b.pick])) : null);
+// Hämtade boostar (scripts/boosts.mjs) har redan chansen vägd mot spelbolagets vanliga odds.
+const boostP = (b, mk) => (b.src ? b.p : mk?.p ?? b.p) ?? null;
+
 function boostCard(b, i, best = false) {
   const m = findMatch(b.match);
-  const mk = m && (b.pick.startsWith('bb:') ? PICKS.marketByKey(m, b.pick) : boostMarket(m, [b.pick]));
-  const p = mk?.p ?? b.p ?? null;
+  const mk = boostPick(m, b);
+  const p = boostP(b, mk);
   const v = verdict(p, b.odds);
-  const weakest = mk?.legs?.slice().sort((x, y) => x.p - y.p)[0];
+  const legs = b.legs?.length > 1 ? b.legs : null;
+  const weakest = legs ? legs.slice().sort((x, y) => (x.mp ?? x.p ?? 1) - (y.mp ?? y.p ?? 1))[0] : mk?.legs?.length > 1 ? mk.legs.slice().sort((x, y) => x.p - y.p)[0] : null;
   const label = b.title ?? mk?.label ?? 'Boost';
+  const risk = mk?.risk ?? (p == null ? '–' : p >= 0.7 ? 'Låg' : p >= 0.45 ? 'Medel' : 'Hög');
+  // Målskytt utan egen nyckel: "p:" rättas på spelarnamnet i texten (grade.js).
+  const key = mk?.key ?? (/^[^&+,]+ gör mål$/i.test(label) ? 'p:boost' : 'boost:' + label);
   return `<div class="boost ${v?.cls ?? ''}${best ? ' best' : ''}" style="animation-delay:${i * 40}ms">
     <div class="b-top"><span class="b-book">${esc(b.book)}</span>${v ? `<span class="b-tag ${v.cls}">${esc(v.short)}</span>` : ''}${b.ends ? `<small>gäller till ${dayText(b.ends)} ${clock(b.ends)}</small>` : ''}</div>
-    ${m ? `<button class="vs" data-match="${m.id}">${crest(m.home)}<span>${esc(m.home.short)}</span><small>–</small><span>${esc(m.away.short)}</span>${crest(m.away)}</button>` : ''}
+    ${m ? `<button class="vs" data-match="${m.id}">${crest(m.home)}<span>${esc(m.home.short)}</span><small>–</small><span>${esc(m.away.short)}</span>${crest(m.away)}</button>`
+      : b.home ? `<div class="vs"><span>${esc(b.home)}</span><small>–</small><span>${esc(b.away)}</span></div>` : ''}
     <div class="b-pick">${esc(label)}</div>
-    <div class="b-odds">${b.was ? `<s>${odd(b.was)}</s>` : ''}<b>${odd(b.odds)}</b><small>implicit ${pct(1 / b.odds)}</small></div>
+    <div class="b-odds">${b.was ? `<s title="Spelbolagets vanliga odds">${odd(b.was)}</s>` : ''}<b>${odd(b.odds)}</b><small>implicit ${pct(1 / b.odds)}</small></div>
     <div class="pc-nums">
-      <div><small>Vår chans</small><b>${pct(p)}</b></div>
+      <div><small>Vår chans</small><b>${p == null ? '–' : pct(p)}</b></div>
       <div class="hl"><small>EV</small><b>${v ? signed(v.ev) : '–'}</b></div>
-      <div><small>Risk</small><b>${esc(mk?.risk ?? '–')}</b></div>
+      <div><small>Risk</small><b>${esc(risk)}</b></div>
     </div>
-    ${weakest && mk.legs.length > 1 ? `<p class="note">Svagaste benet: ${esc(weakest.label)} (${pct(weakest.p)})</p>` : ''}
-    ${!mk ? '<p class="note">Vi kan inte räkna på det här spelet – det saknas statistik för matchen.</p>' : ''}
-    ${m && mk ? saveBtn(m, mk.key, mk.label, mk.p, b.odds, b.book) : ''}
+    ${b.src && p != null ? `<p class="note">${b.mp != null ? `Marknadens chans ${pct(b.mp)} (${esc(b.book)}s vanliga odds utan marginal)` : ''}${b.mp != null && b.modelP != null ? ' · ' : ''}${b.modelP != null ? `vår modell ${pct(b.modelP)}` : ''}</p>` : ''}
+    ${legs ? `<div class="legs-an">${legs.map(l => `<div class="leg-an${l === weakest ? ' weak' : ''}"><div><b>${esc(l.label)}</b>${l === weakest ? '<em>svagaste benet</em>' : ''}</div><span>${l.mp ?? l.p ? pct(l.mp ?? l.p) : '–'}</span></div>`).join('')}</div>`
+      : weakest ? `<p class="note">Svagaste benet: ${esc(weakest.label)} (${pct(weakest.p)})</p>` : ''}
+    ${p == null ? '<p class="note">Vi kan inte räkna på det här spelet – det saknas odds och statistik för det.</p>' : ''}
+    ${m && p != null ? saveBtn(m, key, label, p, b.odds, b.book) : ''}
     ${b.note ? `<p class="note">${esc(b.note)}</p>` : ''}
     ${b.username ? `<div class="b-by">Upplagd av <b>${esc(b.username)}</b>${AUTH.user?.id === b.created_by ? ` · <button class="linkbtn" data-remove-boost="${b.id}">Ta bort</button>` : ''}</div>` : ''}
   </div>`;
@@ -195,9 +207,7 @@ async function render() {
   boosts = boosts.concat(await sharedBoosts());
   boosts = boosts.filter(b => !b.ends || Date.parse(b.ends) > Date.now())
     .map(b => {
-      const m = findMatch(b.match);
-      const mk = m && (String(b.pick).startsWith('bb:') ? PICKS.marketByKey(m, b.pick) : boostMarket(m, [b.pick]));
-      const p = mk?.p ?? b.p;
+      const p = boostP(b, boostPick(findMatch(b.match), b));
       return { ...b, ev: p ? p * b.odds - 1 : -1 };
     })
     .sort((a, b) => b.ev - a.ev);
@@ -229,8 +239,9 @@ async function render() {
 
     <section class="sec">
       <div class="sec-head"><h2>Aktuella boostar</h2><span>${boosts.length ? 'Bäst värde först' : ''}</span></div>
+      <p class="note">Unibets boostar hämtas automatiskt var tredje timme och jämförs med Unibets vanliga odds för samma spel och med vår modell. Bet365, Svenska Spel, ATG m.fl. har inga öppna listor – ser du en boost där, skriv in den i analysen ovan och lägg upp den så att alla ser den.</p>
       ${boosts.length ? groups.filter(([, l]) => l.length).map(([t, l]) => `<h3 class="sb-h">${t}</h3><div class="cgrid">${l.map((b, i) => boostCard(b, i, t.startsWith('⭐') && i === 0)).join('')}</div>`).join('')
-        : `<p class="empty-small">Inga boostar upplagda just nu. Spelbolagens boostar finns inte att hämta gratis, så vi hittar inte på några – testa en boost du ser i analysen ovan och lägg upp den så att alla ser den.</p>`}
+        : `<p class="empty-small">Inga boostar just nu. Vi hittar inte på några – testa en boost du ser i analysen ovan och lägg upp den så att alla ser den.</p>`}
     </section>
 
     <details class="box ai-prompt">
