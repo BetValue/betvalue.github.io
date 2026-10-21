@@ -8,18 +8,18 @@
   "comp": "Champions League",
   "title": "Harry Kane gör mål",
   "odds": 2.2,
-  "was": 1.8,
+  "was": 1.81,
   "ends": "2026-10-21T19:00:00Z",
   "pick": "x:g:1:142200",
-  "p": 0.49,
-  "mp": 0.505,
+  "p": 0.488,
+  "mp": 0.502,
   "modelP": 0.467,
   "legs": [
    {
     "label": "Harry Kane gör mål",
     "key": "x:g:1:142200",
-    "mp": 0.505,
-    "was": 1.8,
+    "mp": 0.502,
+    "was": 1.81,
     "p": 0.467
    }
   ],
