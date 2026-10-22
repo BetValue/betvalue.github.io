@@ -1,1 +1,158 @@
-[]
+[
+ {
+  "book": "Unibet",
+  "src": "unibet",
+  "match": 564723,
+  "home": "FC Barcelona",
+  "away": "Real Madrid",
+  "comp": "La Liga",
+  "title": "Kylian Mbappe gör mål",
+  "odds": 2.25,
+  "was": 1.68,
+  "ends": "2026-10-25T20:00:00Z",
+  "pick": null,
+  "p": 0.541,
+  "mp": 0.541,
+  "modelP": null,
+  "legs": [
+   {
+    "label": "Kylian Mbappe gör mål",
+    "key": null,
+    "mp": 0.541,
+    "was": 1.68,
+    "p": null
+   }
+  ],
+  "note": "Spelaren måste starta matchen för att spel ska vara giltiga"
+ },
+ {
+  "book": "Unibet",
+  "src": "unibet",
+  "match": 560614,
+  "home": "Aston Villa",
+  "away": "Manchester City",
+  "comp": "Premier League",
+  "title": "Phil Foden gör mål",
+  "odds": 3.8,
+  "was": 3.2,
+  "ends": "2026-10-24T11:30:00Z",
+  "pick": null,
+  "p": 0.284,
+  "mp": 0.284,
+  "modelP": null,
+  "legs": [
+   {
+    "label": "Phil Foden gör mål",
+    "key": null,
+    "mp": 0.284,
+    "was": 3.2,
+    "p": null
+   }
+  ],
+  "note": "Spelaren måste starta matchen för att spel ska vara giltiga"
+ },
+ {
+  "book": "Unibet",
+  "src": "unibet",
+  "match": 560612,
+  "home": "Liverpool",
+  "away": "Brighton",
+  "comp": "Premier League",
+  "title": "Alexander Isak gör mål",
+  "odds": 2.7,
+  "was": 2.28,
+  "ends": "2026-10-25T14:00:00Z",
+  "pick": null,
+  "p": 0.399,
+  "mp": 0.399,
+  "modelP": null,
+  "legs": [
+   {
+    "label": "Alexander Isak gör mål",
+    "key": null,
+    "mp": 0.399,
+    "was": 2.28,
+    "p": null
+   }
+  ],
+  "note": "Spelaren måste starta matchen för att spel ska vara giltiga"
+ },
+ {
+  "book": "Unibet",
+  "src": "unibet",
+  "match": 564723,
+  "home": "FC Barcelona",
+  "away": "Real Madrid",
+  "comp": "La Liga",
+  "title": "Lamine Yamal gör mål",
+  "odds": 1.9,
+  "was": 1.62,
+  "ends": "2026-10-25T20:00:00Z",
+  "pick": null,
+  "p": 0.561,
+  "mp": 0.561,
+  "modelP": null,
+  "legs": [
+   {
+    "label": "Lamine Yamal gör mål",
+    "key": null,
+    "mp": 0.561,
+    "was": 1.62,
+    "p": null
+   }
+  ],
+  "note": "Spelaren måste starta matchen för att spel ska vara giltiga"
+ },
+ {
+  "book": "Unibet",
+  "src": "unibet",
+  "match": null,
+  "home": "IK Sirius FK",
+  "away": "AIK",
+  "comp": "Allsvenskan",
+  "title": "Joakim Persson gör mål",
+  "odds": 4.25,
+  "was": 3.7,
+  "ends": "2026-10-24T13:00:00Z",
+  "pick": null,
+  "p": 0.246,
+  "mp": 0.246,
+  "modelP": null,
+  "legs": [
+   {
+    "label": "Joakim Persson gör mål",
+    "key": null,
+    "mp": 0.246,
+    "was": 3.7,
+    "p": null
+   }
+  ],
+  "note": "Spelaren måste starta matchen för att spel ska vara giltiga"
+ },
+ {
+  "book": "Unibet",
+  "src": "unibet",
+  "match": 560617,
+  "home": "Chelsea",
+  "away": "Tottenham",
+  "comp": "Premier League",
+  "title": "Pedro Neto gör mål eller assist",
+  "odds": 2.8,
+  "was": 2.45,
+  "ends": "2026-10-24T16:30:00Z",
+  "pick": null,
+  "p": 0.371,
+  "mp": 0.371,
+  "modelP": null,
+  "legs": [
+   {
+    "label": "Pedro Neto gör mål eller assist",
+    "key": null,
+    "mp": 0.371,
+    "was": 2.45,
+    "p": null
+   }
+  ],
+  "note": "Spelaren måste starta matchen för att spel ska vara giltiga"
+ }
+]
