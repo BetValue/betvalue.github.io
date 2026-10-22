@@ -28,6 +28,32 @@
  {
   "book": "Unibet",
   "src": "unibet",
+  "match": 560617,
+  "home": "Chelsea",
+  "away": "Tottenham",
+  "comp": "Premier League",
+  "title": "Pedro Neto gör mål eller assist",
+  "odds": 2.8,
+  "was": 2.45,
+  "ends": "2026-10-24T16:30:00Z",
+  "pick": "x:ga:1:256115",
+  "p": 0.41,
+  "mp": 0.371,
+  "modelP": 0.468,
+  "legs": [
+   {
+    "label": "Pedro Neto gör mål eller assist",
+    "key": "x:ga:1:256115",
+    "mp": 0.371,
+    "was": 2.45,
+    "p": 0.468
+   }
+  ],
+  "note": "Spelaren måste starta matchen för att spel ska vara giltiga"
+ },
+ {
+  "book": "Unibet",
+  "src": "unibet",
   "match": 560614,
   "home": "Aston Villa",
   "away": "Manchester City",
@@ -124,32 +150,6 @@
     "key": null,
     "mp": 0.246,
     "was": 3.7,
-    "p": null
-   }
-  ],
-  "note": "Spelaren måste starta matchen för att spel ska vara giltiga"
- },
- {
-  "book": "Unibet",
-  "src": "unibet",
-  "match": 560617,
-  "home": "Chelsea",
-  "away": "Tottenham",
-  "comp": "Premier League",
-  "title": "Pedro Neto gör mål eller assist",
-  "odds": 2.8,
-  "was": 2.45,
-  "ends": "2026-10-24T16:30:00Z",
-  "pick": null,
-  "p": 0.371,
-  "mp": 0.371,
-  "modelP": null,
-  "legs": [
-   {
-    "label": "Pedro Neto gör mål eller assist",
-    "key": null,
-    "mp": 0.371,
-    "was": 2.45,
     "p": null
    }
   ],
