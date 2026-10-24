@@ -8,19 +8,45 @@
   "comp": "La Liga",
   "title": "Kylian Mbappe gör mål",
   "odds": 2.25,
-  "was": 1.71,
+  "was": 1.67,
   "ends": "2026-10-25T20:00:00Z",
   "pick": "p:3374",
-  "p": 0.464,
-  "mp": 0.532,
+  "p": 0.471,
+  "mp": 0.544,
   "modelP": 0.362,
   "legs": [
    {
     "label": "Kylian Mbappe gör mål",
     "key": "p:3374",
-    "mp": 0.532,
-    "was": 1.71,
+    "mp": 0.544,
+    "was": 1.67,
     "p": 0.362
+   }
+  ],
+  "note": "Spelaren måste starta matchen för att spel ska vara giltiga"
+ },
+ {
+  "book": "Unibet",
+  "src": "unibet",
+  "match": 560612,
+  "home": "Liverpool",
+  "away": "Brighton",
+  "comp": "Premier League",
+  "title": "Alexander Isak gör mål",
+  "odds": 2.7,
+  "was": 2.15,
+  "ends": "2026-10-25T14:00:00Z",
+  "pick": "p:6486",
+  "p": 0.373,
+  "mp": 0.423,
+  "modelP": 0.298,
+  "legs": [
+   {
+    "label": "Alexander Isak gör mål",
+    "key": "p:6486",
+    "mp": 0.423,
+    "was": 2.15,
+    "p": 0.298
    }
   ],
   "note": "Spelaren måste starta matchen för att spel ska vara giltiga"
@@ -47,32 +73,6 @@
     "mp": 0.618,
     "was": 1.47,
     "p": 0.382
-   }
-  ],
-  "note": "Spelaren måste starta matchen för att spel ska vara giltiga"
- },
- {
-  "book": "Unibet",
-  "src": "unibet",
-  "match": 560612,
-  "home": "Liverpool",
-  "away": "Brighton",
-  "comp": "Premier League",
-  "title": "Alexander Isak gör mål",
-  "odds": 2.7,
-  "was": 2.18,
-  "ends": "2026-10-25T14:00:00Z",
-  "pick": "p:6486",
-  "p": 0.368,
-  "mp": 0.417,
-  "modelP": 0.295,
-  "legs": [
-   {
-    "label": "Alexander Isak gör mål",
-    "key": "p:6486",
-    "mp": 0.417,
-    "was": 2.18,
-    "p": 0.295
    }
   ],
   "note": "Spelaren måste starta matchen för att spel ska vara giltiga"
