@@ -34,18 +34,18 @@
   "comp": "Premier League",
   "title": "Phil Foden gör mål",
   "odds": 3.8,
-  "was": 3.2,
+  "was": 3.1,
   "ends": "2026-10-24T11:30:00Z",
   "pick": null,
-  "p": 0.284,
-  "mp": 0.284,
+  "p": 0.293,
+  "mp": 0.293,
   "modelP": null,
   "legs": [
    {
     "label": "Phil Foden gör mål",
     "key": null,
-    "mp": 0.284,
-    "was": 3.2,
+    "mp": 0.293,
+    "was": 3.1,
     "p": null
    }
   ],
