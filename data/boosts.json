@@ -60,18 +60,18 @@
   "comp": "La Liga",
   "title": "Kylian Mbappe gör mål",
   "odds": 2.25,
-  "was": 1.7,
+  "was": 1.68,
   "ends": "2026-10-25T20:00:00Z",
   "pick": "p:3374",
-  "p": 0.466,
-  "mp": 0.535,
+  "p": 0.469,
+  "mp": 0.541,
   "modelP": 0.362,
   "legs": [
    {
     "label": "Kylian Mbappe gör mål",
     "key": "p:3374",
-    "mp": 0.535,
-    "was": 1.7,
+    "mp": 0.541,
+    "was": 1.68,
     "p": 0.362
    }
   ],
