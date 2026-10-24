@@ -8,18 +8,18 @@
   "comp": "Premier League",
   "title": "Pedro Neto gör mål eller assist",
   "odds": 2.8,
-  "was": 2.5,
+  "was": 2.55,
   "ends": "2026-10-24T16:30:00Z",
   "pick": "x:ga:1:256115",
-  "p": 0.406,
-  "mp": 0.364,
+  "p": 0.401,
+  "mp": 0.357,
   "modelP": 0.468,
   "legs": [
    {
     "label": "Pedro Neto gör mål eller assist",
     "key": "x:ga:1:256115",
-    "mp": 0.364,
-    "was": 2.5,
+    "mp": 0.357,
+    "was": 2.55,
     "p": 0.468
    }
   ],
@@ -28,24 +28,24 @@
  {
   "book": "Unibet",
   "src": "unibet",
-  "match": 560614,
-  "home": "Aston Villa",
-  "away": "Manchester City",
-  "comp": "Premier League",
-  "title": "Phil Foden gör mål",
-  "odds": 3.8,
-  "was": 3.1,
-  "ends": "2026-10-24T11:30:00Z",
+  "match": null,
+  "home": "IK Sirius FK",
+  "away": "AIK",
+  "comp": "Allsvenskan",
+  "title": "Joakim Persson gör mål",
+  "odds": 4.25,
+  "was": 3.6,
+  "ends": "2026-10-24T13:00:00Z",
   "pick": null,
-  "p": 0.293,
-  "mp": 0.293,
+  "p": 0.253,
+  "mp": 0.253,
   "modelP": null,
   "legs": [
    {
-    "label": "Phil Foden gör mål",
+    "label": "Joakim Persson gör mål",
     "key": null,
-    "mp": 0.293,
-    "was": 3.1,
+    "mp": 0.253,
+    "was": 3.6,
     "p": null
    }
   ],
@@ -60,71 +60,19 @@
   "comp": "La Liga",
   "title": "Kylian Mbappe gör mål",
   "odds": 2.25,
-  "was": 1.68,
+  "was": 1.7,
   "ends": "2026-10-25T20:00:00Z",
   "pick": "p:3374",
-  "p": 0.469,
-  "mp": 0.541,
+  "p": 0.466,
+  "mp": 0.535,
   "modelP": 0.362,
   "legs": [
    {
     "label": "Kylian Mbappe gör mål",
     "key": "p:3374",
-    "mp": 0.541,
-    "was": 1.68,
+    "mp": 0.535,
+    "was": 1.7,
     "p": 0.362
-   }
-  ],
-  "note": "Spelaren måste starta matchen för att spel ska vara giltiga"
- },
- {
-  "book": "Unibet",
-  "src": "unibet",
-  "match": null,
-  "home": "IFK Värnamo",
-  "away": "Sandvikens IF",
-  "comp": "Superettan",
-  "title": "Kai Meriluoto gör mål",
-  "odds": 3.3,
-  "was": 2.88,
-  "ends": "2026-10-24T11:00:00Z",
-  "pick": null,
-  "p": 0.316,
-  "mp": 0.316,
-  "modelP": null,
-  "legs": [
-   {
-    "label": "Kai Meriluoto gör mål",
-    "key": null,
-    "mp": 0.316,
-    "was": 2.88,
-    "p": null
-   }
-  ],
-  "note": "Spelaren måste starta matchen för att spel ska vara giltiga"
- },
- {
-  "book": "Unibet",
-  "src": "unibet",
-  "match": null,
-  "home": "IK Sirius FK",
-  "away": "AIK",
-  "comp": "Allsvenskan",
-  "title": "Joakim Persson gör mål",
-  "odds": 4.25,
-  "was": 3.75,
-  "ends": "2026-10-24T13:00:00Z",
-  "pick": null,
-  "p": 0.242,
-  "mp": 0.242,
-  "modelP": null,
-  "legs": [
-   {
-    "label": "Joakim Persson gör mål",
-    "key": null,
-    "mp": 0.242,
-    "was": 3.75,
-    "p": null
    }
   ],
   "note": "Spelaren måste starta matchen för att spel ska vara giltiga"
@@ -138,18 +86,18 @@
   "comp": "Premier League",
   "title": "Alexander Isak gör mål",
   "odds": 2.7,
-  "was": 2.2,
+  "was": 2.18,
   "ends": "2026-10-25T14:00:00Z",
   "pick": "p:6486",
-  "p": 0.367,
-  "mp": 0.413,
+  "p": 0.369,
+  "mp": 0.417,
   "modelP": 0.298,
   "legs": [
    {
     "label": "Alexander Isak gör mål",
     "key": "p:6486",
-    "mp": 0.413,
-    "was": 2.2,
+    "mp": 0.417,
+    "was": 2.18,
     "p": 0.298
    }
   ],
