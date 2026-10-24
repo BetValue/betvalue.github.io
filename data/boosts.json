@@ -2,32 +2,6 @@
  {
   "book": "Unibet",
   "src": "unibet",
-  "match": 560617,
-  "home": "Chelsea",
-  "away": "Tottenham",
-  "comp": "Premier League",
-  "title": "Pedro Neto gör mål eller assist",
-  "odds": 2.8,
-  "was": 2.6,
-  "ends": "2026-10-24T16:30:00Z",
-  "pick": "x:ga:1:256115",
-  "p": 0.397,
-  "mp": 0.35,
-  "modelP": 0.468,
-  "legs": [
-   {
-    "label": "Pedro Neto gör mål eller assist",
-    "key": "x:ga:1:256115",
-    "mp": 0.35,
-    "was": 2.6,
-    "p": 0.468
-   }
-  ],
-  "note": "Spelaren måste starta matchen för att spel ska vara giltiga"
- },
- {
-  "book": "Unibet",
-  "src": "unibet",
   "match": 564723,
   "home": "FC Barcelona",
   "away": "Real Madrid",
@@ -54,32 +28,6 @@
  {
   "book": "Unibet",
   "src": "unibet",
-  "match": 560612,
-  "home": "Liverpool",
-  "away": "Brighton",
-  "comp": "Premier League",
-  "title": "Alexander Isak gör mål",
-  "odds": 2.7,
-  "was": 2.18,
-  "ends": "2026-10-25T14:00:00Z",
-  "pick": "p:6486",
-  "p": 0.369,
-  "mp": 0.417,
-  "modelP": 0.298,
-  "legs": [
-   {
-    "label": "Alexander Isak gör mål",
-    "key": "p:6486",
-    "mp": 0.417,
-    "was": 2.18,
-    "p": 0.298
-   }
-  ],
-  "note": "Spelaren måste starta matchen för att spel ska vara giltiga"
- },
- {
-  "book": "Unibet",
-  "src": "unibet",
   "match": 564723,
   "home": "FC Barcelona",
   "away": "Real Madrid",
@@ -99,6 +47,32 @@
     "mp": 0.618,
     "was": 1.47,
     "p": 0.382
+   }
+  ],
+  "note": "Spelaren måste starta matchen för att spel ska vara giltiga"
+ },
+ {
+  "book": "Unibet",
+  "src": "unibet",
+  "match": 560612,
+  "home": "Liverpool",
+  "away": "Brighton",
+  "comp": "Premier League",
+  "title": "Alexander Isak gör mål",
+  "odds": 2.7,
+  "was": 2.18,
+  "ends": "2026-10-25T14:00:00Z",
+  "pick": "p:6486",
+  "p": 0.368,
+  "mp": 0.417,
+  "modelP": 0.295,
+  "legs": [
+   {
+    "label": "Alexander Isak gör mål",
+    "key": "p:6486",
+    "mp": 0.417,
+    "was": 2.18,
+    "p": 0.295
    }
   ],
   "note": "Spelaren måste starta matchen för att spel ska vara giltiga"
