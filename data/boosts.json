@@ -34,18 +34,18 @@
   "comp": "Premier League",
   "title": "Phil Foden gör mål",
   "odds": 3.8,
-  "was": 3.15,
+  "was": 3.2,
   "ends": "2026-10-24T11:30:00Z",
   "pick": null,
-  "p": 0.289,
-  "mp": 0.289,
+  "p": 0.284,
+  "mp": 0.284,
   "modelP": null,
   "legs": [
    {
     "label": "Phil Foden gör mål",
     "key": null,
-    "mp": 0.289,
-    "was": 3.15,
+    "mp": 0.284,
+    "was": 3.2,
     "p": null
    }
   ],
@@ -132,32 +132,6 @@
  {
   "book": "Unibet",
   "src": "unibet",
-  "match": 564723,
-  "home": "FC Barcelona",
-  "away": "Real Madrid",
-  "comp": "La Liga",
-  "title": "Lamine Yamal gör mål",
-  "odds": 1.9,
-  "was": 1.47,
-  "ends": "2026-10-25T20:00:00Z",
-  "pick": "p:202283",
-  "p": 0.524,
-  "mp": 0.618,
-  "modelP": 0.382,
-  "legs": [
-   {
-    "label": "Lamine Yamal gör mål",
-    "key": "p:202283",
-    "mp": 0.618,
-    "was": 1.47,
-    "p": 0.382
-   }
-  ],
-  "note": "Spelaren måste starta matchen för att spel ska vara giltiga"
- },
- {
-  "book": "Unibet",
-  "src": "unibet",
   "match": 560612,
   "home": "Liverpool",
   "away": "Brighton",
@@ -177,6 +151,32 @@
     "mp": 0.413,
     "was": 2.2,
     "p": 0.298
+   }
+  ],
+  "note": "Spelaren måste starta matchen för att spel ska vara giltiga"
+ },
+ {
+  "book": "Unibet",
+  "src": "unibet",
+  "match": 564723,
+  "home": "FC Barcelona",
+  "away": "Real Madrid",
+  "comp": "La Liga",
+  "title": "Lamine Yamal gör mål",
+  "odds": 1.9,
+  "was": 1.48,
+  "ends": "2026-10-25T20:00:00Z",
+  "pick": "p:202283",
+  "p": 0.521,
+  "mp": 0.614,
+  "modelP": 0.382,
+  "legs": [
+   {
+    "label": "Lamine Yamal gör mål",
+    "key": "p:202283",
+    "mp": 0.614,
+    "was": 1.48,
+    "p": 0.382
    }
   ],
   "note": "Spelaren måste starta matchen för att spel ska vara giltiga"
