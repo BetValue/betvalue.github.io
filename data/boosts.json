@@ -8,19 +8,19 @@
   "comp": "La Liga",
   "title": "Kylian Mbappe gör mål",
   "odds": 2.25,
-  "was": 1.68,
+  "was": 1.73,
   "ends": "2026-10-25T20:00:00Z",
   "pick": "p:3374",
-  "p": 0.469,
-  "mp": 0.541,
-  "modelP": 0.362,
+  "p": 0.462,
+  "mp": 0.525,
+  "modelP": 0.367,
   "legs": [
    {
     "label": "Kylian Mbappe gör mål",
     "key": "p:3374",
-    "mp": 0.541,
-    "was": 1.68,
-    "p": 0.362
+    "mp": 0.525,
+    "was": 1.73,
+    "p": 0.367
    }
   ],
   "note": "Spelaren måste starta matchen för att spel ska vara giltiga"
@@ -34,18 +34,18 @@
   "comp": "Premier League",
   "title": "Alexander Isak gör mål",
   "odds": 2.7,
-  "was": 2.2,
+  "was": 2.16,
   "ends": "2026-10-25T14:00:00Z",
   "pick": "p:6486",
-  "p": 0.367,
-  "mp": 0.413,
+  "p": 0.371,
+  "mp": 0.421,
   "modelP": 0.297,
   "legs": [
    {
     "label": "Alexander Isak gör mål",
     "key": "p:6486",
-    "mp": 0.413,
-    "was": 2.2,
+    "mp": 0.421,
+    "was": 2.16,
     "p": 0.297
    }
   ],
@@ -60,19 +60,19 @@
   "comp": "La Liga",
   "title": "Lamine Yamal gör mål",
   "odds": 1.9,
-  "was": 1.5,
+  "was": 1.47,
   "ends": "2026-10-25T20:00:00Z",
   "pick": "p:202283",
-  "p": 0.516,
-  "mp": 0.606,
-  "modelP": 0.382,
+  "p": 0.523,
+  "mp": 0.618,
+  "modelP": 0.38,
   "legs": [
    {
     "label": "Lamine Yamal gör mål",
     "key": "p:202283",
-    "mp": 0.606,
-    "was": 1.5,
-    "p": 0.382
+    "mp": 0.618,
+    "was": 1.47,
+    "p": 0.38
    }
   ],
   "note": "Spelaren måste starta matchen för att spel ska vara giltiga"
