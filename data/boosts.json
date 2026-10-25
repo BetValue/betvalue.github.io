@@ -8,45 +8,19 @@
   "comp": "La Liga",
   "title": "Kylian Mbappe gör mål",
   "odds": 2.25,
-  "was": 1.67,
+  "was": 1.68,
   "ends": "2026-10-25T20:00:00Z",
   "pick": "p:3374",
-  "p": 0.471,
-  "mp": 0.544,
+  "p": 0.469,
+  "mp": 0.541,
   "modelP": 0.362,
   "legs": [
    {
     "label": "Kylian Mbappe gör mål",
     "key": "p:3374",
-    "mp": 0.544,
-    "was": 1.67,
+    "mp": 0.541,
+    "was": 1.68,
     "p": 0.362
-   }
-  ],
-  "note": "Spelaren måste starta matchen för att spel ska vara giltiga"
- },
- {
-  "book": "Unibet",
-  "src": "unibet",
-  "match": 564723,
-  "home": "FC Barcelona",
-  "away": "Real Madrid",
-  "comp": "La Liga",
-  "title": "Lamine Yamal gör mål",
-  "odds": 1.9,
-  "was": 1.44,
-  "ends": "2026-10-25T20:00:00Z",
-  "pick": "p:202283",
-  "p": 0.531,
-  "mp": 0.631,
-  "modelP": 0.382,
-  "legs": [
-   {
-    "label": "Lamine Yamal gör mål",
-    "key": "p:202283",
-    "mp": 0.631,
-    "was": 1.44,
-    "p": 0.382
    }
   ],
   "note": "Spelaren måste starta matchen för att spel ska vara giltiga"
@@ -60,19 +34,45 @@
   "comp": "Premier League",
   "title": "Alexander Isak gör mål",
   "odds": 2.7,
-  "was": 2.15,
+  "was": 2.2,
   "ends": "2026-10-25T14:00:00Z",
   "pick": "p:6486",
-  "p": 0.373,
-  "mp": 0.423,
-  "modelP": 0.298,
+  "p": 0.367,
+  "mp": 0.413,
+  "modelP": 0.297,
   "legs": [
    {
     "label": "Alexander Isak gör mål",
     "key": "p:6486",
-    "mp": 0.423,
-    "was": 2.15,
-    "p": 0.298
+    "mp": 0.413,
+    "was": 2.2,
+    "p": 0.297
+   }
+  ],
+  "note": "Spelaren måste starta matchen för att spel ska vara giltiga"
+ },
+ {
+  "book": "Unibet",
+  "src": "unibet",
+  "match": 564723,
+  "home": "FC Barcelona",
+  "away": "Real Madrid",
+  "comp": "La Liga",
+  "title": "Lamine Yamal gör mål",
+  "odds": 1.9,
+  "was": 1.5,
+  "ends": "2026-10-25T20:00:00Z",
+  "pick": "p:202283",
+  "p": 0.516,
+  "mp": 0.606,
+  "modelP": 0.382,
+  "legs": [
+   {
+    "label": "Lamine Yamal gör mål",
+    "key": "p:202283",
+    "mp": 0.606,
+    "was": 1.5,
+    "p": 0.382
    }
   ],
   "note": "Spelaren måste starta matchen för att spel ska vara giltiga"
