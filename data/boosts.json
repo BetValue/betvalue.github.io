@@ -8,45 +8,19 @@
   "comp": "La Liga",
   "title": "Kylian Mbappe gör mål",
   "odds": 2.25,
-  "was": 1.73,
+  "was": 1.85,
   "ends": "2026-10-25T20:00:00Z",
   "pick": "p:3374",
-  "p": 0.462,
-  "mp": 0.525,
-  "modelP": 0.367,
+  "p": 0.439,
+  "mp": 0.491,
+  "modelP": 0.362,
   "legs": [
    {
     "label": "Kylian Mbappe gör mål",
     "key": "p:3374",
-    "mp": 0.525,
-    "was": 1.73,
-    "p": 0.367
-   }
-  ],
-  "note": "Spelaren måste starta matchen för att spel ska vara giltiga"
- },
- {
-  "book": "Unibet",
-  "src": "unibet",
-  "match": 560612,
-  "home": "Liverpool",
-  "away": "Brighton",
-  "comp": "Premier League",
-  "title": "Alexander Isak gör mål",
-  "odds": 2.7,
-  "was": 2.16,
-  "ends": "2026-10-25T14:00:00Z",
-  "pick": "p:6486",
-  "p": 0.371,
-  "mp": 0.421,
-  "modelP": 0.297,
-  "legs": [
-   {
-    "label": "Alexander Isak gör mål",
-    "key": "p:6486",
-    "mp": 0.421,
-    "was": 2.16,
-    "p": 0.297
+    "mp": 0.491,
+    "was": 1.85,
+    "p": 0.362
    }
   ],
   "note": "Spelaren måste starta matchen för att spel ska vara giltiga"
@@ -60,19 +34,19 @@
   "comp": "La Liga",
   "title": "Lamine Yamal gör mål",
   "odds": 1.9,
-  "was": 1.47,
+  "was": 1.7,
   "ends": "2026-10-25T20:00:00Z",
   "pick": "p:202283",
-  "p": 0.523,
-  "mp": 0.618,
-  "modelP": 0.38,
+  "p": 0.474,
+  "mp": 0.535,
+  "modelP": 0.383,
   "legs": [
    {
     "label": "Lamine Yamal gör mål",
     "key": "p:202283",
-    "mp": 0.618,
-    "was": 1.47,
-    "p": 0.38
+    "mp": 0.535,
+    "was": 1.7,
+    "p": 0.383
    }
   ],
   "note": "Spelaren måste starta matchen för att spel ska vara giltiga"
