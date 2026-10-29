@@ -8,18 +8,18 @@
   "comp": "Premier League",
   "title": "Isak minst 1 skott på mål",
   "odds": 1.8,
-  "was": 1.33,
+  "was": 1.32,
   "ends": "2026-11-01T16:30:00Z",
   "pick": null,
-  "p": 0.684,
-  "mp": 0.684,
+  "p": 0.689,
+  "mp": 0.689,
   "modelP": null,
   "legs": [
    {
     "label": "Isak minst 1 skott på mål",
     "key": null,
-    "mp": 0.684,
-    "was": 1.33,
+    "mp": 0.689,
+    "was": 1.32,
     "p": null
    }
   ],
