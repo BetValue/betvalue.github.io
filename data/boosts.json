@@ -34,18 +34,18 @@
   "comp": "Allsvenskan",
   "title": "IK Sirius FK vinner eller spelar oavgjort",
   "odds": 2.75,
-  "was": 4.7,
+  "was": 5,
   "ends": "2026-10-29T17:30:00Z",
   "pick": null,
-  "p": 0.208,
-  "mp": 0.208,
+  "p": 0.195,
+  "mp": 0.195,
   "modelP": null,
   "legs": [
    {
     "label": "IK Sirius FK vinner eller spelar oavgjort",
     "key": null,
-    "mp": 0.208,
-    "was": 4.7,
+    "mp": 0.195,
+    "was": 5,
     "p": null
    }
   ],
