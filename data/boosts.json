@@ -28,6 +28,32 @@
  {
   "book": "Unibet",
   "src": "unibet",
+  "match": null,
+  "home": "Djurgårdens IF",
+  "away": "Degerfors IF",
+  "comp": "Allsvenskan",
+  "title": "Bo Hegland gör mål",
+  "odds": 2.5,
+  "was": 2.14,
+  "ends": "2026-11-01T13:00:00Z",
+  "pick": null,
+  "p": 0.425,
+  "mp": 0.425,
+  "modelP": null,
+  "legs": [
+   {
+    "label": "Bo Hegland gör mål",
+    "key": null,
+    "mp": 0.425,
+    "was": 2.14,
+    "p": null
+   }
+  ],
+  "note": "Spelaren måste starta matchen för att spel ska vara giltiga"
+ },
+ {
+  "book": "Unibet",
+  "src": "unibet",
   "match": 560631,
   "home": "Liverpool",
   "away": "Arsenal",
