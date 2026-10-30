@@ -10,17 +10,17 @@
   "odds": 1.8,
   "was": 1.34,
   "ends": "2026-11-01T16:30:00Z",
-  "pick": null,
-  "p": 0.678,
+  "pick": "x:sot:1:235662",
+  "p": 0.692,
   "mp": 0.678,
-  "modelP": null,
+  "modelP": 0.712,
   "legs": [
    {
     "label": "Isak minst 1 skott på mål",
-    "key": null,
+    "key": "x:sot:1:235662",
     "mp": 0.678,
     "was": 1.34,
-    "p": null
+    "p": 0.712
    }
   ],
   "note": "Spel avgörs genom Opta-data. Spelarna måste starta i matchen för att spel ska kvarstå."
@@ -60,19 +60,19 @@
   "comp": "Premier League",
   "title": "Alexander Isak gör mål",
   "odds": 3.6,
-  "was": 3.1,
+  "was": 3.15,
   "ends": "2026-11-01T16:30:00Z",
-  "pick": null,
-  "p": 0.293,
-  "mp": 0.293,
-  "modelP": null,
+  "pick": "p:6486",
+  "p": 0.294,
+  "mp": 0.289,
+  "modelP": 0.301,
   "legs": [
    {
     "label": "Alexander Isak gör mål",
-    "key": null,
-    "mp": 0.293,
-    "was": 3.1,
-    "p": null
+    "key": "p:6486",
+    "mp": 0.289,
+    "was": 3.15,
+    "p": 0.301
    }
   ],
   "note": "Spelaren måste starta matchen för att spel ska vara giltiga"
@@ -89,29 +89,29 @@
   "was": null,
   "ends": "2026-10-31T15:00:00Z",
   "pick": "bb:home|over|p:38101",
-  "p": 0.188,
-  "mp": 0.221,
+  "p": 0.173,
+  "mp": 0.196,
   "modelP": 0.138,
   "legs": [
    {
     "label": "Manchester City vinner",
     "key": "home",
-    "mp": 0.6,
-    "was": 1.63,
+    "mp": 0.558,
+    "was": 1.75,
     "p": 0.495
    },
    {
     "label": "minst 3 mål i matchen",
     "key": "over",
-    "mp": 0.677,
-    "was": 1.41,
+    "mp": 0.668,
+    "was": 1.43,
     "p": 0.682
    },
    {
     "label": "Erling Haaland gör mål",
     "key": "p:38101",
-    "mp": 0.579,
-    "was": 1.57,
+    "mp": 0.561,
+    "was": 1.62,
     "p": 0.436
    }
   ],
