@@ -8,18 +8,18 @@
   "comp": "Premier League",
   "title": "Isak minst 1 skott på mål",
   "odds": 1.8,
-  "was": 1.32,
+  "was": 1.34,
   "ends": "2026-11-01T16:30:00Z",
   "pick": null,
-  "p": 0.689,
-  "mp": 0.689,
+  "p": 0.678,
+  "mp": 0.678,
   "modelP": null,
   "legs": [
    {
     "label": "Isak minst 1 skott på mål",
     "key": null,
-    "mp": 0.689,
-    "was": 1.32,
+    "mp": 0.678,
+    "was": 1.34,
     "p": null
    }
   ],
@@ -47,6 +47,46 @@
     "mp": 0.293,
     "was": 3.1,
     "p": null
+   }
+  ],
+  "note": "Spelaren måste starta matchen för att spel ska vara giltiga"
+ },
+ {
+  "book": "Unibet",
+  "src": "unibet",
+  "match": 560623,
+  "home": "Manchester City",
+  "away": "Brighton",
+  "comp": "Premier League",
+  "title": "Manchester City vinner, minst 3 mål i matchen och Erling Haaland gör mål",
+  "odds": 3,
+  "was": null,
+  "ends": "2026-10-31T15:00:00Z",
+  "pick": "bb:home|over|p:38101",
+  "p": 0.188,
+  "mp": 0.221,
+  "modelP": 0.138,
+  "legs": [
+   {
+    "label": "Manchester City vinner",
+    "key": "home",
+    "mp": 0.6,
+    "was": 1.63,
+    "p": 0.495
+   },
+   {
+    "label": "minst 3 mål i matchen",
+    "key": "over",
+    "mp": 0.677,
+    "was": 1.41,
+    "p": 0.682
+   },
+   {
+    "label": "Erling Haaland gör mål",
+    "key": "p:38101",
+    "mp": 0.579,
+    "was": 1.57,
+    "p": 0.436
    }
   ],
   "note": "Spelaren måste starta matchen för att spel ska vara giltiga"
