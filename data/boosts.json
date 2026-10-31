@@ -90,15 +90,15 @@
   "ends": "2026-10-31T15:00:00Z",
   "pick": "bb:home|over|p:38101",
   "p": 0.173,
-  "mp": 0.196,
-  "modelP": 0.138,
+  "mp": 0.198,
+  "modelP": 0.135,
   "legs": [
    {
     "label": "Manchester City vinner",
     "key": "home",
     "mp": 0.557,
     "was": 1.75,
-    "p": 0.495
+    "p": 0.478
    },
    {
     "label": "minst 3 mål i matchen",
