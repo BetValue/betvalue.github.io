@@ -60,18 +60,18 @@
   "comp": "Allsvenskan",
   "title": "Bo Hegland gör mål",
   "odds": 2.5,
-  "was": 2.14,
+  "was": 2.18,
   "ends": "2026-11-01T13:00:00Z",
   "pick": null,
-  "p": 0.425,
-  "mp": 0.425,
+  "p": 0.417,
+  "mp": 0.417,
   "modelP": null,
   "legs": [
    {
     "label": "Bo Hegland gör mål",
     "key": null,
-    "mp": 0.425,
-    "was": 2.14,
+    "mp": 0.417,
+    "was": 2.18,
     "p": null
    }
   ],
@@ -89,29 +89,29 @@
   "was": null,
   "ends": "2026-10-31T15:00:00Z",
   "pick": "bb:home|over|p:38101",
-  "p": 0.189,
-  "mp": 0.226,
+  "p": 0.175,
+  "mp": 0.202,
   "modelP": 0.135,
   "legs": [
    {
     "label": "Manchester City vinner",
     "key": "home",
-    "mp": 0.584,
-    "was": 1.67,
+    "mp": 0.554,
+    "was": 1.76,
     "p": 0.478
    },
    {
     "label": "minst 3 mål i matchen",
     "key": "over",
-    "mp": 0.671,
-    "was": 1.42,
+    "mp": 0.653,
+    "was": 1.46,
     "p": 0.682
    },
    {
     "label": "Erling Haaland gör mål",
     "key": "p:38101",
-    "mp": 0.606,
-    "was": 1.5,
+    "mp": 0.587,
+    "was": 1.55,
     "p": 0.436
    }
   ],
