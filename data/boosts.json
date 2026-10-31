@@ -37,16 +37,16 @@
   "was": 2.8,
   "ends": "2026-11-01T16:30:00Z",
   "pick": "p:6486",
-  "p": 0.316,
+  "p": 0.318,
   "mp": 0.325,
-  "modelP": 0.303,
+  "modelP": 0.307,
   "legs": [
    {
     "label": "Alexander Isak gör mål",
     "key": "p:6486",
     "mp": 0.325,
     "was": 2.8,
-    "p": 0.303
+    "p": 0.307
    }
   ],
   "note": "Spelaren måste starta matchen för att spel ska vara giltiga"
