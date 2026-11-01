@@ -8,18 +8,18 @@
   "comp": "Premier League",
   "title": "Alexander Isak gör mål",
   "odds": 3.6,
-  "was": 2.3,
+  "was": 2.35,
   "ends": "2026-11-01T16:30:00Z",
   "pick": "p:6486",
-  "p": 0.361,
-  "mp": 0.395,
+  "p": 0.356,
+  "mp": 0.387,
   "modelP": 0.309,
   "legs": [
    {
     "label": "Alexander Isak gör mål",
     "key": "p:6486",
-    "mp": 0.395,
-    "was": 2.3,
+    "mp": 0.387,
+    "was": 2.35,
     "p": 0.309
    }
   ],
@@ -34,47 +34,21 @@
   "comp": "Premier League",
   "title": "Isak minst 1 skott på mål",
   "odds": 1.8,
-  "was": 1.25,
+  "was": 1.29,
   "ends": "2026-11-01T16:30:00Z",
   "pick": "x:sot:1:235662",
-  "p": 0.721,
-  "mp": 0.727,
+  "p": 0.708,
+  "mp": 0.705,
   "modelP": 0.712,
   "legs": [
    {
     "label": "Isak minst 1 skott på mål",
     "key": "x:sot:1:235662",
-    "mp": 0.727,
-    "was": 1.25,
+    "mp": 0.705,
+    "was": 1.29,
     "p": 0.712
    }
   ],
   "note": "Spel avgörs genom Opta-data. Spelarna måste starta i matchen för att spel ska kvarstå."
- },
- {
-  "book": "Unibet",
-  "src": "unibet",
-  "match": null,
-  "home": "Djurgårdens IF",
-  "away": "Degerfors IF",
-  "comp": "Allsvenskan",
-  "title": "Bo Hegland gör mål",
-  "odds": 2.5,
-  "was": 2.28,
-  "ends": "2026-11-01T13:00:00Z",
-  "pick": null,
-  "p": 0.399,
-  "mp": 0.399,
-  "modelP": null,
-  "legs": [
-   {
-    "label": "Bo Hegland gör mål",
-    "key": null,
-    "mp": 0.399,
-    "was": 2.28,
-    "p": null
-   }
-  ],
-  "note": "Spelaren måste starta matchen för att spel ska vara giltiga"
  }
 ]
