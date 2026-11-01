@@ -8,18 +8,18 @@
   "comp": "Premier League",
   "title": "Isak minst 1 skott på mål",
   "odds": 1.8,
-  "was": 1.29,
+  "was": 1.24,
   "ends": "2026-11-01T16:30:00Z",
   "pick": "x:sot:1:235662",
-  "p": 0.708,
-  "mp": 0.705,
+  "p": 0.725,
+  "mp": 0.733,
   "modelP": 0.712,
   "legs": [
    {
     "label": "Isak minst 1 skott på mål",
     "key": "x:sot:1:235662",
-    "mp": 0.705,
-    "was": 1.29,
+    "mp": 0.733,
+    "was": 1.24,
     "p": 0.712
    }
   ],
@@ -34,18 +34,18 @@
   "comp": "Premier League",
   "title": "Alexander Isak gör mål",
   "odds": 3.6,
-  "was": 2.8,
+  "was": 2.33,
   "ends": "2026-11-01T16:30:00Z",
   "pick": "p:6486",
-  "p": 0.319,
-  "mp": 0.325,
+  "p": 0.358,
+  "mp": 0.39,
   "modelP": 0.309,
   "legs": [
    {
     "label": "Alexander Isak gör mål",
     "key": "p:6486",
-    "mp": 0.325,
-    "was": 2.8,
+    "mp": 0.39,
+    "was": 2.33,
     "p": 0.309
    }
   ],
