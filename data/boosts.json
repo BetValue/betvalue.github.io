@@ -8,18 +8,18 @@
   "comp": "Premier League",
   "title": "Isak minst 1 skott på mål",
   "odds": 1.8,
-  "was": 1.24,
+  "was": 1.29,
   "ends": "2026-11-01T16:30:00Z",
   "pick": "x:sot:1:235662",
-  "p": 0.725,
-  "mp": 0.733,
+  "p": 0.708,
+  "mp": 0.705,
   "modelP": 0.712,
   "legs": [
    {
     "label": "Isak minst 1 skott på mål",
     "key": "x:sot:1:235662",
-    "mp": 0.733,
-    "was": 1.24,
+    "mp": 0.705,
+    "was": 1.29,
     "p": 0.712
    }
   ],
@@ -34,18 +34,18 @@
   "comp": "Premier League",
   "title": "Alexander Isak gör mål",
   "odds": 3.6,
-  "was": 2.33,
+  "was": 2.43,
   "ends": "2026-11-01T16:30:00Z",
   "pick": "p:6486",
-  "p": 0.358,
-  "mp": 0.39,
+  "p": 0.348,
+  "mp": 0.374,
   "modelP": 0.309,
   "legs": [
    {
     "label": "Alexander Isak gör mål",
     "key": "p:6486",
-    "mp": 0.39,
-    "was": 2.33,
+    "mp": 0.374,
+    "was": 2.43,
     "p": 0.309
    }
   ],
@@ -60,18 +60,18 @@
   "comp": "Allsvenskan",
   "title": "Bo Hegland gör mål",
   "odds": 2.5,
-  "was": 2.18,
+  "was": 2.16,
   "ends": "2026-11-01T13:00:00Z",
   "pick": null,
-  "p": 0.417,
-  "mp": 0.417,
+  "p": 0.421,
+  "mp": 0.421,
   "modelP": null,
   "legs": [
    {
     "label": "Bo Hegland gör mål",
     "key": null,
-    "mp": 0.417,
-    "was": 2.18,
+    "mp": 0.421,
+    "was": 2.16,
     "p": null
    }
   ],
