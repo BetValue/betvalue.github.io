@@ -37,30 +37,30 @@
   "was": null,
   "ends": "2026-11-02T20:00:00Z",
   "pick": "bb:home|over|x:sot:1:243386",
-  "p": 0.166,
-  "mp": 0.183,
-  "modelP": 0.141,
+  "p": 0.168,
+  "mp": 0.186,
+  "modelP": 0.142,
   "legs": [
    {
     "label": "Newcastle vinner",
     "key": "home",
-    "mp": 0.465,
-    "was": 2.1,
+    "mp": 0.45,
+    "was": 2.18,
     "p": 0.447
    },
    {
     "label": "minst 3 mål i matchen",
     "key": "over",
-    "mp": 0.575,
-    "was": 1.66,
+    "mp": 0.58,
+    "was": 1.65,
     "p": 0.532
    },
    {
     "label": "Harvey Barnes har minst 1 skott på mål",
     "key": "x:sot:1:243386",
-    "mp": 0.598,
-    "was": 1.52,
-    "p": 0.517
+    "mp": 0.618,
+    "was": 1.47,
+    "p": 0.518
    }
   ],
   "note": "Spelaren måste starta matchen för att spel ska vara giltiga"
@@ -84,15 +84,15 @@
    {
     "label": "Barcelona vinner",
     "key": "home",
-    "mp": 0.789,
-    "was": 1.24,
+    "mp": 0.778,
+    "was": 1.25,
     "p": 0.719
    },
    {
     "label": "Lamine Yamal gör minst 1 assist",
     "key": "x:a:1:362150",
-    "mp": 0.423,
-    "was": 2.15,
+    "mp": 0.413,
+    "was": 2.2,
     "p": 0.448
    },
    {
