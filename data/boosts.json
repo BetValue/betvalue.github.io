@@ -44,15 +44,15 @@
    {
     "label": "Barcelona vinner",
     "key": "home",
-    "mp": 0.789,
+    "mp": 0.785,
     "was": 1.24,
     "p": 0.719
    },
    {
     "label": "Lamine Yamal gör minst 1 assist",
     "key": "x:a:1:362150",
-    "mp": 0.413,
-    "was": 2.2,
+    "mp": 0.417,
+    "was": 2.18,
     "p": 0.448
    },
    {
