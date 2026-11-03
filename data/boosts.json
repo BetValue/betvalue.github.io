@@ -8,18 +8,18 @@
   "comp": "Champions League",
   "title": "Harry Kane gör mål",
   "odds": 2.25,
-  "was": 1.74,
+  "was": 2.2,
   "ends": "2026-11-03T20:00:00Z",
   "pick": "p:8004",
-  "p": 0.449,
-  "mp": 0.522,
+  "p": 0.383,
+  "mp": 0.413,
   "modelP": 0.339,
   "legs": [
    {
     "label": "Harry Kane gör mål",
     "key": "p:8004",
-    "mp": 0.522,
-    "was": 1.74,
+    "mp": 0.413,
+    "was": 2.2,
     "p": 0.339
    }
   ],
@@ -46,13 +46,13 @@
     "key": "home",
     "mp": 0.766,
     "was": 1.28,
-    "p": 0.719
+    "p": 0.705
    },
    {
     "label": "Lamine Yamal gör minst 1 assist",
     "key": "x:a:1:362150",
-    "mp": 0.413,
-    "was": 2.2,
+    "mp": 0.379,
+    "was": 2.4,
     "p": 0.448
    },
    {
