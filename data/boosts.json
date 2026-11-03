@@ -33,7 +33,7 @@
   "away": "Aston Villa",
   "comp": "Champions League",
   "title": "Barcelona vinner, Lamine Yamal gör minst 1 assist och Raphina gör mål",
-  "odds": 3.7,
+  "odds": 4.3,
   "was": null,
   "ends": "2026-11-03T20:00:00Z",
   "pick": null,
@@ -44,15 +44,15 @@
    {
     "label": "Barcelona vinner",
     "key": "home",
-    "mp": 0.766,
-    "was": 1.28,
+    "mp": 0.776,
+    "was": 1.26,
     "p": 0.705
    },
    {
     "label": "Lamine Yamal gör minst 1 assist",
     "key": "x:a:1:362150",
-    "mp": 0.379,
-    "was": 2.4,
+    "mp": 0.387,
+    "was": 2.35,
     "p": 0.448
    },
    {
