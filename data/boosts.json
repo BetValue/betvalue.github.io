@@ -2,39 +2,25 @@
  {
   "book": "Unibet",
   "src": "unibet",
-  "match": 575388,
-  "home": "RB Leipzig",
-  "away": "Manchester City",
-  "comp": "Champions League",
-  "title": "Manchester City vinner, minst 3 mål i matchen och Haaland gör mål",
-  "odds": 2.8,
-  "was": null,
-  "ends": "2026-11-04T20:00:00Z",
-  "pick": "bb:away|over|p:38101",
-  "p": 0.259,
-  "mp": 0.294,
-  "modelP": 0.207,
+  "match": null,
+  "home": "Halmstads BK",
+  "away": "Djurgårdens IF",
+  "comp": "Allsvenskan",
+  "title": "Bo Hegland gör mål",
+  "odds": 2.5,
+  "was": 2.23,
+  "ends": "2026-11-08T13:00:00Z",
+  "pick": null,
+  "p": 0.408,
+  "mp": 0.408,
+  "modelP": null,
   "legs": [
    {
-    "label": "Manchester City vinner",
-    "key": "away",
-    "mp": 0.652,
-    "was": 1.5,
-    "p": 0.603
-   },
-   {
-    "label": "minst 3 mål i matchen",
-    "key": "over",
-    "mp": 0.722,
-    "was": 1.33,
-    "p": 0.732
-   },
-   {
-    "label": "Haaland gör mål",
-    "key": "p:38101",
-    "mp": 0.631,
-    "was": 1.44,
-    "p": 0.474
+    "label": "Bo Hegland gör mål",
+    "key": null,
+    "mp": 0.408,
+    "was": 2.23,
+    "p": null
    }
   ],
   "note": "Spelaren måste starta matchen för att spel ska vara giltiga"
@@ -46,9 +32,75 @@
   "home": "Slavia Prag",
   "away": "Arsenal",
   "comp": "Champions League",
-  "title": "Kai Havertz to Score",
+  "title": "Kai Havertz gör mål",
   "odds": 2.5,
+  "was": 2.12,
   "ends": "2026-11-04T20:00:00Z",
+  "pick": "x:g:1:231182",
+  "p": 0.375,
+  "mp": 0.429,
+  "modelP": 0.294,
+  "legs": [
+   {
+    "label": "Kai Havertz gör mål",
+    "key": "x:g:1:231182",
+    "mp": 0.429,
+    "was": 2.12,
+    "p": 0.294
+   }
+  ],
+  "note": "Spelaren måste starta matchen för att spel ska vara giltiga"
+ },
+ {
+  "book": "Unibet",
+  "src": "unibet",
+  "match": 575388,
+  "home": "RB Leipzig",
+  "away": "Manchester City",
+  "comp": "Champions League",
+  "title": "Manchester City vinner, minst 3 mål i matchen och Haaland gör mål",
+  "odds": 2.8,
+  "was": null,
+  "ends": "2026-11-04T20:00:00Z",
+  "pick": "bb:away|over|p:38101",
+  "p": 0.25,
+  "mp": 0.279,
+  "modelP": 0.207,
+  "legs": [
+   {
+    "label": "Manchester City vinner",
+    "key": "away",
+    "mp": 0.634,
+    "was": 1.55,
+    "p": 0.603
+   },
+   {
+    "label": "minst 3 mål i matchen",
+    "key": "over",
+    "mp": 0.714,
+    "was": 1.34,
+    "p": 0.732
+   },
+   {
+    "label": "Haaland gör mål",
+    "key": "p:38101",
+    "mp": 0.623,
+    "was": 1.46,
+    "p": 0.474
+   }
+  ],
+  "note": "Spelaren måste starta matchen för att spel ska vara giltiga"
+ },
+ {
+  "book": "Unibet",
+  "src": "unibet",
+  "match": 575386,
+  "home": "AEK Aten",
+  "away": "Real Madrid",
+  "comp": "Champions League",
+  "title": "Real Madrid har 3 olika målskyttar i matchen",
+  "odds": 2,
+  "ends": "2026-11-04T17:45:00Z",
   "legs": [],
   "p": null,
   "note": "Vi kunde inte dela upp boosten i spel som vi kan räkna på."
