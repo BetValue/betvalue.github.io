@@ -8,44 +8,18 @@
   "comp": "Allsvenskan",
   "title": "Paulos Abraham gör mål",
   "odds": 2.3,
-  "was": 2,
+  "was": 1.98,
   "ends": "2026-11-06T18:00:00Z",
   "pick": null,
-  "p": 0.455,
-  "mp": 0.455,
+  "p": 0.459,
+  "mp": 0.459,
   "modelP": null,
   "legs": [
    {
     "label": "Paulos Abraham gör mål",
     "key": null,
-    "mp": 0.455,
-    "was": 2,
-    "p": null
-   }
-  ],
-  "note": "Spelaren måste starta matchen för att spel ska vara giltiga"
- },
- {
-  "book": "Unibet",
-  "src": "unibet",
-  "match": null,
-  "home": "AIK",
-  "away": "BK Häcken",
-  "comp": "Allsvenskan",
-  "title": "Linus Carlstrand gör mål",
-  "odds": 2.75,
-  "was": 2.4,
-  "ends": "2026-11-08T15:30:00Z",
-  "pick": null,
-  "p": 0.379,
-  "mp": 0.379,
-  "modelP": null,
-  "legs": [
-   {
-    "label": "Linus Carlstrand gör mål",
-    "key": null,
-    "mp": 0.379,
-    "was": 2.4,
+    "mp": 0.459,
+    "was": 1.98,
     "p": null
    }
   ],
@@ -72,6 +46,32 @@
     "key": null,
     "mp": 0.408,
     "was": 2.23,
+    "p": null
+   }
+  ],
+  "note": "Spelaren måste starta matchen för att spel ska vara giltiga"
+ },
+ {
+  "book": "Unibet",
+  "src": "unibet",
+  "match": null,
+  "home": "AIK",
+  "away": "BK Häcken",
+  "comp": "Allsvenskan",
+  "title": "Linus Carlstrand gör mål",
+  "odds": 2.75,
+  "was": 2.48,
+  "ends": "2026-11-08T15:30:00Z",
+  "pick": null,
+  "p": 0.367,
+  "mp": 0.367,
+  "modelP": null,
+  "legs": [
+   {
+    "label": "Linus Carlstrand gör mål",
+    "key": null,
+    "mp": 0.367,
+    "was": 2.48,
     "p": null
    }
   ],
