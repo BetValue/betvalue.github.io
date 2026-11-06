@@ -8,18 +8,18 @@
   "comp": "Allsvenskan",
   "title": "Paulos Abraham gör mål",
   "odds": 2.3,
-  "was": 1.81,
+  "was": 1.78,
   "ends": "2026-11-06T18:00:00Z",
   "pick": null,
-  "p": 0.502,
-  "mp": 0.502,
+  "p": 0.511,
+  "mp": 0.511,
   "modelP": null,
   "legs": [
    {
     "label": "Paulos Abraham gör mål",
     "key": null,
-    "mp": 0.502,
-    "was": 1.81,
+    "mp": 0.511,
+    "was": 1.78,
     "p": null
    }
   ],
@@ -60,22 +60,62 @@
   "comp": "Allsvenskan",
   "title": "Linus Carlstrand gör mål",
   "odds": 2.75,
-  "was": 2.48,
+  "was": 2.5,
   "ends": "2026-11-08T15:30:00Z",
   "pick": null,
-  "p": 0.367,
-  "mp": 0.367,
+  "p": 0.364,
+  "mp": 0.364,
   "modelP": null,
   "legs": [
    {
     "label": "Linus Carlstrand gör mål",
     "key": null,
-    "mp": 0.367,
-    "was": 2.48,
+    "mp": 0.364,
+    "was": 2.5,
     "p": null
    }
   ],
   "note": "Spelaren måste starta matchen för att spel ska vara giltiga"
+ },
+ {
+  "book": "Unibet",
+  "src": "unibet",
+  "match": 560641,
+  "home": "Nottingham",
+  "away": "Manchester City",
+  "comp": "Premier League",
+  "title": "Manchester City vinner, minst 3 mål i matchen och Haaland gör mål",
+  "odds": 3.4,
+  "was": null,
+  "ends": "2026-11-07T17:30:00Z",
+  "pick": "bb:away|over|p:38101",
+  "p": 0.184,
+  "mp": 0.209,
+  "modelP": 0.147,
+  "legs": [
+   {
+    "label": "Manchester City vinner",
+    "key": "away",
+    "mp": 0.562,
+    "was": 1.74,
+    "p": 0.558
+   },
+   {
+    "label": "minst 3 mål i matchen",
+    "key": "over",
+    "mp": 0.585,
+    "was": 1.63,
+    "p": 0.54
+   },
+   {
+    "label": "Haaland gör mål",
+    "key": "p:38101",
+    "mp": 0.558,
+    "was": 1.63,
+    "p": 0.428
+   }
+  ],
+  "note": "Spelaren måste påbörja alla matcherna för att spel ska kvarstå"
  },
  {
   "book": "Unibet",
