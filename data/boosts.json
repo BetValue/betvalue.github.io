@@ -2,24 +2,180 @@
  {
   "book": "Unibet",
   "src": "unibet",
+  "match": 560638,
+  "home": "Brighton",
+  "away": "Brentford",
+  "comp": "Premier League",
+  "title": "Yasin Ayari minst 1 skott på mål",
+  "odds": 2.4,
+  "was": 1.56,
+  "ends": "2026-11-08T14:00:00Z",
+  "pick": "x:sot:1:304242",
+  "p": 0.545,
+  "mp": 0.583,
+  "modelP": 0.489,
+  "legs": [
+   {
+    "label": "Yasin Ayari minst 1 skott på mål",
+    "key": "x:sot:1:304242",
+    "mp": 0.583,
+    "was": 1.56,
+    "p": 0.489
+   }
+  ],
+  "note": "Spel avgörs genom Opta-data. Spelarna måste starta i matchen för att spel ska kvarstå."
+ },
+ {
+  "book": "Unibet",
+  "src": "unibet",
   "match": null,
   "home": "Hammarby IF",
   "away": "IF Elfsborg",
   "comp": "Allsvenskan",
   "title": "Paulos Abraham gör mål",
   "odds": 2.3,
-  "was": 1.78,
+  "was": 1.74,
   "ends": "2026-11-06T18:00:00Z",
   "pick": null,
-  "p": 0.511,
-  "mp": 0.511,
+  "p": 0.522,
+  "mp": 0.522,
   "modelP": null,
   "legs": [
    {
     "label": "Paulos Abraham gör mål",
     "key": null,
-    "mp": 0.511,
-    "was": 1.78,
+    "mp": 0.522,
+    "was": 1.74,
+    "p": null
+   }
+  ],
+  "note": "Spelaren måste starta matchen för att spel ska vara giltiga"
+ },
+ {
+  "book": "Unibet",
+  "src": "unibet",
+  "match": null,
+  "home": "Hammarby IF",
+  "away": "IF Elfsborg",
+  "comp": "Allsvenskan",
+  "title": "Montader Madjed gör mål",
+  "odds": 3.7,
+  "was": 3.05,
+  "ends": "2026-11-06T18:00:00Z",
+  "pick": null,
+  "p": 0.298,
+  "mp": 0.298,
+  "modelP": null,
+  "legs": [
+   {
+    "label": "Montader Madjed gör mål",
+    "key": null,
+    "mp": 0.298,
+    "was": 3.05,
+    "p": null
+   }
+  ],
+  "note": "Spelaren måste starta matchen för att spel ska vara giltiga"
+ },
+ {
+  "book": "Unibet",
+  "src": "unibet",
+  "match": null,
+  "home": "Kalmar FF",
+  "away": "IK Sirius FK",
+  "comp": "Allsvenskan",
+  "title": "Isak Bjerkebo gör mål",
+  "odds": 2.4,
+  "was": 2.04,
+  "ends": "2026-11-08T15:30:00Z",
+  "pick": null,
+  "p": 0.446,
+  "mp": 0.446,
+  "modelP": null,
+  "legs": [
+   {
+    "label": "Isak Bjerkebo gör mål",
+    "key": null,
+    "mp": 0.446,
+    "was": 2.04,
+    "p": null
+   }
+  ],
+  "note": "Spelaren måste starta matchen för att spel ska vara giltiga"
+ },
+ {
+  "book": "Unibet",
+  "src": "unibet",
+  "match": null,
+  "home": "Örgryte IS",
+  "away": "Västerås SK FK",
+  "comp": "Allsvenskan",
+  "title": "Tobias Sana gör mål",
+  "odds": 4.5,
+  "was": 3.9,
+  "ends": "2026-11-07T16:30:00Z",
+  "pick": null,
+  "p": 0.233,
+  "mp": 0.233,
+  "modelP": null,
+  "legs": [
+   {
+    "label": "Tobias Sana gör mål",
+    "key": null,
+    "mp": 0.233,
+    "was": 3.9,
+    "p": null
+   }
+  ],
+  "note": "Spelaren måste starta matchen för att spel ska vara giltiga"
+ },
+ {
+  "book": "Unibet",
+  "src": "unibet",
+  "match": null,
+  "home": "IFK Värnamo",
+  "away": "IFK Norrköping",
+  "comp": "Superettan",
+  "title": "Christoffer Nyman gör mål",
+  "odds": 2.1,
+  "was": 1.83,
+  "ends": "2026-11-07T14:00:00Z",
+  "pick": null,
+  "p": 0.497,
+  "mp": 0.497,
+  "modelP": null,
+  "legs": [
+   {
+    "label": "Christoffer Nyman gör mål",
+    "key": null,
+    "mp": 0.497,
+    "was": 1.83,
+    "p": null
+   }
+  ],
+  "note": "Spelaren måste starta matchen för att spel ska vara giltiga"
+ },
+ {
+  "book": "Unibet",
+  "src": "unibet",
+  "match": null,
+  "home": "Hammarby IF",
+  "away": "IF Elfsborg",
+  "comp": "Allsvenskan",
+  "title": "Leo Östman gör mål",
+  "odds": 4.6,
+  "was": 4.1,
+  "ends": "2026-11-06T18:00:00Z",
+  "pick": null,
+  "p": 0.222,
+  "mp": 0.222,
+  "modelP": null,
+  "legs": [
+   {
+    "label": "Leo Östman gör mål",
+    "key": null,
+    "mp": 0.222,
+    "was": 4.1,
     "p": null
    }
   ],
@@ -90,7 +246,7 @@
   "ends": "2026-11-07T17:30:00Z",
   "pick": "bb:away|over|p:38101",
   "p": 0.184,
-  "mp": 0.209,
+  "mp": 0.208,
   "modelP": 0.147,
   "legs": [
    {
@@ -103,19 +259,33 @@
    {
     "label": "minst 3 mål i matchen",
     "key": "over",
-    "mp": 0.585,
+    "mp": 0.587,
     "was": 1.63,
     "p": 0.54
    },
    {
     "label": "Haaland gör mål",
     "key": "p:38101",
-    "mp": 0.558,
-    "was": 1.63,
+    "mp": 0.554,
+    "was": 1.64,
     "p": 0.428
    }
   ],
   "note": "Spelaren måste påbörja alla matcherna för att spel ska kvarstå"
+ },
+ {
+  "book": "Unibet",
+  "src": "unibet",
+  "match": null,
+  "home": "Helsingborgs IF",
+  "away": "Falkenbergs FF",
+  "comp": "Superettan",
+  "title": "Albin Andersson to score",
+  "odds": 3,
+  "ends": "2026-11-07T14:00:00Z",
+  "legs": [],
+  "p": null,
+  "note": "Vi kunde inte dela upp boosten i spel som vi kan räkna på."
  },
  {
   "book": "Unibet",
