@@ -167,15 +167,15 @@
   "was": null,
   "ends": "2026-11-07T17:30:00Z",
   "pick": "bb:away|over|p:38101",
-  "p": 0.183,
-  "mp": 0.209,
+  "p": 0.182,
+  "mp": 0.208,
   "modelP": 0.144,
   "legs": [
    {
     "label": "Manchester City vinner",
     "key": "away",
-    "mp": 0.562,
-    "was": 1.74,
+    "mp": 0.56,
+    "was": 1.75,
     "p": 0.553
    },
    {
