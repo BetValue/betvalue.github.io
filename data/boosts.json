@@ -167,29 +167,29 @@
   "was": null,
   "ends": "2026-11-07T17:30:00Z",
   "pick": "bb:away|over|p:38101",
-  "p": 0.182,
-  "mp": 0.208,
+  "p": 0.18,
+  "mp": 0.204,
   "modelP": 0.144,
   "legs": [
    {
     "label": "Manchester City vinner",
     "key": "away",
-    "mp": 0.56,
-    "was": 1.75,
+    "mp": 0.566,
+    "was": 1.73,
     "p": 0.553
    },
    {
     "label": "minst 3 mål i matchen",
     "key": "over",
-    "mp": 0.587,
-    "was": 1.63,
+    "mp": 0.572,
+    "was": 1.67,
     "p": 0.538
    },
    {
     "label": "Haaland gör mål",
     "key": "p:38101",
-    "mp": 0.554,
-    "was": 1.64,
+    "mp": 0.551,
+    "was": 1.65,
     "p": 0.424
    }
   ],
