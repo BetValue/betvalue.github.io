@@ -29,101 +29,23 @@
   "book": "Unibet",
   "src": "unibet",
   "match": null,
-  "home": "IFK Värnamo",
-  "away": "IFK Norrköping",
-  "comp": "Superettan",
-  "title": "Christoffer Nyman gör mål",
-  "odds": 2.1,
-  "was": 1.72,
-  "ends": "2026-11-07T14:00:00Z",
-  "pick": null,
-  "p": 0.529,
-  "mp": 0.529,
-  "modelP": null,
-  "legs": [
-   {
-    "label": "Christoffer Nyman gör mål",
-    "key": null,
-    "mp": 0.529,
-    "was": 1.72,
-    "p": null
-   }
-  ],
-  "note": "Spelaren måste starta matchen för att spel ska vara giltiga"
- },
- {
-  "book": "Unibet",
-  "src": "unibet",
-  "match": null,
   "home": "Kalmar FF",
   "away": "IK Sirius FK",
   "comp": "Allsvenskan",
   "title": "Isak Bjerkebo gör mål",
   "odds": 2.4,
-  "was": 2.02,
+  "was": 2.08,
   "ends": "2026-11-08T15:30:00Z",
   "pick": null,
-  "p": 0.45,
-  "mp": 0.45,
+  "p": 0.437,
+  "mp": 0.437,
   "modelP": null,
   "legs": [
    {
     "label": "Isak Bjerkebo gör mål",
     "key": null,
-    "mp": 0.45,
-    "was": 2.02,
-    "p": null
-   }
-  ],
-  "note": "Spelaren måste starta matchen för att spel ska vara giltiga"
- },
- {
-  "book": "Unibet",
-  "src": "unibet",
-  "match": 560640,
-  "home": "Arsenal",
-  "away": "Hull ",
-  "comp": "Premier League",
-  "title": "Viktor Gyökeres gör mål",
-  "odds": 2,
-  "was": 1.75,
-  "ends": "2026-11-07T15:00:00Z",
-  "pick": null,
-  "p": 0.519,
-  "mp": 0.519,
-  "modelP": null,
-  "legs": [
-   {
-    "label": "Viktor Gyökeres gör mål",
-    "key": null,
-    "mp": 0.519,
-    "was": 1.75,
-    "p": null
-   }
-  ],
-  "note": "Spelaren måste starta matchen för att spel ska vara giltiga"
- },
- {
-  "book": "Unibet",
-  "src": "unibet",
-  "match": null,
-  "home": "Örgryte IS",
-  "away": "Västerås SK FK",
-  "comp": "Allsvenskan",
-  "title": "Tobias Sana gör mål",
-  "odds": 4.5,
-  "was": 3.95,
-  "ends": "2026-11-07T16:30:00Z",
-  "pick": null,
-  "p": 0.23,
-  "mp": 0.23,
-  "modelP": null,
-  "legs": [
-   {
-    "label": "Tobias Sana gör mål",
-    "key": null,
-    "mp": 0.23,
-    "was": 3.95,
+    "mp": 0.437,
+    "was": 2.08,
     "p": null
    }
   ],
@@ -164,76 +86,22 @@
   "comp": "Allsvenskan",
   "title": "Linus Carlstrand gör mål",
   "odds": 2.75,
-  "was": 2.5,
+  "was": 2.63,
   "ends": "2026-11-08T15:30:00Z",
   "pick": null,
-  "p": 0.364,
-  "mp": 0.364,
+  "p": 0.346,
+  "mp": 0.346,
   "modelP": null,
   "legs": [
    {
     "label": "Linus Carlstrand gör mål",
     "key": null,
-    "mp": 0.364,
-    "was": 2.5,
+    "mp": 0.346,
+    "was": 2.63,
     "p": null
    }
   ],
   "note": "Spelaren måste starta matchen för att spel ska vara giltiga"
- },
- {
-  "book": "Unibet",
-  "src": "unibet",
-  "match": 560641,
-  "home": "Nottingham",
-  "away": "Manchester City",
-  "comp": "Premier League",
-  "title": "Manchester City vinner, minst 3 mål i matchen och Haaland gör mål",
-  "odds": 3.4,
-  "was": null,
-  "ends": "2026-11-07T17:30:00Z",
-  "pick": "bb:away|over|p:38101",
-  "p": 0.19,
-  "mp": 0.221,
-  "modelP": 0.144,
-  "legs": [
-   {
-    "label": "Manchester City vinner",
-    "key": "away",
-    "mp": 0.573,
-    "was": 1.71,
-    "p": 0.553
-   },
-   {
-    "label": "minst 3 mål i matchen",
-    "key": "over",
-    "mp": 0.598,
-    "was": 1.6,
-    "p": 0.538
-   },
-   {
-    "label": "Haaland gör mål",
-    "key": "p:38101",
-    "mp": 0.565,
-    "was": 1.61,
-    "p": 0.424
-   }
-  ],
-  "note": "Spelaren måste påbörja alla matcherna för att spel ska kvarstå"
- },
- {
-  "book": "Unibet",
-  "src": "unibet",
-  "match": null,
-  "home": "Helsingborgs IF",
-  "away": "Falkenbergs FF",
-  "comp": "Superettan",
-  "title": "Albin Andersson to score",
-  "odds": 3,
-  "ends": "2026-11-07T14:00:00Z",
-  "legs": [],
-  "p": null,
-  "note": "Vi kunde inte dela upp boosten i spel som vi kan räkna på."
  },
  {
   "book": "Unibet",
