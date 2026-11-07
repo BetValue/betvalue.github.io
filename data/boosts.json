@@ -34,18 +34,18 @@
   "comp": "Allsvenskan",
   "title": "Isak Bjerkebo gör mål",
   "odds": 2.4,
-  "was": 2.04,
+  "was": 2.08,
   "ends": "2026-11-08T15:30:00Z",
   "pick": null,
-  "p": 0.446,
-  "mp": 0.446,
+  "p": 0.437,
+  "mp": 0.437,
   "modelP": null,
   "legs": [
    {
     "label": "Isak Bjerkebo gör mål",
     "key": null,
-    "mp": 0.446,
-    "was": 2.04,
+    "mp": 0.437,
+    "was": 2.08,
     "p": null
    }
   ],
@@ -167,30 +167,30 @@
   "was": null,
   "ends": "2026-11-07T17:30:00Z",
   "pick": "bb:away|over|p:38101",
-  "p": 0.184,
-  "mp": 0.208,
-  "modelP": 0.147,
+  "p": 0.183,
+  "mp": 0.209,
+  "modelP": 0.144,
   "legs": [
    {
     "label": "Manchester City vinner",
     "key": "away",
     "mp": 0.562,
     "was": 1.74,
-    "p": 0.558
+    "p": 0.553
    },
    {
     "label": "minst 3 mål i matchen",
     "key": "over",
     "mp": 0.587,
     "was": 1.63,
-    "p": 0.54
+    "p": 0.538
    },
    {
     "label": "Haaland gör mål",
     "key": "p:38101",
     "mp": 0.554,
     "was": 1.64,
-    "p": 0.428
+    "p": 0.424
    }
   ],
   "note": "Spelaren måste påbörja alla matcherna för att spel ska kvarstå"
