@@ -8,22 +8,48 @@
   "comp": "Premier League",
   "title": "Yasin Ayari minst 1 skott på mål",
   "odds": 2.4,
-  "was": 1.56,
+  "was": 1.57,
   "ends": "2026-11-08T14:00:00Z",
   "pick": "x:sot:1:304242",
-  "p": 0.545,
-  "mp": 0.583,
+  "p": 0.543,
+  "mp": 0.579,
   "modelP": 0.489,
   "legs": [
    {
     "label": "Yasin Ayari minst 1 skott på mål",
     "key": "x:sot:1:304242",
-    "mp": 0.583,
-    "was": 1.56,
+    "mp": 0.579,
+    "was": 1.57,
     "p": 0.489
    }
   ],
   "note": "Spel avgörs genom Opta-data. Spelarna måste starta i matchen för att spel ska kvarstå."
+ },
+ {
+  "book": "Unibet",
+  "src": "unibet",
+  "match": null,
+  "home": "IFK Värnamo",
+  "away": "IFK Norrköping",
+  "comp": "Superettan",
+  "title": "Christoffer Nyman gör mål",
+  "odds": 2.1,
+  "was": 1.75,
+  "ends": "2026-11-07T14:00:00Z",
+  "pick": null,
+  "p": 0.519,
+  "mp": 0.519,
+  "modelP": null,
+  "legs": [
+   {
+    "label": "Christoffer Nyman gör mål",
+    "key": null,
+    "mp": 0.519,
+    "was": 1.75,
+    "p": null
+   }
+  ],
+  "note": "Spelaren måste starta matchen för att spel ska vara giltiga"
  },
  {
   "book": "Unibet",
@@ -34,18 +60,18 @@
   "comp": "Allsvenskan",
   "title": "Isak Bjerkebo gör mål",
   "odds": 2.4,
-  "was": 2.08,
+  "was": 2.02,
   "ends": "2026-11-08T15:30:00Z",
   "pick": null,
-  "p": 0.437,
-  "mp": 0.437,
+  "p": 0.45,
+  "mp": 0.45,
   "modelP": null,
   "legs": [
    {
     "label": "Isak Bjerkebo gör mål",
     "key": null,
-    "mp": 0.437,
-    "was": 2.08,
+    "mp": 0.45,
+    "was": 2.02,
     "p": null
    }
   ],
@@ -60,44 +86,18 @@
   "comp": "Allsvenskan",
   "title": "Tobias Sana gör mål",
   "odds": 4.5,
-  "was": 3.9,
+  "was": 3.95,
   "ends": "2026-11-07T16:30:00Z",
   "pick": null,
-  "p": 0.233,
-  "mp": 0.233,
+  "p": 0.23,
+  "mp": 0.23,
   "modelP": null,
   "legs": [
    {
     "label": "Tobias Sana gör mål",
     "key": null,
-    "mp": 0.233,
-    "was": 3.9,
-    "p": null
-   }
-  ],
-  "note": "Spelaren måste starta matchen för att spel ska vara giltiga"
- },
- {
-  "book": "Unibet",
-  "src": "unibet",
-  "match": null,
-  "home": "IFK Värnamo",
-  "away": "IFK Norrköping",
-  "comp": "Superettan",
-  "title": "Christoffer Nyman gör mål",
-  "odds": 2.1,
-  "was": 1.83,
-  "ends": "2026-11-07T14:00:00Z",
-  "pick": null,
-  "p": 0.497,
-  "mp": 0.497,
-  "modelP": null,
-  "legs": [
-   {
-    "label": "Christoffer Nyman gör mål",
-    "key": null,
-    "mp": 0.497,
-    "was": 1.83,
+    "mp": 0.23,
+    "was": 3.95,
     "p": null
    }
   ],
@@ -167,29 +167,29 @@
   "was": null,
   "ends": "2026-11-07T17:30:00Z",
   "pick": "bb:away|over|p:38101",
-  "p": 0.18,
-  "mp": 0.204,
+  "p": 0.185,
+  "mp": 0.212,
   "modelP": 0.144,
   "legs": [
    {
     "label": "Manchester City vinner",
     "key": "away",
-    "mp": 0.566,
-    "was": 1.73,
+    "mp": 0.57,
+    "was": 1.72,
     "p": 0.553
    },
    {
     "label": "minst 3 mål i matchen",
     "key": "over",
-    "mp": 0.572,
-    "was": 1.67,
+    "mp": 0.584,
+    "was": 1.64,
     "p": 0.538
    },
    {
     "label": "Haaland gör mål",
     "key": "p:38101",
-    "mp": 0.551,
-    "was": 1.65,
+    "mp": 0.558,
+    "was": 1.63,
     "p": 0.424
    }
   ],
