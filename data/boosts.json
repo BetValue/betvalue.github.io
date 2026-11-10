@@ -1,1 +1,28 @@
-[]
+[
+ {
+  "book": "Unibet",
+  "src": "unibet",
+  "match": null,
+  "home": "Sverige",
+  "away": "Bosnien-Hercegovina",
+  "comp": "UEFA Nations League",
+  "title": "Alexander Isak gör mål",
+  "odds": 2.75,
+  "was": 2.15,
+  "ends": "2026-11-14T19:45:00Z",
+  "pick": null,
+  "p": 0.423,
+  "mp": 0.423,
+  "modelP": null,
+  "legs": [
+   {
+    "label": "Alexander Isak gör mål",
+    "key": null,
+    "mp": 0.423,
+    "was": 2.15,
+    "p": null
+   }
+  ],
+  "note": "Spelaren måste starta matchen för att spel ska vara giltiga"
+ }
+]
