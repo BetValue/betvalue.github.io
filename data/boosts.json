@@ -1,1 +1,28 @@
-[]
+[
+ {
+  "book": "Unibet",
+  "src": "unibet",
+  "match": null,
+  "home": "Tyskland",
+  "away": "Nederländerna",
+  "comp": "UEFA Nations League",
+  "title": "Tijjani Reijnders gör mål",
+  "odds": 5.2,
+  "was": 3.8,
+  "ends": "2026-11-16T19:45:00Z",
+  "pick": null,
+  "p": 0.239,
+  "mp": 0.239,
+  "modelP": null,
+  "legs": [
+   {
+    "label": "Tijjani Reijnders gör mål",
+    "key": null,
+    "mp": 0.239,
+    "was": 3.8,
+    "p": null
+   }
+  ],
+  "note": "Spelaren måste starta matchen för att spel ska vara giltiga"
+ }
+]
