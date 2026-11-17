@@ -3,26 +3,26 @@
   "book": "Unibet",
   "src": "unibet",
   "match": null,
-  "home": "Tyskland",
-  "away": "Nederländerna",
+  "home": "Polen",
+  "away": "Sverige",
   "comp": "UEFA Nations League",
-  "title": "Tijjani Reijnders gör mål",
-  "odds": 5.2,
-  "was": 3.8,
-  "ends": "2026-11-16T19:45:00Z",
+  "title": "Sverige spelar oavgjort eller vinner",
+  "odds": 1.85,
+  "was": 3.65,
+  "ends": "2026-11-17T19:45:00Z",
   "pick": null,
-  "p": 0.239,
-  "mp": 0.239,
+  "p": 0.264,
+  "mp": 0.264,
   "modelP": null,
   "legs": [
    {
-    "label": "Tijjani Reijnders gör mål",
+    "label": "Sverige spelar oavgjort eller vinner",
     "key": null,
-    "mp": 0.239,
-    "was": 3.8,
+    "mp": 0.264,
+    "was": 3.65,
     "p": null
    }
   ],
-  "note": "Spelaren måste starta matchen för att spel ska vara giltiga"
+  "note": null
  }
 ]
