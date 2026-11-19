@@ -1,1 +1,54 @@
-[]
+[
+ {
+  "book": "Unibet",
+  "src": "unibet",
+  "match": 560645,
+  "home": "Liverpool",
+  "away": "Manchester United",
+  "comp": "Premier League",
+  "title": "Alexander Isak gör mål",
+  "odds": 2.5,
+  "was": 2.07,
+  "ends": "2026-11-22T16:30:00Z",
+  "pick": null,
+  "p": 0.439,
+  "mp": 0.439,
+  "modelP": null,
+  "legs": [
+   {
+    "label": "Alexander Isak gör mål",
+    "key": null,
+    "mp": 0.439,
+    "was": 2.07,
+    "p": null
+   }
+  ],
+  "note": "Spelaren måste starta matchen för att spel ska vara giltiga"
+ },
+ {
+  "book": "Unibet",
+  "src": "unibet",
+  "match": null,
+  "home": "Hammarby IF",
+  "away": "IFK Göteborg",
+  "comp": "Allsvenskan",
+  "title": "Paulos Abraham gör mål",
+  "odds": 2,
+  "was": 1.77,
+  "ends": "2026-11-23T18:00:00Z",
+  "pick": null,
+  "p": 0.514,
+  "mp": 0.514,
+  "modelP": null,
+  "legs": [
+   {
+    "label": "Paulos Abraham gör mål",
+    "key": null,
+    "mp": 0.514,
+    "was": 1.77,
+    "p": null
+   }
+  ],
+  "note": "Spelaren måste starta matchen för att spel ska vara giltiga"
+ }
+]
