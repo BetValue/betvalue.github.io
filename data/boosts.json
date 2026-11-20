@@ -8,18 +8,18 @@
   "comp": "Premier League",
   "title": "Alexander Isak gör mål",
   "odds": 2.5,
-  "was": 2.07,
+  "was": 2.05,
   "ends": "2026-11-22T16:30:00Z",
   "pick": null,
-  "p": 0.439,
-  "mp": 0.439,
+  "p": 0.443,
+  "mp": 0.443,
   "modelP": null,
   "legs": [
    {
     "label": "Alexander Isak gör mål",
     "key": null,
-    "mp": 0.439,
-    "was": 2.07,
+    "mp": 0.443,
+    "was": 2.05,
     "p": null
    }
   ],
