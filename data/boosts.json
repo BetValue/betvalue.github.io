@@ -8,18 +8,18 @@
   "comp": "Premier League",
   "title": "Alexander Isak gör mål",
   "odds": 2.5,
-  "was": 2,
+  "was": 1.97,
   "ends": "2026-11-22T16:30:00Z",
   "pick": "p:6486",
-  "p": 0.475,
-  "mp": 0.455,
+  "p": 0.479,
+  "mp": 0.461,
   "modelP": 0.506,
   "legs": [
    {
     "label": "Alexander Isak gör mål",
     "key": "p:6486",
-    "mp": 0.455,
-    "was": 2,
+    "mp": 0.461,
+    "was": 1.97,
     "p": 0.506
    }
   ],
@@ -34,18 +34,18 @@
   "comp": "Allsvenskan",
   "title": "Paulos Abraham gör mål",
   "odds": 2,
-  "was": 1.77,
+  "was": 1.74,
   "ends": "2026-11-23T18:00:00Z",
   "pick": null,
-  "p": 0.514,
-  "mp": 0.514,
+  "p": 0.522,
+  "mp": 0.522,
   "modelP": null,
   "legs": [
    {
     "label": "Paulos Abraham gör mål",
     "key": null,
-    "mp": 0.514,
-    "was": 1.77,
+    "mp": 0.522,
+    "was": 1.74,
     "p": null
    }
   ],
