@@ -8,21 +8,61 @@
   "comp": "Allsvenskan",
   "title": "Paulos Abraham gör mål",
   "odds": 2,
-  "was": 1.72,
+  "was": 1.65,
   "ends": "2026-11-23T18:00:00Z",
   "pick": null,
-  "p": 0.529,
-  "mp": 0.529,
+  "p": 0.551,
+  "mp": 0.551,
   "modelP": null,
   "legs": [
    {
     "label": "Paulos Abraham gör mål",
     "key": null,
-    "mp": 0.529,
-    "was": 1.72,
+    "mp": 0.551,
+    "was": 1.65,
     "p": null
    }
   ],
   "note": "Spelaren måste starta matchen för att spel ska vara giltiga"
+ },
+ {
+  "book": "Unibet",
+  "src": "unibet",
+  "match": 575409,
+  "home": "Club Brugge",
+  "away": "Liverpool",
+  "comp": "Champions League",
+  "title": "Alexander Isak gör mål",
+  "odds": 2.25,
+  "was": 1.93,
+  "ends": "2026-11-25T20:00:00Z",
+  "pick": null,
+  "p": 0.471,
+  "mp": 0.471,
+  "modelP": null,
+  "legs": [
+   {
+    "label": "Alexander Isak gör mål",
+    "key": null,
+    "mp": 0.471,
+    "was": 1.93,
+    "p": null
+   }
+  ],
+  "note": "Spelaren måste påbörja alla matcherna för att spel ska kvarstå"
+ },
+ {
+  "book": "Unibet",
+  "src": "unibet",
+  "match": 575399,
+  "home": "Arsenal",
+  "away": "Borussia Dortmund",
+  "comp": "Champions League",
+  "title": "Viktor Gyökeres blir målskytt i matchen",
+  "odds": 2.4,
+  "ends": "2026-11-24T20:00:00Z",
+  "legs": [],
+  "p": null,
+  "note": "Vi kunde inte dela upp boosten i spel som vi kan räkna på."
  }
 ]
