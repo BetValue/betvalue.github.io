@@ -8,18 +8,18 @@
   "comp": "Champions League",
   "title": "Alexander Isak gör mål",
   "odds": 2.25,
-  "was": 1.91,
+  "was": 1.84,
   "ends": "2026-11-25T20:00:00Z",
   "pick": "x:g:1:235662",
-  "p": 0.508,
-  "mp": 0.476,
+  "p": 0.519,
+  "mp": 0.494,
   "modelP": 0.557,
   "legs": [
    {
     "label": "Alexander Isak gör mål",
     "key": "x:g:1:235662",
-    "mp": 0.476,
-    "was": 1.91,
+    "mp": 0.494,
+    "was": 1.84,
     "p": 0.557
    }
   ],
