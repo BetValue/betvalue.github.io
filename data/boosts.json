@@ -11,32 +11,18 @@
   "was": 1.84,
   "ends": "2026-11-25T20:00:00Z",
   "pick": "x:g:1:235662",
-  "p": 0.519,
+  "p": 0.518,
   "mp": 0.494,
-  "modelP": 0.557,
+  "modelP": 0.555,
   "legs": [
    {
     "label": "Alexander Isak gör mål",
     "key": "x:g:1:235662",
     "mp": 0.494,
     "was": 1.84,
-    "p": 0.557
+    "p": 0.555
    }
   ],
   "note": "Spelaren måste påbörja alla matcherna för att spel ska kvarstå"
- },
- {
-  "book": "Unibet",
-  "src": "unibet",
-  "match": 575399,
-  "home": "Arsenal",
-  "away": "Borussia Dortmund",
-  "comp": "Champions League",
-  "title": "Viktor Gyökeres blir målskytt i matchen",
-  "odds": 2.4,
-  "ends": "2026-11-24T20:00:00Z",
-  "legs": [],
-  "p": null,
-  "note": "Vi kunde inte dela upp boosten i spel som vi kan räkna på."
  }
 ]
