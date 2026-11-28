@@ -28,54 +28,54 @@
  {
   "book": "Unibet",
   "src": "unibet",
-  "match": 560654,
-  "home": "Arsenal",
-  "away": "Manchester City",
-  "comp": "Premier League",
-  "title": "Erling Haaland minst 2 skott på mål",
-  "odds": 2.75,
-  "was": 2.28,
-  "ends": "2026-11-29T16:30:00Z",
-  "pick": "x:sot:2:253989",
-  "p": 0.385,
-  "mp": 0.399,
-  "modelP": 0.365,
-  "legs": [
-   {
-    "label": "Erling Haaland minst 2 skott på mål",
-    "key": "x:sot:2:253989",
-    "mp": 0.399,
-    "was": 2.28,
-    "p": 0.365
-   }
-  ],
-  "note": "Spel avgörs genom Opta-data. Spelarna måste starta i matchen för att spel ska kvarstå."
- },
- {
-  "book": "Unibet",
-  "src": "unibet",
   "match": null,
   "home": "Västerås SK FK",
   "away": "Hammarby IF",
   "comp": "Allsvenskan",
   "title": "Paulos Abraham gör mål",
   "odds": 1.9,
-  "was": 1.65,
+  "was": 1.61,
   "ends": "2026-11-29T14:00:00Z",
   "pick": null,
-  "p": 0.551,
-  "mp": 0.551,
+  "p": 0.565,
+  "mp": 0.565,
   "modelP": null,
   "legs": [
    {
     "label": "Paulos Abraham gör mål",
     "key": null,
-    "mp": 0.551,
-    "was": 1.65,
+    "mp": 0.565,
+    "was": 1.61,
     "p": null
    }
   ],
   "note": "Spelaren måste starta matchen för att spel ska vara giltiga"
+ },
+ {
+  "book": "Unibet",
+  "src": "unibet",
+  "match": 560654,
+  "home": "Arsenal",
+  "away": "Manchester City",
+  "comp": "Premier League",
+  "title": "Erling Haaland minst 2 skott på mål",
+  "odds": 2.75,
+  "was": 2.25,
+  "ends": "2026-11-29T16:30:00Z",
+  "pick": "x:sot:2:253989",
+  "p": 0.388,
+  "mp": 0.404,
+  "modelP": 0.365,
+  "legs": [
+   {
+    "label": "Erling Haaland minst 2 skott på mål",
+    "key": "x:sot:2:253989",
+    "mp": 0.404,
+    "was": 2.25,
+    "p": 0.365
+   }
+  ],
+  "note": "Spel avgörs genom Opta-data. Spelarna måste starta i matchen för att spel ska kvarstå."
  },
  {
   "book": "Unibet",
@@ -86,18 +86,18 @@
   "comp": "Allsvenskan",
   "title": "Tobias Sana gör mål",
   "odds": 4.6,
-  "was": 4,
+  "was": 4.1,
   "ends": "2026-11-29T14:00:00Z",
   "pick": null,
-  "p": 0.227,
-  "mp": 0.227,
+  "p": 0.222,
+  "mp": 0.222,
   "modelP": null,
   "legs": [
    {
     "label": "Tobias Sana gör mål",
     "key": null,
-    "mp": 0.227,
-    "was": 4,
+    "mp": 0.222,
+    "was": 4.1,
     "p": null
    }
   ],
@@ -115,16 +115,16 @@
   "was": 1.89,
   "ends": "2026-11-29T12:00:00Z",
   "pick": "p:6486",
-  "p": 0.417,
+  "p": 0.418,
   "mp": 0.481,
-  "modelP": 0.321,
+  "modelP": 0.323,
   "legs": [
    {
     "label": "Alexander Isak gör mål",
     "key": "p:6486",
     "mp": 0.481,
     "was": 1.89,
-    "p": 0.321
+    "p": 0.323
    }
   ],
   "note": "Spelaren måste starta matchen för att spel ska vara giltiga"
