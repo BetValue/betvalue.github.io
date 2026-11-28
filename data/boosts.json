@@ -8,44 +8,18 @@
   "comp": "Allsvenskan",
   "title": "Gustav Lundgren gör mål",
   "odds": 5.6,
-  "was": 4.6,
+  "was": 4.7,
   "ends": "2026-11-29T14:00:00Z",
   "pick": null,
-  "p": 0.198,
-  "mp": 0.198,
+  "p": 0.193,
+  "mp": 0.193,
   "modelP": null,
   "legs": [
    {
     "label": "Gustav Lundgren gör mål",
     "key": null,
-    "mp": 0.198,
-    "was": 4.6,
-    "p": null
-   }
-  ],
-  "note": "Spelaren måste starta matchen för att spel ska vara giltiga"
- },
- {
-  "book": "Unibet",
-  "src": "unibet",
-  "match": null,
-  "home": "Västerås SK FK",
-  "away": "Hammarby IF",
-  "comp": "Allsvenskan",
-  "title": "Paulos Abraham gör mål",
-  "odds": 1.9,
-  "was": 1.58,
-  "ends": "2026-11-29T14:00:00Z",
-  "pick": null,
-  "p": 0.575,
-  "mp": 0.575,
-  "modelP": null,
-  "legs": [
-   {
-    "label": "Paulos Abraham gör mål",
-    "key": null,
-    "mp": 0.575,
-    "was": 1.58,
+    "mp": 0.193,
+    "was": 4.7,
     "p": null
    }
   ],
@@ -76,6 +50,32 @@
    }
   ],
   "note": "Spel avgörs genom Opta-data. Spelarna måste starta i matchen för att spel ska kvarstå."
+ },
+ {
+  "book": "Unibet",
+  "src": "unibet",
+  "match": null,
+  "home": "Västerås SK FK",
+  "away": "Hammarby IF",
+  "comp": "Allsvenskan",
+  "title": "Paulos Abraham gör mål",
+  "odds": 1.9,
+  "was": 1.65,
+  "ends": "2026-11-29T14:00:00Z",
+  "pick": null,
+  "p": 0.551,
+  "mp": 0.551,
+  "modelP": null,
+  "legs": [
+   {
+    "label": "Paulos Abraham gör mål",
+    "key": null,
+    "mp": 0.551,
+    "was": 1.65,
+    "p": null
+   }
+  ],
+  "note": "Spelaren måste starta matchen för att spel ska vara giltiga"
  },
  {
   "book": "Unibet",
@@ -115,16 +115,16 @@
   "was": 1.89,
   "ends": "2026-11-29T12:00:00Z",
   "pick": "p:6486",
-  "p": 0.418,
+  "p": 0.417,
   "mp": 0.481,
-  "modelP": 0.323,
+  "modelP": 0.321,
   "legs": [
    {
     "label": "Alexander Isak gör mål",
     "key": "p:6486",
     "mp": 0.481,
     "was": 1.89,
-    "p": 0.323
+    "p": 0.321
    }
   ],
   "note": "Spelaren måste starta matchen för att spel ska vara giltiga"
